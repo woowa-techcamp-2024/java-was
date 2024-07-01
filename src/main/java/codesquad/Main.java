@@ -20,7 +20,6 @@ public class Main {
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             logger.debug("Listening for connection on port {} ....", PORT);
-
             while (true) {
                 Socket clientSocket = serverSocket.accept();
                 executor.execute(new ClientHandler(clientSocket, router));

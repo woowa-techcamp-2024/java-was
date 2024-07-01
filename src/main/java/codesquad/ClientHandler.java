@@ -83,5 +83,4 @@ class ClientHandler implements Runnable {
         if (filePath.endsWith(".html")) { return "text/html"; }
         return "text/plain";
     }
-
 }
