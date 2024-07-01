@@ -56,7 +56,6 @@ public class Server {
                     clientSocket.close();
                 } catch (IOException e) {
                     logger.error("클라이언트 소켓을 닫을 수 없습니다.");
-                    throw new RuntimeException(e);
                 }
             }
         }
@@ -70,7 +69,7 @@ public class Server {
             clientOutput.write("\r\n".getBytes());
 
             try (FileInputStream fileInputStream = new FileInputStream(path)) {
-                int data = 0;
+                int data;
                 byte[] buffer = new byte[fileInputStream.available()];
                 while ((data = fileInputStream.read(buffer, 0, buffer.length)) != -1) {
                     clientOutput.write(new String(buffer, 0, data).getBytes());
