@@ -12,6 +12,10 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    // slf4j
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    // assertj
+    testImplementation 'org.assertj:assertj-core:3.23.1'
 }
 
 test {
