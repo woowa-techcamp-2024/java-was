@@ -16,7 +16,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Router router = new Router();
-        router.addRoute("/index.html", "<h1>index.html</h1>");
+        router.addRoute("/index.html", "/index.html");
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             logger.debug("Listening for connection on port {} ....", PORT);

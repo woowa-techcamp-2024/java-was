@@ -3,14 +3,12 @@ package codesquad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 class ClientHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+    private static final String STATIC_PATH = "src/main/resources/static";
     private final Socket clientSocket;
     private final Router router;
 
@@ -36,7 +34,11 @@ class ClientHandler implements Runnable {
                 logger.debug("Client request URL: {}", url);
                 logger.debug("Client request HTTP Protocol: {}", protocol);
                 String content = router.getContent(url);
-                sendResponse(out, content);
+                if (content.startsWith("/")) {
+                    sendFile(out, content);
+                } else {
+                    sendResponse(out, "text/html", content);
+                }
             }
         } catch (IOException e) {
             logger.error("Error handling client request", e);
@@ -49,11 +51,37 @@ class ClientHandler implements Runnable {
         }
     }
 
-    private void sendResponse(OutputStream out, String response) throws IOException {
+    private void sendFile(OutputStream out, String filePath) throws IOException {
+        File file = new File(STATIC_PATH + filePath);
+        if (file.exists() && !file.isDirectory()) {
+            String contentType = getContentType(filePath);
+            out.write("HTTP/1.1 200 OK\r\n".getBytes());
+            out.write(("Content-Type: " + contentType + "\r\n").getBytes());
+            out.write("\r\n".getBytes());
+
+            try (FileInputStream fis = new FileInputStream(file);
+                 BufferedInputStream bis = new BufferedInputStream(fis)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
+            out.flush();
+        }
+    }
+
+    private void sendResponse(OutputStream out, String contentType, String response) throws IOException {
         out.write("HTTP/1.1 200 OK\r\n".getBytes());
-        out.write("Content-Type: text/html\r\n".getBytes());
+        out.write(("Content-Type: " + contentType + "\r\n").getBytes());
         out.write("\r\n".getBytes());
         out.write(response.getBytes());
         out.flush();
     }
+
+    private String getContentType(String filePath) {
+        if (filePath.endsWith(".html")) { return "text/html"; }
+        return "text/plain";
+    }
+
 }
