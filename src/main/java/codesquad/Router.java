@@ -1,13 +1,13 @@
 package codesquad;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Router {
     private final Map<String, String> routes;
 
     public Router() {
-        routes = new HashMap<>();
+        routes = new ConcurrentHashMap<>();
     }
 
     public void addRoute(String url, String content) {
