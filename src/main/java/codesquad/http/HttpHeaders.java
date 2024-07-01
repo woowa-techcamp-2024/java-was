@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class HttpHeaders {
     private final Logger log = LoggerFactory.getLogger(HttpHeaders.class);
-    private Map<String, String> headers = new HashMap<>();
+    private final Map<String, String> headers = new HashMap<>();
 
     public void add(String line) {
         String[] row = line.split(":");

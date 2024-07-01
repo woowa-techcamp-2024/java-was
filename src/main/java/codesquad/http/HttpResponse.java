@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 public class HttpResponse {
     private final Logger log = LoggerFactory.getLogger(HttpResponse.class);
-    private DataOutputStream outputStream;
-    private Map<String, String> headers = new HashMap<>();
+    private final DataOutputStream outputStream;
+    private final Map<String, String> headers = new HashMap<>();
     public HttpResponse(OutputStream outputStream) {
         this.outputStream = new DataOutputStream(outputStream);
     }

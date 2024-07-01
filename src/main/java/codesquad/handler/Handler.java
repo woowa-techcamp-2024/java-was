@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class Handler {
-    private Logger log = LoggerFactory.getLogger(Handler.class);
+    private final Logger log = LoggerFactory.getLogger(Handler.class);
 
     public void handle(HttpRequest request, HttpResponse response){
         log.info("request: "+request);

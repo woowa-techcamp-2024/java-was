@@ -2,7 +2,6 @@ package codesquad.webserver;
 
 import codesquad.handler.Handler;
 import codesquad.handler.HandlerMapping;
-import codesquad.handler.IndexHandler;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import java.io.IOException;
@@ -13,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RequestHandler {
-    private final String PATH_INDEX = "/index";
-    private Socket connect;
+    private final Socket connect;
     private final Logger log = LoggerFactory.getLogger(RequestHandler.class);
-
 
     public RequestHandler(Socket connect) {
         this.connect = connect;

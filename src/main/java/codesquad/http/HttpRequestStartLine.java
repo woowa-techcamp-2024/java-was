@@ -1,8 +1,8 @@
 package codesquad.http;
 
 public class HttpRequestStartLine {
-    private HttpMethod method;
-    private String path;
+    private final HttpMethod method;
+    private final String path;
     private String queryString;
 
     public HttpRequestStartLine(String line){
