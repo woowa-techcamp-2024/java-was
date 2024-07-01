@@ -1,6 +1,7 @@
 package codesquad;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -28,12 +29,16 @@ public class Main {
 
                 System.out.println("Client connected");
 
+                FileInputStream fileInputStream = new FileInputStream("src/main/resources/static/index.html");
+
                 // HTTP 응답을 생성합니다.
                 clientOutput.write("HTTP/1.1 200 OK\r\n".getBytes());
                 clientOutput.write("Content-Type: text/html\r\n".getBytes());
                 clientOutput.write("\r\n".getBytes());
-                clientOutput.write("<h1>Hello</h1>\r\n".getBytes()); // 응답 본문으로 "Hello"를 보냅니다.
+                clientOutput.write(fileInputStream.readAllBytes()); // 응답 본문으로 "Hello"를 보냅니다.
                 clientOutput.flush();
+
+                fileInputStream.close();
             }
         }
     }
