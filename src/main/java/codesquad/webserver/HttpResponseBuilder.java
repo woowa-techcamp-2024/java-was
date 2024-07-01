@@ -20,7 +20,7 @@ public class HttpResponseBuilder {
     public HttpResponse build(File file) throws IOException {
         if (file.exists() && file.isFile()) {
             byte[] body = Files.readAllBytes(file.toPath());
-            String contentType = MIME_TYPES.get(file.getName());
+            String contentType = getContentType(file.getName());
 
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", contentType);
