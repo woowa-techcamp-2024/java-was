@@ -1,12 +1,12 @@
 package codesquad;
 
 import codesquad.http.HttpRequest;
-import codesquad.reader.FileByteReader;
-import java.io.BufferedWriter;
+import codesquad.http.HttpResponse;
+import codesquad.http.enums.StatusCode;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,25 +22,17 @@ public class Main {
         while (true) {
             try (Socket clientSocket = serverSocket.accept();
                 var is = clientSocket.getInputStream();
-                var bw = new BufferedWriter(
-                    new OutputStreamWriter(clientSocket.getOutputStream()))) {
+                var os = clientSocket.getOutputStream()) {
                 log.info("Client connected");
                 var request = HttpRequest.from(is);
-
-                bw.write(generateResponse());
-                bw.flush();
+                var response = HttpResponse.of("HTTP/1.1", StatusCode.OK,
+                    Map.of("Content-Type", "text/html"), request.getRequestUri());
+                os.write(response.generateResponse());
+                os.flush();
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
         }
-    }
-
-    private static String generateResponse() {
-        var fileByteReader = new FileByteReader("/index.html");
-        return "HTTP/1.1 200 OK\r\n"
-            + "Content-Type: text/html\r\n"
-            + "\r\n"
-            + new String(fileByteReader.readAllBytes());
     }
 
 }
