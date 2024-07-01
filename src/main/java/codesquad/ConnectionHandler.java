@@ -25,7 +25,7 @@ public class ConnectionHandler implements Runnable {
              OutputStream clientOutput = clientSocket.getOutputStream();
              FileInputStream fileInputStream = new FileInputStream("src/main/resources/static/index.html")) {
 
-            String httpRequestInformation = printRequest(requestReader);
+            String httpRequestInformation = parseRequest(requestReader);
 
             log.debug(httpRequestInformation);
             log.debug("Client connected");
@@ -49,7 +49,7 @@ public class ConnectionHandler implements Runnable {
         }
     }
 
-    private String printRequest(final BufferedReader requestReader) throws IOException {
+    private String parseRequest(final BufferedReader requestReader) throws IOException {
         StringBuilder httpRequestBuilder = new StringBuilder();
         String requestLine;
         while (!(requestLine = requestReader.readLine()).isEmpty()) {
