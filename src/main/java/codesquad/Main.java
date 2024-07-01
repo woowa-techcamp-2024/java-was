@@ -1,10 +1,9 @@
 package codesquad;
 
+import codesquad.http.HttpRequest;
 import codesquad.reader.FileByteReader;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,28 +21,17 @@ public class Main {
 
         while (true) {
             try (Socket clientSocket = serverSocket.accept();
-                var br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                var is = clientSocket.getInputStream();
                 var bw = new BufferedWriter(
                     new OutputStreamWriter(clientSocket.getOutputStream()))) {
                 log.info("Client connected");
-                readRequest(br);
+                var request = HttpRequest.from(is);
 
                 bw.write(generateResponse());
                 bw.flush();
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
-        }
-    }
-
-    private static void readRequest(BufferedReader br) throws IOException {
-        log.info("read request");
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.isBlank()) {
-                break;
-            }
-            log.info(line);
         }
     }
 
