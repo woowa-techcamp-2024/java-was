@@ -20,7 +20,7 @@ public class Main {
                 new LinkedBlockingQueue<>());
 
         while (true) { // 무한 루프를 돌며 클라이언트의 연결을 기다립니다.
-            executor.execute(new Connection(serverSocket.accept()));
+            executor.execute(new ConnectionHandler(serverSocket.accept()));
         }
     }
 }

@@ -9,13 +9,13 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Connection implements Runnable {
+public class ConnectionHandler implements Runnable {
 
     private final Logger log = LoggerFactory.getLogger(Main.class);
 
     private final Socket clientSocket;
 
-    public Connection(final Socket clientSocket) {
+    public ConnectionHandler(final Socket clientSocket) {
         this.clientSocket = clientSocket;
     }
 
