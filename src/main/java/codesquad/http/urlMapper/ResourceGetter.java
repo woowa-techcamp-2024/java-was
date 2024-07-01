@@ -37,6 +37,12 @@ public class ResourceGetter {
             return "text/css";
         } else if (filePath.endsWith(".js")) {
             return "application/javascript";
+        } else if (filePath.endsWith(".jpg")) {
+            return "image/jpeg";
+        } else if (filePath.endsWith(".png")) {
+            return "image/png";
+        } else if (filePath.endsWith(".svg")) {
+            return "image/svg+xml";
         } else {
             return "application/octet-stream"; // 기타 파일 형식의 기본 타입
         }

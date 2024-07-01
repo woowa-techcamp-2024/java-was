@@ -15,7 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-import static codesquad.http.response.HttpResponseSender.sendHttpResponse;
+import static codesquad.http.response.HttpResponseSender.*;
 import static codesquad.http.urlMapper.ResourceGetter.*;
 
 
@@ -35,11 +35,29 @@ public class Main {
 
                 // HTTP 응답을 생성합니다.
                 OutputStream clientOutput = clientSocket.getOutputStream();
+                String resourcePath = "";
 
-                String resourcePath = resourceMapping.getResourcePath(request.getUrl());
+                String url = request.getUrl();
+                if(url.startsWith("/img")){
+                    resourcePath = "/static"+ url;
+                }
+                else {
+                    resourcePath = resourceMapping.getResourcePath(url);
+                }
+
+                System.out.println(resourcePath);
 
                 // 요청된 URL과 매핑된 리소스 파일 경로 가져오기
                 if (resourcePath != null) {
+                    if (resourcePath.endsWith(".html")) {
+                        sendHtmlResponse(clientSocket.getOutputStream(), "200 OK", "text/html", getResourceBytes(resourcePath));
+                    } else if (resourcePath.endsWith(".css")) {
+                        sendHttpResponse(clientSocket.getOutputStream(), "200 OK", "text/css", getResourceBytes(resourcePath));
+                    } else if (resourcePath.endsWith(".js")) {
+                        sendHttpResponse(clientSocket.getOutputStream(), "200 OK", "application/javascript", getResourceBytes(resourcePath));
+                    } else if (resourcePath.endsWith(".jpg") || resourcePath.endsWith(".png") || resourcePath.endsWith(".svg")) {
+                        sendImageResponse(clientSocket.getOutputStream(), "200 OK", getContentType(resourcePath), getResourceBytes(resourcePath));
+                    }
                     System.out.println(resourcePath);
 
                     // HTTP 응답 보내기

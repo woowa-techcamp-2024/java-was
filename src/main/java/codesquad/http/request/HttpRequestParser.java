@@ -40,19 +40,4 @@ public class HttpRequestParser {
         return request;
     }
 
-    public static void main(String[] args) {
-        // Example usage
-        try {
-            // Mock InputStream (replace with actual socket input stream in real usage)
-            String httpRequestString = "GET /index.html HTTP/1.1\r\n" +
-                    "Host: www.example.com\r\n" +
-                    "Connection: keep-alive\r\n" +
-                    "\r\n";
-            InputStream inputStream = new ByteArrayInputStream(httpRequestString.getBytes());
-            HttpRequest request = parseHttpRequest(inputStream);
-            System.out.println(request);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
