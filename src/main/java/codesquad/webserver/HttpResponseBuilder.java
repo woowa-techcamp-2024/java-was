@@ -15,6 +15,8 @@ public class HttpResponseBuilder {
         MIME_TYPES.put("jpg", "image/jpeg");
         MIME_TYPES.put("png", "image/png");
         MIME_TYPES.put("gif", "image/gif");
+        MIME_TYPES.put("svg", "image/svg+xml");
+        MIME_TYPES.put("ico", "image/x-icon");
     }
 
     public HttpResponse build(File file) throws IOException {
