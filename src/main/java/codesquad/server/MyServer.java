@@ -13,12 +13,13 @@ import codesquad.socket.MySocket;
 public class MyServer {
 
 	private static final Logger logger = LoggerFactory.getLogger(Main.class);
+	private static final MyServer instance = new MyServer();
 
-	private static final int PORT = 8080;
+	private final int PORT = 8080;
 
 	private MySocket mySocket;
 
-	public MyServer() {
+	private MyServer() {
 		try {
 			mySocket = new MySocket(PORT);
 		} catch (IOException e) {
@@ -26,9 +27,9 @@ public class MyServer {
 		}
 	}
 
-	public void start() throws IOException {
+	public static void start() throws IOException {
 		while (true) {
-			try (Socket clientSocket = mySocket.accept()) {
+			try (Socket clientSocket = instance.mySocket.accept()) {
 				logger.info("Client connected");
 
 				// HTTP 응답을 생성합니다.
