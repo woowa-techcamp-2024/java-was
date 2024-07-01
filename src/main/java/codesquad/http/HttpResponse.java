@@ -1,8 +1,10 @@
 package codesquad.http;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -16,13 +18,25 @@ public class HttpResponse {
         this.outputStream = new DataOutputStream(outputStream);
     }
 
+    public void setBodyFile(String path){
+        try{
+            String STATIC_DIRECTORY_PATH = "./src/main/resources/static";
+            byte[] body = Files.readAllBytes(new File(STATIC_DIRECTORY_PATH +path).toPath());
+            setSuccessStatusHeader();
+            headers.put("Content-Length", body.length+"");
+            processHeader();
+            setResponseBody(body);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void setBodyMessage(String body) {
         byte[] contents = body.getBytes();
         setSuccessStatusHeader();
         headers.put("Content-Type", "text/html;charset=utf-8");
         headers.put("Content-Length", contents.length +"");
         processHeader();
-        setNewLine();
         setResponseBody(contents);
     }
 
@@ -57,6 +71,7 @@ public class HttpResponse {
             for(String key : headers.keySet()){
                 outputStream.writeBytes(key+": "+headers.get(key)+"\r\n");
             }
+            setNewLine();
         } catch (IOException e) {
             log.error(e.getMessage());
         }

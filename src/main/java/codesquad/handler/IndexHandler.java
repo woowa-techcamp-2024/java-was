@@ -6,6 +6,6 @@ import codesquad.http.HttpResponse;
 public class IndexHandler extends Handler{
     @Override
     public void doGet(HttpRequest request, HttpResponse response) {
-        response.setBodyMessage("<h1>Hello</h1>");
+        response.setBodyFile("/index.html");
     }
 }
