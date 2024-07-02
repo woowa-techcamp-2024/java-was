@@ -1,28 +1,46 @@
 package codesquad;
 
+import codesquad.http.Servlet.Servlet;
+import codesquad.http.log.Log;
+import codesquad.http.request.HttpRequest;
+import codesquad.http.request.HttpRequestParser;
+import codesquad.http.urlMapper.ResourceMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static codesquad.http.response.HttpResponseSender.*;
+import static codesquad.http.urlMapper.ResourceGetter.*;
 
 
 public class Main {
+    private static final int THREAD_POOL_SIZE = 10;
+    private static final int PORT = 8080;
+    private static final ResourceMapping resourceMapping = new ResourceMapping();
+    private static final Servlet servlet = new Servlet(resourceMapping);
+
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(8080); // 8080 포트에서 서버를 엽니다.
-        System.out.println("Listening for connection on port 8080 ....");
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+        ServerSocket serverSocket = new ServerSocket(PORT);
 
-        while (true) { // 무한 루프를 돌며 클라이언트의 연결을 기다립니다.
-            try (Socket clientSocket = serverSocket.accept()) { // 클라이언트 연결을 수락합니다.
-                System.out.println("Client connected");
-
-                // HTTP 응답을 생성합니다.
-                OutputStream clientOutput = clientSocket.getOutputStream();
-                clientOutput.write("HTTP/1.1 200 OK\r\n".getBytes());
-                clientOutput.write("Content-Type: text/html\r\n".getBytes());
-                clientOutput.write("\r\n".getBytes());
-                clientOutput.write("<h1>Hello</h1>\r\n".getBytes()); // 응답 본문으로 "Hello"를 보냅니다.
-                clientOutput.flush();
-            }
+        Log.log("Server started on port " + PORT);
+        while (true) {
+            Socket clientSocket = serverSocket.accept();
+            executorService.submit(() -> {
+                try {
+                    servlet.handleClientRequest(clientSocket);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
     }
 }
