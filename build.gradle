@@ -10,8 +10,12 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.slf4j:slf4j-api:2.0.0'  // SLF4J API
+    implementation 'ch.qos.logback:logback-classic:1.3.0'  // Logback Classic
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'uk.org.lidalia:slf4j-test:1.2.0'
 }
 
 test {
