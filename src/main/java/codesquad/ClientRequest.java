@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +36,20 @@ public class ClientRequest implements Runnable {
             HttpRequestMessage requestMessage = HttpRequestMessage.parse(rawHttpRequestMessage);
             log.debug("Http request message={}", requestMessage);
 
+            // 정적 파일의 경로를 찾습니다.
+            String rawHttpResponseMessage = getStaticFile("static/" + requestMessage.requestUrl());
+
+            // 컨텐츠 타입을 매핑합니다.
+            int extensionStartIndex = requestMessage.requestUrl().indexOf(".");
+            String fileNameExtension = requestMessage.requestUrl().substring(extensionStartIndex + 1);
+            String contentType = ContentTypes.getMimeType(fileNameExtension);
+
             // HTTP 응답을 생성합니다.
             OutputStream clientOutput = clientSocket.getOutputStream();
             clientOutput.write("HTTP/1.1 200 OK\r\n".getBytes());
-            clientOutput.write("Content-Type: text/html\r\n".getBytes());
+            String contentTypeHeader = MessageFormat.format("Content-Type: {0}\r\n", contentType);
+            clientOutput.write(contentTypeHeader.getBytes());
             clientOutput.write("\r\n".getBytes());
-            String rawHttpResponseMessage = getStaticFile("static/index.html");
             clientOutput.write(rawHttpResponseMessage.getBytes()); // 응답 본문으로 "Hello"를 보냅니다.
             clientOutput.flush();
 
