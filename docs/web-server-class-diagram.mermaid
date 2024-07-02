@@ -1,0 +1,42 @@
+classDiagram
+    class WebServer {
+        -int port
+        -ThreadPool threadPool
+        +start()
+        -handleConnections()
+    }
+    class RequestHandler {
+        +handle(Socket clientSocket)
+    }
+    class HttpParser {
+        +parse(InputStream input) HttpRequest
+    }
+    class FileReader {
+        +read(String path) File
+    }
+    class HttpResponseBuilder {
+        +build(File file) HttpResponse
+    }
+    class HttpRequest {
+        -String method
+        -String path
+        -Map~String, String~ headers
+    }
+    class HttpResponse {
+        -int statusCode
+        -Map~String, String~ headers
+        -byte[] body
+    }
+    class Logger {
+        +info(String message)
+        +error(String message, Exception e)
+    }
+
+    WebServer --> RequestHandler : uses
+    RequestHandler --> HttpParser : uses
+    RequestHandler --> FileReader : uses
+    RequestHandler --> HttpResponseBuilder : uses
+    HttpParser ..> HttpRequest : creates
+    HttpResponseBuilder ..> HttpResponse : creates
+    WebServer --> Logger : uses
+    RequestHandler --> Logger : uses
