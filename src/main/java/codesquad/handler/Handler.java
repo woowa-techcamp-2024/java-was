@@ -11,14 +11,12 @@ public abstract class Handler {
     private final Logger log = LoggerFactory.getLogger(Handler.class);
 
     public void handle(HttpRequest request, HttpResponse response){
-        log.info("request: "+request);
         HttpMethod method = request.getMethod();
         if(method.isPost()){
             doPost(request, response);
         }else if(method.isGet()){
             doGet(request, response);
         }
-        log.info("response: "+response);
     }
 
     protected void doGet(HttpRequest request, HttpResponse response){}

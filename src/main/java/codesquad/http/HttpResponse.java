@@ -1,12 +1,10 @@
 package codesquad.http;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+
+import codesquad.util.FileReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +18,12 @@ public class HttpResponse {
 
     public void setBodyFile(String path){
         try{
-            String STATIC_DIRECTORY_PATH = "./src/main/resources/static";
-            byte[] body = Files.readAllBytes(new File(STATIC_DIRECTORY_PATH +path).toPath());
+            byte[] body = FileReader.readFile(path);
             setSuccessStatusHeader();
             headers.put("Content-Length", body.length+"");
+            if(path.endsWith(".svg")){
+                headers.put("Content-Type", "image/svg+xml");
+            }
             processHeader();
             setResponseBody(body);
         } catch (IOException e) {
@@ -44,7 +44,7 @@ public class HttpResponse {
         try{
             outputStream.writeBytes("HTTP/1.1 200 OK\r\n");
         } catch (IOException e) {
-            log.error(e.getMessage());
+            log.error(e.getMessage(), e);
         }
     }
 
