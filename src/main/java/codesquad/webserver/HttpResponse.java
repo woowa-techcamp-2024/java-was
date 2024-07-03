@@ -9,6 +9,7 @@ public class HttpResponse {
     private final Map<String, String> headers;
     private final byte[] body;
 
+    // TODO: 헤더와 바디를 분리해 처리
     public HttpResponse(int statusCode, String statusMessage, Map<String, String> headers, byte[] body) {
         this.statusCode = statusCode;
         this.statusMessage = statusMessage;

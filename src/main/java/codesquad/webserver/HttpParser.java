@@ -26,18 +26,30 @@ public class HttpParser {
         String path = parts[1];
         String httpVersion = parts[2];
 
-        logger.debug(method + " " + path + " " + httpVersion);
+        logger.debug("Request Line : {} {} {}", method, path, httpVersion);
 
         Map<String, String> headers = new HashMap<>();
         String headerLine;
         while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
             String[] headerParts = headerLine.split(":", 2);
             if (headerParts.length == 2) {
-                headers.put(headerParts[0], headerParts[1]);
+                headers.put(headerParts[0].trim(), headerParts[1].trim());
             }
         }
-        logger.debug(headerLine);
 
-        return new HttpRequest(method, path, httpVersion, headers);
+        logger.debug("Headers : {}", headers);
+
+        StringBuilder body = new StringBuilder();
+        if ("POST".equalsIgnoreCase(method) && headers.containsKey("Content-Length")) {
+            int contentLength = Integer.parseInt(headers.get("Content-Length"));
+            char[] buffer = new char[contentLength];
+            int read = in.read(buffer, 0, contentLength);
+            body.append(buffer, 0, read);
+        }
+
+        logger.debug("Body : {}", body);
+
+
+        return new HttpRequest(method, path, httpVersion, headers, body.toString());
     }
 }

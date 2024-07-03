@@ -2,7 +2,7 @@ package codesquad.webserver;
 
 import java.util.Map;
 
-public record HttpRequest(String method, String path, String httpVersion, Map<String, String> headers) {
+public record HttpRequest(String method, String path, String httpVersion, Map<String, String> headers, String body) {
 
     @Override
     public String toString() {
@@ -11,6 +11,7 @@ public record HttpRequest(String method, String path, String httpVersion, Map<St
                 ", path='" + path + '\'' +
                 ", httpVersion='" + httpVersion + '\'' +
                 ", headers=" + headers +
+                ", body='" + body + '\'' +
                 '}';
     }
 }

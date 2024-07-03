@@ -20,22 +20,14 @@ public class WebServer {
 
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
+            serverSocket.setReuseAddress(true); // 작업 중 껐다 켰다 하는 상황에 발생하는 포트 사용중 발생을 피하기 위해 임시 작성
             logger.info("Starting web server on port {}", port);
             while (!Thread.currentThread().isInterrupted()) {
-                //TODO: 커넥션을 accept하는것부터 스레드를 분리하는게 맞나?
-                threadPool.submit(() -> handleConnections(serverSocket));
+                Socket client = serverSocket.accept();
+                threadPool.submit(() -> handleRequest(client));
             }
         } catch (IOException e) {
             logger.error("Error while starting web server", e);
-        }
-    }
-
-    private void handleConnections(ServerSocket serverSocket) {
-        try {
-            Socket client = serverSocket.accept();
-            handleRequest(client);
-        } catch (IOException e) {
-            logger.error("Error while handling connections", e);
         }
     }
 
@@ -56,6 +48,6 @@ public class WebServer {
     public static void main(String[] args) {
         int port = 8080;
         int threadPoolSize = 10;
-        new WebServer(port, 10).start();
+        new WebServer(port, threadPoolSize).start();
     }
 }
