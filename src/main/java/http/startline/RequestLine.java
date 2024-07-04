@@ -28,7 +28,7 @@ public class RequestLine extends StartLine {
         return method;
     }
 
-    public UrlPath getPath() {
+    public UrlPath getUrlPath() {
         return urlPath;
     }
 

@@ -62,7 +62,7 @@ public class HttpTest {
 
         RequestLine requestLine = (RequestLine) startLine;
         assertEquals(expectedMethod, requestLine.getMethod().name());
-        assertEquals(expectedPath, requestLine.getPath().getPath());
+        assertEquals(expectedPath, requestLine.getUrlPath().getPath());
         assertEquals(expectedVersion, requestLine.getVersion());
         assertEquals(headerMap1, headerMap2);
         assertEquals(expectedBody, body);

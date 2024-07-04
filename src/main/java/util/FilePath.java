@@ -15,12 +15,12 @@ public class FilePath {
     }
 
     public String getFileName() {
-        String extension = getExtension();
-        // 마지막 슬래시 뒤에 점(.)이 없으면 빈 문자열 반환
-        if (extension.isEmpty()) {
-            return "";
+        int lastSlashIndex = path.lastIndexOf('/');
+        if (lastSlashIndex == -1) {
+            return path.isEmpty() ? "" : path;
         }
-        return path.substring(0, path.length() - extension.length() - 1);
+        String fileName = path.substring(lastSlashIndex + 1);
+        return fileName.isEmpty() ? "" : fileName;
     }
 
     public FilePath join(String otherPath) {
