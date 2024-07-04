@@ -1,4 +1,4 @@
-package codesquad.http;
+package codesquad.http.header;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +12,16 @@ public class HttpHeaders {
         return new HttpHeaders(headers);
     }
 
+    public static HttpHeaders emptyHeader() {
+        return new HttpHeaders();
+    }
+
     public void addHeader(String key, String value) {
         valueMap.put(key, value);
+    }
+
+    public boolean containsHeader(String key) {
+        return valueMap.containsKey(key);
     }
 
     public String getHeader(String key) {
@@ -30,5 +38,9 @@ public class HttpHeaders {
 
     private HttpHeaders(Map<String, String> valueMap) {
         this.valueMap = new HashMap<>(valueMap);
+    }
+
+    private HttpHeaders() {
+        this.valueMap = new HashMap<>();
     }
 }
