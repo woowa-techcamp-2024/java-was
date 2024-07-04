@@ -9,28 +9,19 @@ import java.util.TreeMap;
 
 public class HttpHeaders {
 
+    public static final String ACCEPT = "Accept";
+    public static final String CONTENT_TYPE = "Content-Type";
+    public static final String CONTENT_LENGTH = "Content-Length";
+
     private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     public static HttpHeaders empty() {
         return new HttpHeaders();
     }
 
-    public static HttpHeaders fromText(String headersText) {
-        if (headersText == null || headersText.isEmpty()) {
-            throw new IllegalArgumentException("[ERROR] HTTP header의 내용이 없습니다.");
-        }
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        String[] lines = headersText.split(System.lineSeparator());
-        Arrays.stream(lines)
-                .map(line -> line.split(": ", 2))
-                .forEach(httpHeaders::putHeader);
-        return httpHeaders;
-    }
-
-    private void putHeader(String[] nameAndValues) {
+    public void putHeader(String[] nameAndValues) {
         String name = nameAndValues[0].trim();
-        Arrays.stream(nameAndValues[1].split(";\\s*"))
+        Arrays.stream(nameAndValues[1].split(",\\s*"))
                 .forEach(value -> addValue(name, value));
     }
 
@@ -39,7 +30,7 @@ public class HttpHeaders {
                 .add(value);
     }
 
-    public void addValues(String name, List<String> values) {
+    public void addValues(String name, Iterable<String> values) {
         values.forEach(value -> addValue(name, value));
     }
 

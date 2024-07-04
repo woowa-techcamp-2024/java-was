@@ -11,3 +11,13 @@
 - [x] HTTP request를 적절히 파싱해 `HttpRequest` 객체와 `HttpHeaders` 객체 생성
     - [x] HTTP request를 logger를 사용해 debug 레벨로 출력
 - [x] `ExecutorService`(`ThreadPoolExecutor`)를 사용해 10개의 스레드로 사용자 요청 멀티 스레드 처리
+
+#### 2단계
+
+- [x] 여러 컨텐츠 타입 지원하기
+    - html
+    - css
+    - js
+    - ico
+    - png
+    - jpg

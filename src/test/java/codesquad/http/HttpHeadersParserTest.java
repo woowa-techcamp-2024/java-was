@@ -1,5 +1,6 @@
 package codesquad.http;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
@@ -10,12 +11,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class HttpHeadersTest {
+class HttpHeadersParserTest {
 
-    HttpHeaders httpHeaders;
+    HttpHeadersParser headersParser;
+
+    @BeforeEach
+    void setUp() {
+        headersParser = new HttpHeadersParser();
+    }
 
     @Nested
-    class fromText_메서드는 {
+    class parse_메서드는 {
 
         @Nested
         class 비어있는_값이_들어오면 {
@@ -24,7 +30,7 @@ class HttpHeadersTest {
 
             @Test
             void 예외가_발생한다() {
-                assertThatThrownBy(() -> HttpHeaders.fromText(emptyHeaders))
+                assertThatThrownBy(() -> headersParser.parse(emptyHeaders))
                         .isInstanceOf(IllegalArgumentException.class)
                         .hasMessageContaining("[ERROR] HTTP header의 내용이 없습니다.");
             }
@@ -37,7 +43,7 @@ class HttpHeadersTest {
 
             @Test
             void 예외가_발생한다() {
-                assertThatThrownBy(() -> HttpHeaders.fromText(nullHeaders))
+                assertThatThrownBy(() -> headersParser.parse(nullHeaders))
                         .isInstanceOf(IllegalArgumentException.class)
                         .hasMessageContaining("[ERROR] HTTP header의 내용이 없습니다.");
             }
@@ -46,16 +52,15 @@ class HttpHeadersTest {
         @Nested
         class 정상적인_HTTP_header가_들어오면 {
 
-            String request = "Host: localhost:8080\n" +
-                    "Accept: text/html\n" +
-                    "\n";
+            String headersText = "Host: localhost:8080\r\n" +
+                    "Accept: text/html\r\n";
 
             @Test
-            void 성공적으로_파싱할_수_있다() {
-                httpHeaders = HttpHeaders.fromText(request);
+            void 성공적으로_파싱해_HttpHeaders_인스턴스를_생성한다() {
+                HttpHeaders httpHeaders = headersParser.parse(headersText);
                 assertAll(
                         () -> assertThat(httpHeaders).isNotNull(),
-                        () -> assertThat(httpHeaders.getValues("Accept")).containsExactly("text/html")
+                        () -> assertThat(httpHeaders.getValues(HttpHeaders.ACCEPT)).containsExactly("text/html")
                 );
             }
         }
