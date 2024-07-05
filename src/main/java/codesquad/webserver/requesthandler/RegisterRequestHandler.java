@@ -10,7 +10,7 @@ import java.io.IOException;
 
 public class RegisterRequestHandler extends AbstractRequestHandler {
 
-    private static final String FILE_PATH = "/registration";
+    private static final String FILE_PATH = "/registration/index.html";
 
     public RegisterRequestHandler(FileReader fileReader) {
         super(fileReader);
