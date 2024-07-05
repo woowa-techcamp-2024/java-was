@@ -42,7 +42,7 @@ public class ClientHandler implements Runnable {
             MyHandler chosenHandler = handlerMapper.findHandler(requestLine.getUrlPath().getPath());
 
             chosenHandler.handle(httpRequest, httpResponse);
-            writeResponse(clientOutput, httpResponse);
+            sendResponse(clientOutput, httpResponse);
 
         } catch (FileNotFoundException e) {
             logger.error("File not found: {}", e.getMessage());
@@ -57,7 +57,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void writeResponse(OutputStream clientOutput, HttpResponse httpResponse) throws IOException {
+    private void sendResponse(OutputStream clientOutput, HttpResponse httpResponse) throws IOException {
         ResponseLine responseLine = (ResponseLine) httpResponse.getStartLine();
         String responseHeaderLine = httpResponse.getHeader().toString();
         String body = new String(httpResponse.getBody());

@@ -6,7 +6,6 @@ import java.io.IOException;
 
 public class HttpRequest extends Http {
 
-
     public HttpRequest(RequestLine startLine, Header header, byte[] body) {
         super(startLine, header, body);
     }
