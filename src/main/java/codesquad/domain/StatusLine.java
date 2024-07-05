@@ -1,6 +1,6 @@
 package codesquad.domain;
 
-import static codesquad.utils.StringUtils.*;
+import static codesquad.utils.StringUtils.lineSeparator;
 
 public record StatusLine(
 	HttpProtocol protocol,
@@ -12,6 +12,6 @@ public record StatusLine(
 
 	@Override
 	public String toString() {
-		return protocol.getProtocol() + " " + status.getCode() + " " + status.name() + lineSeparator();
+		return protocol.getProtocol() + " " + status.getCode() + " " + status.getValue() + lineSeparator();
 	}
 }
