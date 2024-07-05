@@ -1,9 +1,11 @@
-package codesquad;
+package codesquad.webserver;
 
-import codesquad.handler.HttpRequestHandler;
-import codesquad.handler.MappingMediaTypeFileExtensionResolver;
-import codesquad.handler.StaticResourceHandler;
-import codesquad.http.HttpRequestMapper;
+import codesquad.servlet.HandlerMapper;
+import codesquad.servlet.MappingMediaTypeFileExtensionResolver;
+import codesquad.servlet.StaticResourceReader;
+import codesquad.servlet.handler.HttpRequestHandler;
+import codesquad.servlet.handler.StaticResourceHandler;
+import codesquad.webserver.http.HttpRequestParser;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,14 +14,15 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class WebApplicationServer {
+public class Connector {
 
     public static final int PORT = 8080;
-    private static final Logger logger = LoggerFactory.getLogger(WebApplicationServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Connector.class);
 
-    private final HttpRequestMapper httpRequestMapper = new HttpRequestMapper();
-    private final HttpRequestHandler httpRequestHandler =
-            new HttpRequestHandler(new StaticResourceHandler(), new MappingMediaTypeFileExtensionResolver());
+    private final HttpRequestParser httpRequestParser = new HttpRequestParser();
+    private final HttpRequestHandler httpRequestHandler = new HttpRequestHandler(
+            new HandlerMapper(),
+            new StaticResourceHandler(new StaticResourceReader(), new MappingMediaTypeFileExtensionResolver()));
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public void start() {
@@ -35,7 +38,7 @@ public class WebApplicationServer {
         while (true) {
             try {
                 Socket socket = serverSocket.accept();
-                HttpProcessor httpProcessor = new HttpProcessor(httpRequestMapper, httpRequestHandler, socket);
+                HttpProcessor httpProcessor = new HttpProcessor(httpRequestParser, httpRequestHandler, socket);
                 executorService.execute(httpProcessor::process);
             } catch (IOException | RuntimeException e) {
                 logger.error(e.getMessage(), e);

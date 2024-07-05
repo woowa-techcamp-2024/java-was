@@ -1,8 +1,10 @@
 package codesquad;
 
+import codesquad.webserver.Connector;
+
 public class Main {
     public static void main(String[] args) {
-        WebApplicationServer webApplicationServer = new WebApplicationServer();
-        webApplicationServer.start();
+        Connector connector = new Connector();
+        connector.start();
     }
 }

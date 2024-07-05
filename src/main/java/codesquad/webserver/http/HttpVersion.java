@@ -1,4 +1,4 @@
-package codesquad.http;
+package codesquad.webserver.http;
 
 import java.util.Arrays;
 
@@ -24,4 +24,8 @@ public enum HttpVersion {
                 .orElseThrow(() -> new IllegalArgumentException("지원하지 않는 HttpVersion 입니다."));
     }
 
+    @Override
+    public String toString() {
+        return "HttpVersion='" + name + '\'';
+    }
 }

@@ -1,4 +1,4 @@
-package codesquad.http;
+package codesquad.webserver.http;
 
 public enum HttpMediaType {
 

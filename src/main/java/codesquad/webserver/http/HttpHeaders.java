@@ -1,7 +1,7 @@
-package codesquad.http;
+package codesquad.webserver.http;
 
-import static codesquad.http.HttpHeaders.HeaderName.CONTENT_LENGTH;
-import static codesquad.http.HttpHeaders.HeaderName.CONTENT_TYPE;
+import static codesquad.webserver.http.HttpHeaders.HeaderName.CONTENT_LENGTH;
+import static codesquad.webserver.http.HttpHeaders.HeaderName.CONTENT_TYPE;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,10 +32,15 @@ public class HttpHeaders {
         headers.put(CONTENT_LENGTH.getName(), String.valueOf(contentLength));
     }
 
+    public void setHeader(final String name, final String value) {
+        headers.put(name, value);
+    }
+
     public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
     }
 
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (String s : headers.keySet()) {
@@ -46,7 +51,8 @@ public class HttpHeaders {
 
     public enum HeaderName {
         CONTENT_TYPE("Content-Type"),
-        CONTENT_LENGTH("Content-Length");
+        CONTENT_LENGTH("Content-Length"),
+        LOCATION("Location");
 
         private final String name;
 

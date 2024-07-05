@@ -1,4 +1,4 @@
-package codesquad.http;
+package codesquad.webserver.http;
 
 public enum HttpMethod {
 
@@ -10,4 +10,8 @@ public enum HttpMethod {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return "HttpMethod='" + name + '\'';
+    }
 }

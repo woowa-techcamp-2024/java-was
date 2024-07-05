@@ -1,10 +1,10 @@
-package codesquad.handler;
+package codesquad.servlet;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-public class StaticResourceHandler {
+public class StaticResourceReader {
 
     public static final String STATIC_PATH = "src/main/resources/static/";
 

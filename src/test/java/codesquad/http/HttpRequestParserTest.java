@@ -2,15 +2,19 @@ package codesquad.http;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import codesquad.webserver.http.HttpMethod;
+import codesquad.webserver.http.HttpRequest;
+import codesquad.webserver.http.HttpRequestParser;
+import codesquad.webserver.http.HttpVersion;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class HttpRequestMapperTest {
+class HttpRequestParserTest {
 
-    HttpRequestMapper httpRequestMapper = new HttpRequestMapper();
+    HttpRequestParser httpRequestParser = new HttpRequestParser();
 
     @Test
     @DisplayName("[Success] HTTP 규약에 맞는 요청")
@@ -21,7 +25,7 @@ class HttpRequestMapperTest {
                 "\r\n";
 
         BufferedReader bufferedReader = new BufferedReader(new StringReader(request));
-        HttpRequest httpRequest = httpRequestMapper.from(bufferedReader);
+        HttpRequest httpRequest = httpRequestParser.parse(bufferedReader);
 
         assertFirstLine(httpRequest);
         assertHeaders(httpRequest);
@@ -29,7 +33,7 @@ class HttpRequestMapperTest {
 
     private static void assertFirstLine(HttpRequest httpRequest) {
         assertThat(httpRequest.getMethod()).isEqualTo(HttpMethod.GET);
-        assertThat(httpRequest.getPath()).isEqualTo("/index.html");
+        assertThat(httpRequest.getPath().getDefaultPath()).isEqualTo("/index.html");
         assertThat(httpRequest.getVersion()).isEqualTo(HttpVersion.HTTP1_1);
     }
 

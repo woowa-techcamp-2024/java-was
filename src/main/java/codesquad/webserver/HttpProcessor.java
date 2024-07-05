@@ -1,11 +1,11 @@
-package codesquad;
+package codesquad.webserver;
 
 import static codesquad.utils.StringUtils.CRLF;
 
-import codesquad.handler.HttpRequestHandler;
-import codesquad.http.HttpRequest;
-import codesquad.http.HttpRequestMapper;
-import codesquad.http.HttpResponse;
+import codesquad.servlet.handler.HttpRequestHandler;
+import codesquad.webserver.http.HttpRequest;
+import codesquad.webserver.http.HttpRequestParser;
+import codesquad.webserver.http.HttpResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,14 +17,14 @@ import org.slf4j.LoggerFactory;
 
 public class HttpProcessor {
 
-    private static final Logger logger = LoggerFactory.getLogger(WebApplicationServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpProcessor.class);
 
-    private final HttpRequestMapper httpRequestMapper;
+    private final HttpRequestParser httpRequestParser;
     private final HttpRequestHandler httpRequestHandler;
     private final Socket socket;
 
-    public HttpProcessor(HttpRequestMapper httpRequestMapper, HttpRequestHandler httpRequestHandler, Socket socket) {
-        this.httpRequestMapper = httpRequestMapper;
+    public HttpProcessor(HttpRequestParser httpRequestParser, HttpRequestHandler httpRequestHandler, Socket socket) {
+        this.httpRequestParser = httpRequestParser;
         this.httpRequestHandler = httpRequestHandler;
         this.socket = socket;
     }
@@ -34,9 +34,9 @@ public class HttpProcessor {
              OutputStream outputStream = socket.getOutputStream()
         ) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            HttpRequest httpRequest = httpRequestMapper.from(bufferedReader);
-            HttpResponse httpResponse = httpRequestHandler.handle(httpRequest);
-
+            HttpRequest httpRequest = httpRequestParser.parse(bufferedReader);
+            HttpResponse httpResponse = HttpResponse.ok();
+            httpRequestHandler.handle(httpRequest, httpResponse);
             sendResponse(outputStream, httpResponse);
         } catch (IOException | RuntimeException e) {
             logger.error(e.getMessage(), e);
