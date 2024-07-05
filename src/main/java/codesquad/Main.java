@@ -1,19 +1,36 @@
 package codesquad;
 
+import codesquad.filter.*;
+import codesquad.handler.HttpHandler;
+import codesquad.handler.StaticResourceHandler;
 import codesquad.http.HttpRequest;
+import codesquad.http.HttpResponse;
+import codesquad.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.*;
 
 public class Main {
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final FilterConfig filterConfig = new FilterConfig();
 
     public static void main(String[] args) throws IOException {
+        // init start
+        Set<HttpHandler> httpHandler = new HashSet<>();
+        httpHandler.add(new StaticResourceHandler());
+
+        filterConfig.addFilter(new AcceptHeaderFilter());
+        filterConfig.addFilter(new HttpLoggingFilter());
+        filterConfig.addFilter(new LogicFilter(httpHandler));
+
         int serverPort = 8080;
         ServerSocket serverSocket = new ServerSocket(serverPort);
         log.info("Listening for connection on port {} ....", serverPort);
@@ -27,51 +44,32 @@ public class Main {
         RejectedExecutionHandler handler = new ThreadPoolExecutor.AbortPolicy();
 
         ExecutorService executorService = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+        // init end
 
         while (true) {
-            Socket clientSocket = serverSocket.accept();
-
+            var clientSocket = serverSocket.accept();
             executorService.submit(() -> {
-                final Logger logger = LoggerFactory.getLogger(Thread.currentThread().getName());
-                try {
-                    HttpRequest request = new HttpRequest(clientSocket.getInputStream());
-                    logger.info("Request[method={}, host={}, path={}, headers={}, bod={}]",
-                            request.method,
-                            request.getHeader("Host"),
-                            request.path,
-                            request.getHeaders(),
-                            request.getBody()
-                    );
 
-                    if (request.path.equals("/index.html")) {
-                        File file = new File("./src/main/resources/static/index.html");
-                        var output = clientSocket.getOutputStream();
-                        BufferedReader reader = new BufferedReader(new FileReader(file));
-                        try {
-                            String line;
-                            logger.debug("Reading from file and writing to output");
-                            output.write("""
-                                    HTTP/1.1 200 OK\r
-                                    Content-Type: text/html\r
-                                    \r
-                                    """.getBytes());
-                            while ((line = reader.readLine()) != null) {
-                                output.write(line.getBytes());
-                            }
-                            output.flush();
-                        } catch (IOException e) {
-                            logger.error("Error reading from file or writing to output: " + e);
-                            throw new RuntimeException(e);
-                        }
-                    } else {
-                        // HTTP 응답을 생성합니다.
-                        OutputStream clientOutput = clientSocket.getOutputStream();
-                        clientOutput.write("HTTP/1.1 200 OK\r\n".getBytes());
-                        clientOutput.write("Content-Type: text/html\r\n".getBytes());
-                        clientOutput.write("\r\n".getBytes());
-                        clientOutput.write(("<h1>OK</h1>\r\n").getBytes());
-                        clientOutput.flush();
+                final FilterChain filterChain = new FilterChainImpl(filterConfig);
+                final Logger logger = LoggerFactory.getLogger(Thread.currentThread().getName());
+                try (
+                        InputStream input = clientSocket.getInputStream();
+                        OutputStream output = clientSocket.getOutputStream()
+                ) {
+                    HttpRequest request = new HttpRequest(input);
+                    HttpResponse response = HttpResponse.of(HttpStatus.INTERNAL_SERVER_ERROR);
+
+                    filterChain.doFilter(request, response);
+
+                    output.write(String.format("%s %d %s\r\n", response.getVersion(), response.getStatus().getCode(), response.getStatus().getStatus()).getBytes());
+                    if (!response.getHeaderString().isEmpty()) {
+                        output.write(response.getHeaderString().getBytes());
+                        output.write("\r\n".getBytes());
                     }
+                    if (!response.getBody().isEmpty()) {
+                        output.write(response.getBytesBody());
+                    }
+                    output.flush();
                 } catch (IOException e) {
                     logger.error("Error reading HTTP request: " + e);
                     throw new RuntimeException(e);
