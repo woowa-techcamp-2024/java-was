@@ -29,6 +29,14 @@ public class HttpResponse {
         return body;
     }
 
+    public void setHeader(String key, String value) {
+        httpHeaders.addHeader(key, value);
+    }
+
+    public void setStatus(HttpStatus httpStatus) {
+        this.httpStatus = httpStatus;
+    }
+
     public HttpResponse(HttpVersion httpVersion) {
         this.httpVersion = validateHttpVersion(httpVersion);
         this.httpStatus = HttpStatus.INITIAL_STATUS;

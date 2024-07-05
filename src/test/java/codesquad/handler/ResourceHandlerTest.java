@@ -4,10 +4,9 @@ import codesquad.factory.TestHttpRequestFactory;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.HttpVersion;
+import codesquad.processor.Triggerable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -18,13 +17,14 @@ class ResourceHandlerTest {
     @Test
     void readFileAsStream() throws Exception {
         // given
-        ResourceHandler resourceHandler = new ResourceHandler();
+        ResourceHandlerAdapter<Void> resourceHandler = new ResourceHandlerAdapter();
         String filePath = "/readStaticFileOf.txt";
         HttpRequest request = TestHttpRequestFactory.createGetResourceRequest(filePath);
         HttpResponse response = new HttpResponse(HttpVersion.HTTP_1_1);
+        Triggerable<Void> triggerable = o -> null;
 
         // when
-        resourceHandler.handle(request, response);
+        resourceHandler.handle(request, response, triggerable);
 
         // then
         String result = response.getBody().toString();
@@ -37,17 +37,18 @@ class ResourceHandlerTest {
     @Test
     void readFileAsStream_notFound() {
         // given
-        ResourceHandler resourceHandler = new ResourceHandler();
+        ResourceHandlerAdapter<Void> resourceHandler = new ResourceHandlerAdapter();
         String filePath = "/invalid.txt";
         HttpRequest request = TestHttpRequestFactory.createGetResourceRequest(filePath);
 
         HttpResponse response = new HttpResponse(HttpVersion.HTTP_1_1);
+        Triggerable<Void> triggerable = o -> null;
 
 
         // when & then
-        assertThatThrownBy(() -> resourceHandler.handle(request, response))
+        assertThatThrownBy(() -> resourceHandler.handle(request, response, triggerable))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("File not found! : static/invalid.txt");
+                .hasMessage("파일을 찾을 수 없습니다.");
     }
 
 }
