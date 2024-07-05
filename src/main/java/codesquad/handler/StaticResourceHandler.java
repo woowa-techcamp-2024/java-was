@@ -5,10 +5,14 @@ import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
 import codesquad.resource.Resource;
 import codesquad.resource.ResourcesReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 public class StaticResourceHandler extends RequestHandler {
+
+    private final Logger log = LoggerFactory.getLogger(StaticResourceHandler.class);
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {
@@ -22,7 +26,7 @@ public class StaticResourceHandler extends RequestHandler {
                 return responseGenerator.sendOK(resource.getContent(), mediaType, httpRequest);
             }
 
-            readResource = ResourcesReader.readResource("/" + resource.getFileName() + "/index.html");
+            readResource = ResourcesReader.readResource(resource.getFileName() + "/index.html");
             if (readResource.isPresent()) {
                 resource = readResource.get();
                 MediaType mediaType = MediaType.find(resource.getExtension());
