@@ -2,7 +2,10 @@ package http.startline;
 
 public abstract class StartLine {
 
-    private final String version;
+    private String version;
+
+    protected StartLine() {
+    }
 
     protected StartLine(String version) {
         this.version = version;
@@ -10,6 +13,10 @@ public abstract class StartLine {
 
     public String getVersion() {
         return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     @Override

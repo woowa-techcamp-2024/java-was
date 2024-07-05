@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-
+        // HandlerMapper 초기화
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             logger.info("Server started on port " + PORT);

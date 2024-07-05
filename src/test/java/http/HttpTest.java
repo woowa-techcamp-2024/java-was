@@ -50,12 +50,14 @@ public class HttpTest {
     @ParameterizedTest
     @MethodSource("provideValidHttpRequests")
     @DisplayName("유효한 HTTP 요청 테스트")
-    public void testGenerate(String httpRequest, String expectedMethod, String expectedPath,
+    public void testGenerateHttpRequest(String httpRequestString, String expectedMethod, String expectedPath,
         String expectedVersion, String expectedHeaders, String expectedBody) throws IOException {
-        Http http = Http.generate(new BufferedReader(new StringReader(httpRequest)));
-        StartLine startLine = http.getStartLine();
-        Header header = http.getHeader();
-        String body = http.getBody();
+
+        HttpRequest httpRequest = HttpRequest.generateHttpRequest(new BufferedReader(new StringReader(httpRequestString)));
+
+        StartLine startLine = httpRequest.getStartLine();
+        Header header = httpRequest.getHeader();
+        String body = new String(httpRequest.getBody());
 
         Map<String, String> headerMap1 = parseHeaders(expectedHeaders);
         Map<String, String> headerMap2 = parseHeaders(header.toString());
@@ -71,9 +73,9 @@ public class HttpTest {
     @ParameterizedTest
     @MethodSource("provideInvalidHttpRequests")
     @DisplayName("유효하지 않은 HTTP 요청 테스트")
-    public void testGenerate(String httpRequest, String expectedErrorMessage) {
+    public void testGenerateHttpRequest(String httpRequest, String expectedErrorMessage) {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            Http.generate(new BufferedReader(new StringReader(httpRequest)));
+            HttpRequest.generateHttpRequest(new BufferedReader(new StringReader(httpRequest)));
         });
         assertEquals(expectedErrorMessage, exception.getMessage());
     }

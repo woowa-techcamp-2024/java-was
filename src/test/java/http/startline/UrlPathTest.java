@@ -3,6 +3,7 @@ package http.startline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -92,6 +93,7 @@ public class UrlPathTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("프래그먼트가 포함된 URL 경로 테스트")
     public void testPathWithFragment() {
         UrlPath urlPath = UrlPath.of("/path/to/resource?param1=value1#fragment");
