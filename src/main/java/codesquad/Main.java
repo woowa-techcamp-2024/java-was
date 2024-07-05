@@ -1,7 +1,6 @@
 package codesquad;
 
-import codesquad.http.HttpHeadersParser;
-import codesquad.http.HttpRequestParser;
+import codesquad.handler.HandlersMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,15 +15,13 @@ public class Main {
 
     private static final int MAXIMUM_THREAD_POOL_SIZE = 10;
 
-    private static final HttpHeadersParser headersParser = new HttpHeadersParser();
-    private static final HttpRequestParser requestParser = new HttpRequestParser(headersParser);
-
     public static void main(String[] args) throws IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(MAXIMUM_THREAD_POOL_SIZE);
+        HandlersMapper handlersMapper = new HandlersMapper();
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
             log.debug("Listening for connection on port 8080 ....");
             while (true) {
-                executorService.execute(new HttpRequestHandler(serverSocket.accept(), requestParser));
+                executorService.execute(new HttpRequestProcessor(serverSocket.accept(), handlersMapper));
             }
         }
     }

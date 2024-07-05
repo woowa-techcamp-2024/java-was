@@ -1,7 +1,12 @@
 package codesquad.http;
 
-public class HttpResponsePrinter {
+import codesquad.format.Printer;
 
+public class HttpResponsePrinter implements Printer<HttpResponse> {
 
+    @Override
+    public String print(HttpResponse httpResponse) {
+        return "";
+    }
 
 }

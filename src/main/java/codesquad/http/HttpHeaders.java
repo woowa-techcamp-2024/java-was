@@ -6,12 +6,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class HttpHeaders {
 
     public static final String ACCEPT = "Accept";
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CONTENT_LENGTH = "Content-Length";
+    public static final String LOCATION = "Location";
 
     private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -41,6 +43,15 @@ public class HttpHeaders {
 
         List<String> values = this.headers.getOrDefault(name, Collections.emptyList());
         return Collections.unmodifiableList(values);
+    }
+
+    public String toText() {
+        return headers.entrySet()
+                .stream()
+                .flatMap(entry -> entry.getValue()
+                        .stream()
+                        .map(value -> entry.getKey() + ": " + value + "\r\n"))
+                .collect(Collectors.joining());
     }
 
     @Override

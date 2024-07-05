@@ -1,5 +1,8 @@
 package codesquad.http;
 
+import codesquad.http.parser.HttpHeadersParser;
+import codesquad.http.parser.HttpRequestParser;
+import codesquad.http.parser.QueryParametersParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -17,7 +20,7 @@ class HttpRequestParserTest {
 
     @BeforeEach
     void setUp() {
-        requestParser = new HttpRequestParser(new HttpHeadersParser());
+        requestParser = new HttpRequestParser(new HttpHeadersParser(), new QueryParametersParser());
     }
 
     @Nested
@@ -64,6 +67,7 @@ class HttpRequestParserTest {
                         () -> assertThat(httpRequest).isNotNull(),
                         () -> assertThat(httpRequest.uri()).isEqualTo("/index.html"),
                         () -> assertThat(httpRequest.method()).isEqualTo("GET"),
+                        () -> assertThat(httpRequest.headerValues(HttpHeaders.ACCEPT)).containsExactly("text/html"),
                         () -> assertThat(httpRequest.headers()).isNotNull()
                 );
             }

@@ -1,6 +1,6 @@
 package codesquad.http;
 
-import java.util.Optional;
+import java.util.Arrays;
 
 public enum MediaType {
 
@@ -24,13 +24,11 @@ public enum MediaType {
         return value;
     }
 
-    public static Optional<MediaType> find(String extension) {
-        for (MediaType mediaType : MediaType.values()) {
-            if (mediaType.fileExtension.equals(extension)) {
-                return Optional.of(mediaType);
-            }
-        }
-        return Optional.empty();
+    public static MediaType find(String extension) {
+        return Arrays.stream(values())
+                .filter(type -> type.fileExtension.equals(extension))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 지원하지 않는 파일 형식입니다."));
     }
 
 }

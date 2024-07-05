@@ -7,9 +7,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class MediaTypeTest {
@@ -28,9 +27,9 @@ class MediaTypeTest {
                 "ico, image/vnd.microsoft.icon"
         })
         void 파일_확장자에_맞는_컨텐츠_타입을_반환한다(String fileExtension, String expectedMediaType) {
-            Optional<MediaType> findMediaType = MediaType.find(fileExtension);
-            assertThat(findMediaType).isNotEmpty();
-            assertThat(findMediaType.get().getValue()).isEqualTo(expectedMediaType);
+            MediaType findMediaType = MediaType.find(fileExtension);
+            assertThat(findMediaType).isNotNull();
+            assertThat(findMediaType.getValue()).isEqualTo(expectedMediaType);
         }
 
         @Nested
@@ -39,8 +38,9 @@ class MediaTypeTest {
             @ParameterizedTest
             @ValueSource(strings = {"txt", "avi", "zzz", ""})
             void empty_optional을_반환한다(String fileExtension) {
-                Optional<MediaType> findMediaType = MediaType.find(fileExtension);
-                assertThat(findMediaType).isEmpty();
+                assertThatThrownBy(() -> MediaType.find(fileExtension))
+                        .isInstanceOf(IllegalArgumentException.class)
+                        .hasMessageContaining("[ERROR] 지원하지 않는 파일 형식입니다.");
             }
         }
     }

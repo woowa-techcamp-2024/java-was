@@ -8,12 +8,16 @@ public class HttpRequest {
 
     private final String uri;
     private final String method;
+    private final String httpVersion;
+    private final QueryParameters parameters;
     private final HttpHeaders headers;
     private final String body;
 
-    public HttpRequest(String uri, String method, HttpHeaders headers, String body) {
+    public HttpRequest(String uri, String method, String httpVersion, QueryParameters parameters, HttpHeaders headers, String body) {
         this.uri = uri;
         this.method = method;
+        this.httpVersion = httpVersion;
+        this.parameters = parameters;
         this.headers = headers;
         this.body = body;
     }
@@ -24,6 +28,10 @@ public class HttpRequest {
 
     public String method() {
         return this.method;
+    }
+
+    public String httpVersion() {
+        return this.httpVersion;
     }
 
     public HttpHeaders headers() {
@@ -39,16 +47,22 @@ public class HttpRequest {
                 : Optional.of(this.body);
     }
 
+    public Optional<String> firstParameterValue(String parameterName) {
+        return parameters.getFirstValue(parameterName);
+    }
+
     @Override
     public String toString() {
         return """
                 HttpRequest{
                 \turi='%s',
                 \tmethod='%s',
+                \thttpVersion='%s',
+                \tparameters=%s,
                 \theaders='%s',
                 \tbody='%s'
                 }
-                """.formatted(this.uri, this.method, headers, body().orElse(""));
+                """.formatted(uri, method, httpVersion, parameters, headers, body().orElse(""));
     }
 
 }
