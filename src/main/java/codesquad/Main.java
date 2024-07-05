@@ -1,7 +1,7 @@
 package codesquad;
 
-import codesquad.http.HttpServer;
-import codesquad.http.handler.DefaultRequestHandler;
+import codesquad.http.Server;
+import codesquad.server.handlers.CreateUserHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +14,9 @@ public class Main {
 
 
     public static void main(String[] args) {
-        MIME.init();
-        HttpServer server = new HttpServer(PORT, THREAD_POOL_SIZE, new DefaultRequestHandler());
+        Server server = new Server(PORT, THREAD_POOL_SIZE);
+        server.get("/create", CreateUserHandler::createUser);
+        server.staticFiles("/", "/static");
 
         try {
             server.start();
