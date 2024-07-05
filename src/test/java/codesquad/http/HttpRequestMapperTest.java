@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class HttpRequestMapperTest {
 
+    HttpRequestMapper httpRequestMapper = new HttpRequestMapper();
+
     @Test
     @DisplayName("[Success] HTTP 규약에 맞는 요청")
     void parserTest() throws IOException {
@@ -19,7 +21,7 @@ class HttpRequestMapperTest {
                 "\r\n";
 
         BufferedReader bufferedReader = new BufferedReader(new StringReader(request));
-        HttpRequest httpRequest = HttpRequestMapper.from(bufferedReader);
+        HttpRequest httpRequest = httpRequestMapper.from(bufferedReader);
 
         assertFirstLine(httpRequest);
         assertHeaders(httpRequest);

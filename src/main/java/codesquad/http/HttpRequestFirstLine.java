@@ -2,18 +2,14 @@ package codesquad.http;
 
 public class HttpRequestFirstLine {
 
-    private final HttpVersion version;
     private final HttpMethod method;
     private final String path;
+    private final HttpVersion version;
 
-    public HttpRequestFirstLine(HttpVersion version, HttpMethod method, String path) {
-        this.version = version;
+    public HttpRequestFirstLine(HttpMethod method, String path, HttpVersion version) {
         this.method = method;
         this.path = path;
-    }
-
-    public HttpVersion getVersion() {
-        return version;
+        this.version = version;
     }
 
     public HttpMethod getMethod() {
@@ -22,6 +18,10 @@ public class HttpRequestFirstLine {
 
     public String getPath() {
         return path;
+    }
+
+    public HttpVersion getVersion() {
+        return version;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package codesquad.http;
 
+import static codesquad.http.HttpHeaders.HeaderName.CONTENT_LENGTH;
 import static codesquad.http.HttpHeaders.HeaderName.CONTENT_TYPE;
 
 import java.util.Collections;
@@ -27,6 +28,10 @@ public class HttpHeaders {
         headers.put(CONTENT_TYPE.getName(), mediaType.getName());
     }
 
+    public void setContentLength(final long contentLength) {
+        headers.put(CONTENT_LENGTH.getName(), String.valueOf(contentLength));
+    }
+
     public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
     }
@@ -40,7 +45,8 @@ public class HttpHeaders {
     }
 
     public enum HeaderName {
-        CONTENT_TYPE("Content-Type");
+        CONTENT_TYPE("Content-Type"),
+        CONTENT_LENGTH("Content-Length");
 
         private final String name;
 
