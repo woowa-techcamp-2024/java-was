@@ -1,16 +1,16 @@
-package codesquad.http;
+package codesquad.webserver.http;
 
 public class HttpRequestStartLine {
     private final HttpMethod method;
     private final String path;
     private String queryString;
 
-    public HttpRequestStartLine(String line){
+    public HttpRequestStartLine(String line) {
         String[] tokens = line.split(" ");
         this.method = HttpMethod.valueOf(tokens[0]);
         String[] url = tokens[1].split("\\?");
         this.path = url[0];
-        if(url.length == 2){
+        if (url.length == 2) {
             this.queryString = url[1];
         }
     }
@@ -29,10 +29,8 @@ public class HttpRequestStartLine {
 
     @Override
     public String toString() {
-        return "HttpRequestStartLine{" +
-                "method=" + method +
+        return "method=" + method +
                 ", path='" + path + '\'' +
-                ", queryString='" + queryString + '\'' +
-                '}';
+                ", queryString='" + queryString + '\'';
     }
 }

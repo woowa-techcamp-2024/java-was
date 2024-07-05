@@ -21,8 +21,13 @@
   - 브라우저에서 GET localhost:8080/xx.img, GET localhost:8080/xx.css, 등의 요청을 보낸다
 
 ## 1-3
-- “회원가입” 메뉴를 클릭하면 http://localhost:8080/register.html 로 이동,
-- 회원가입 폼에서 가입 버튼 클릭시 다음 형태를 서버로 전달
+- “회원가입” 메뉴를 클릭하면 http://localhost:8080/registration 로 이동(href)
+  - stiac/registration/index.html 응답
+- 회원가입 폼에서 사용자 입력 후 가입 버튼 클릭시 다음과 같이 전송 
   - /create?userId=javajigi&password=password&name=%EB%B0%95%EC%9E%AC%EC%84%B1&email=javajigi%40slipp.net
+    - query string
+      - userId=javajigi
+      - password=password
+      - name=%EB%B0%95%EC%9E%AC%EC%84%B1
+      - email=javajigi%40slipp.net
 - url 파싱해 User 클래스 저장
-- 
