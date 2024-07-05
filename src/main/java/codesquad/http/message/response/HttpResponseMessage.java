@@ -1,90 +1,98 @@
 package codesquad.http.message.response;
-
-import codesquad.http.message.InvalidResponseFormatException;
+import codesquad.http.message.request.HttpMethod;
+import codesquad.http.message.vo.HttpBody;
+import codesquad.http.message.vo.HttpHeader;
 import codesquad.utils.Timer;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class HttpResponseMessage {
-    private String httpVersion;
-    private HttpStatus status;
-    private final Map<String,String> header = new HashMap<>();
-    private String body;
+    private final HttpResponseStartLine startLine;
+    private final HttpHeader header;
+    private final HttpBody body;
+    private final String NEW_LINE = "\r\n";
 
-    private HttpResponseMessage() {
-        this.httpVersion = "HTTP/1.1";
+    public HttpResponseMessage(HttpResponseStartLine startLine,HttpHeader header,HttpBody body){
+        this.startLine = startLine;
+        this.header = header;
+        this.body = body;
     }
 
-    public static class Builder{
-        private HttpResponseMessage responseMessage;
-        private Timer timer;
-        public Builder(Timer timer){
-            responseMessage = new HttpResponseMessage();
-            this.timer = timer;
-        }
-        public Builder status(HttpStatus status){
-            responseMessage.status = status;
-            return this;
-        }
-        public Builder header(String key,String value){
-            responseMessage.header.put(key, value);
-            return this;
-        }
-        public Builder headers(Map<String,String> headers){
-            responseMessage.header.putAll(headers);
-            return this;
-        }
-        public Builder body(String body){
-            if(body == null){
-                body = "";
-            }
-            responseMessage.header.put("Content-Length", Integer.toString(body.getBytes().length));
-            responseMessage.body = body;
-            return this;
-        }
-        public HttpResponseMessage build() throws InvalidResponseFormatException {
-            validation();
-
-            // SimpleDateFormat을 사용하여 HTTP date 포맷을 만듭니다.
-            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-            responseMessage.header.put("Date",dateFormat.format(timer.getCurrentTime()));
-            return responseMessage;
-        }
-        private void validation() throws InvalidResponseFormatException {
-            if( !(this.timer != null && this.responseMessage.getStatus() != null)) throw new InvalidResponseFormatException();
-        }
+    public HttpResponseMessage(String httpVersion, Map<String, List<String>> header){
+        this.startLine = new HttpResponseStartLine(httpVersion);
+        this.header = new HttpHeader(header);
+        this.body = new HttpBody();
+    }
+    public void sendRedirect(String redirectPath){
+        setHeader("Location",redirectPath);
+        setStatus(HttpStatus.MOVED_PERMANENTLY);
+    }
+    public void setStatus(HttpStatus status){
+        this.startLine.setStatus(status);
+    }
+    public void setHeader(String key,String value){
+        header.setHeader(key,value);
+    }
+    public void setBody(byte[] body){
+        this.body.setBody(body);
+        this.header.setHeader("Content-Length",String.valueOf(body.length));
+    }
+    public void setBody(String body){
+        setBody(body.getBytes());
+    }
+    public byte[] getBody(){
+        return this.body.getBody();
+    }
+    public List<String> getHeaders(String key){
+        return this.header.getHeaders(key);
+    }
+    public HttpStatus getStatus(){
+        return this.startLine.getStatus();
     }
 
-    public String getHttpVersion() {
-        return httpVersion;
+    private byte[] parseStartLine(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(startLine.getHttpVersion())
+                .append(' ').append(startLine.getStatus().getCode())
+                .append(' ').append(startLine.getStatus().getMessage()).append(NEW_LINE);
+        return sb.toString().getBytes();
     }
-
-    public HttpStatus getStatus() {
-        return status;
+    private byte[] parseHeaders(){
+        return header.allHeaders().entrySet().stream()
+                .map(entry -> {
+                    StringJoiner joiner = new StringJoiner(", ");
+                    entry.getValue().forEach(joiner::add);
+                    return entry.getKey() + ": " + joiner.toString();
+                })
+                .reduce("", (acc, line) -> acc + line + NEW_LINE).getBytes();
     }
-
-    public String getHeader(String header) {
-        return this.header.get(header);
+    private byte[] parseBody(){
+        return body.getBody();
     }
-
-    public String getBody() {
-        return body;
+    private byte[] mergeByteArray(byte[] array1,byte[] array2){
+        byte[] result = new byte[array1.length+array2.length];
+        System.arraycopy(array1, 0, result, 0, array1.length);
+        System.arraycopy(array2, 0, result, array1.length, array2.length);
+        return result;
     }
+    private byte[] concatByteArray(byte[] ...array){
+        return Arrays.stream(array)
+                .reduce(new byte[0],this::mergeByteArray);
+    }
+    public byte[] parse(Timer timer){
+        setHeader("Date",getFormattedDate(timer));
+        byte[] startLine = parseStartLine();
+        byte[] headers = parseHeaders();
+        byte[] emptyLine = NEW_LINE.getBytes();
+        byte[] body = parseBody();
 
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder()
-                .append(httpVersion).append(' ').append(status.getCode()).append(' ').append(status.getMessage()).append(System.lineSeparator());
+        return concatByteArray(startLine,headers,emptyLine,body);
+    }
+    private String getFormattedDate(Timer timer) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
-        for(Map.Entry<String,String> header : header.entrySet().stream().sorted((o1,o2)->o1.getKey().compareTo(o2.getKey())).toList()){
-            sb.append(header.getKey()).append(':').append(' ').append(header.getValue()).append(System.lineSeparator());
-        }
-
-        sb.append(System.lineSeparator());
-        sb.append(body).append(System.lineSeparator());
-
-        return sb.toString();
+        return dateFormat.format(timer.getCurrentTime());
     }
 }
