@@ -1,28 +1,14 @@
-package codesquad.http.urlMapper;
+package codesquad.was.util;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ResourceGetter {
-    private static final String ROOT_DIRECTORY = "src/main/resources"; // 웹 리소스가 있는 디렉토리 경로
-
-
-    /**
-     * 요청된 URL에 해당하는 리소스 파일 경로를 가져옵니다.
-     *
-     * @param url 요청된 URL
-     * @return 리소스 파일 경로
-     */
-    private static String getResourcePath(String url) {
-        String filePath = ROOT_DIRECTORY + url;
-        Path path = Paths.get(filePath);
-        if (Files.exists(path) && !Files.isDirectory(path)) {
-            return filePath;
-        }
-        return null;
-    }
 
     /**
      * 파일의 MIME 타입을 가져옵니다.
@@ -30,7 +16,7 @@ public class ResourceGetter {
      * @param filePath 파일 경로
      * @return MIME 타입 문자열
      */
-    public static String getContentType(String filePath) {
+    public static String getContentTypeByPath(String filePath) {
         if (filePath.endsWith(".html")) {
             return "text/html";
         } else if (filePath.endsWith(".css")) {
@@ -50,16 +36,33 @@ public class ResourceGetter {
         }
     }
 
+
+
     /**
      * 파일의 바이트 배열을 읽어옵니다.
      *
-     * @param filePath 파일 경로
+     * @param filePath 파일 경로Ï
      * @return 파일의 바이트 배열
      */
-    public static byte[] getResourceBytes(String filePath) throws IOException {
-        String resourcePath = getResourcePath(filePath);
-        System.out.println(resourcePath);
-        Path path = Paths.get(resourcePath);
-        return Files.readAllBytes(path);
+    public static byte[] getResourceBytesByPath(String filePath) throws IOException {
+        InputStream resourceAsStream = ResourceGetter.class.getResourceAsStream(filePath);
+        return resourceAsStream.readAllBytes();
+    }
+
+    public static byte[] readBytesFromFile(File file) throws IOException {
+        FileInputStream fis = null;
+        byte[] fileBytes = null;
+
+        try {
+            fis = new FileInputStream(file);
+            fileBytes = new byte[(int) file.length()];
+            fis.read(fileBytes);
+        } finally {
+            if (fis != null) {
+                fis.close();
+            }
+        }
+
+        return fileBytes;
     }
 }
