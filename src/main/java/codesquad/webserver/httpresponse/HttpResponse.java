@@ -1,4 +1,4 @@
-package codesquad.webserver;
+package codesquad.webserver.httpresponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +15,10 @@ public class HttpResponse {
         this.statusMessage = statusMessage;
         this.headers = new HashMap<>(headers);
         this.body = body;
+    }
+
+    public HttpResponse(int statusCode, String statusMessage) {
+        this(statusCode, statusMessage, new HashMap<>(), new byte[0]);
     }
 
     public int getStatusCode() {

@@ -21,3 +21,15 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes(
+                'Main-Class': 'codesquad.Main'
+        )
+    }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    with jar
+}
+
