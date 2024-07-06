@@ -26,7 +26,8 @@ public class FrontHandler implements Runnable{
     @Override
     public void run() {
         log.debug("Client Connected IP: {}, Port: {}", connect.getInetAddress(), connect.getPort());
-        try(InputStream inputStream = connect.getInputStream()){
+        try{
+            InputStream inputStream = connect.getInputStream();
             HttpRequest request = HttpRequestParser.parse(inputStream);
             log.info("request: {}", request);
             HttpResponse response = handlers.stream()
@@ -37,7 +38,12 @@ public class FrontHandler implements Runnable{
             log.info("response: {}", response);
             sendResponse(response);
             connect.close();
-        }catch (IOException e){
+        }
+        catch (IllegalStateException e){
+            sendResponse(HttpResponse.createNotFoundResponse());
+        }
+        catch (IOException e){
+            log.error(e.getMessage(), e);
         }
     }
 

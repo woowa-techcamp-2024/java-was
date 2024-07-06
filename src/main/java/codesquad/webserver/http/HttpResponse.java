@@ -1,6 +1,5 @@
 package codesquad.webserver.http;
 
-import java.util.Arrays;
 import java.util.Set;
 
 public class HttpResponse {
@@ -80,8 +79,6 @@ public class HttpResponse {
         return "HttpResponse{" +
                 "statusCode=" + statusCode +
                 ", statusMessage='" + statusMessage + '\'' +
-                ", httpHeader=" + httpHeader +
-                ", contents=" + Arrays.toString(contents) +
                 '}';
     }
 }

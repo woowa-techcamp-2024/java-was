@@ -122,3 +122,10 @@ public void bind(SocketAddress endpoint, int backlog) throws IOException {
         return s;
     }
 ```
+
+
+# Jar 파일
+- File 로드 오류
+  - 
+
+
