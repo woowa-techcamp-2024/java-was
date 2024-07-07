@@ -17,8 +17,7 @@ public class HttpResponse {
 
     public byte[] toBytes() {
         String responseHeader = httpVersion + " " + statusCode.getValue() + " " + statusCode.getPhrase() + CRLF +
-                headers.toText() + CRLF +
-                CRLF;
+                headers.toText() + CRLF;
         byte[] headerBytes = responseHeader.getBytes();
         if (body == null) {
             return headerBytes;

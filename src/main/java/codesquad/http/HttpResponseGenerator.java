@@ -23,6 +23,7 @@ public class HttpResponseGenerator {
     private HttpResponse generate(StatusCode statusCode, byte[] body, MediaType mediaType, HttpRequest httpRequest) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.addValue(HttpHeaders.CONTENT_TYPE, mediaType.getValue());
+        httpHeaders.addValue(HttpHeaders.CONTENT_LENGTH, String.valueOf(body.length));
         return generate(statusCode, body, httpHeaders, httpRequest);
     }
 
