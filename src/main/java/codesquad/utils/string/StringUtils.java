@@ -1,4 +1,4 @@
-package codesquad.utils;
+package codesquad.utils.string;
 
 public class StringUtils {
 

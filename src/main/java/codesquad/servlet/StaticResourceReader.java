@@ -1,18 +1,20 @@
 package codesquad.servlet;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class StaticResourceReader {
 
-    public static final String STATIC_PATH = "src/main/resources/static/";
+    public static final String STATIC_PATH = "static";
 
     public byte[] getFileContents(String path) throws IOException {
         String targetPath = STATIC_PATH + path;
-        File file = new File(targetPath);
-        try (FileInputStream fileInputStream = new FileInputStream(file)) {
-            return fileInputStream.readAllBytes();
+        try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(targetPath)) {
+            if (resourceAsStream == null) {
+                throw new FileNotFoundException();
+            }
+            return resourceAsStream.readAllBytes();
         }
     }
 }

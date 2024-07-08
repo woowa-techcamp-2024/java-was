@@ -9,6 +9,7 @@ import codesquad.servlet.MappingMediaTypeFileExtensionResolver;
 import codesquad.servlet.StaticResourceReader;
 import codesquad.servlet.handler.HttpRequestHandler;
 import codesquad.servlet.handler.StaticResourceHandler;
+import codesquad.utils.FixedZonedDateTimeGenerator;
 import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
@@ -16,14 +17,23 @@ import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.HttpStatus;
 import java.io.IOException;
+import java.time.ZoneOffset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class HttpRequestHandlerTest {
 
+    FixedZonedDateTimeGenerator fixedZonedDateTimeGenerator = new FixedZonedDateTimeGenerator(2000, 1, 1, 1, 1, 1, 1,
+            ZoneOffset.UTC);
+
     HttpRequestHandler httpRequestHandler = new HttpRequestHandler(
             new HandlerMapper(),
-            new StaticResourceHandler(new StaticResourceReader(), new MappingMediaTypeFileExtensionResolver()));
+            new StaticResourceHandler(
+                    new StaticResourceReader(),
+                    new MappingMediaTypeFileExtensionResolver()
+            ),
+            fixedZonedDateTimeGenerator
+    );
 
     @Test
     @DisplayName("[Success] /index.html로 요청을 보내면 200 OK 응답이 발생한다.")

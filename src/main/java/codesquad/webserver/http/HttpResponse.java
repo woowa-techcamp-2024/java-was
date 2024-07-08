@@ -1,8 +1,9 @@
 package codesquad.webserver.http;
 
-import static codesquad.utils.StringUtils.CRLF;
+import static codesquad.utils.string.StringUtils.CRLF;
 
 import codesquad.webserver.http.HttpHeaders.HeaderName;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -37,6 +38,18 @@ public class HttpResponse {
         this.headers.setContentLength(contentLength);
     }
 
+    public void setDate(ZonedDateTime zonedDateTime) {
+        this.headers.setHeader("Date", zonedDateTime.toString());
+    }
+
+    public void setServer() {
+        this.headers.setHeader("Server", "Woowah WAS Server/1.0");
+    }
+
+    public void setConnectionClose() {
+        this.headers.setHeader("Connection", "close");
+    }
+
     public void setBadRequest() {
         this.httpResponseLine = new HttpResponseLine(HttpVersion.HTTP1_1, HttpStatus.BAD_REQUEST);
         this.headers = HttpHeaders.empty();
@@ -50,6 +63,12 @@ public class HttpResponse {
     public void sendRedirect(String redirectUrl) {
         httpResponseLine.setStatus(HttpStatus.SEE_OTHER);
         headers.setHeader(HeaderName.LOCATION.getName(), redirectUrl);
+    }
+
+    public void setDefaultHeaders(ZonedDateTime zonedDateTime) {
+        setDate(zonedDateTime);
+        setServer();
+        setConnectionClose();
     }
 
     public String getResponseLine() {

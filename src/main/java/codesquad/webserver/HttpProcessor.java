@@ -1,6 +1,6 @@
 package codesquad.webserver;
 
-import static codesquad.utils.StringUtils.CRLF;
+import static codesquad.utils.string.StringUtils.CRLF;
 
 import codesquad.servlet.handler.HttpRequestHandler;
 import codesquad.webserver.http.HttpRequest;
@@ -51,7 +51,7 @@ public class HttpProcessor {
         }
     }
 
-    public void sendResponse(OutputStream outputStream, HttpResponse httpResponse) throws IOException {
+    private void sendResponse(OutputStream outputStream, HttpResponse httpResponse) throws IOException {
         sendResponseLine(outputStream, httpResponse);
         sendHeaders(outputStream, httpResponse);
         sendBody(outputStream, httpResponse);

@@ -33,7 +33,11 @@ public class StaticResourceHandler implements Handler {
         try {
             String pathValue = path.getDefaultPath();
             if (path.isDirectoryPath()) {
-                pathValue += "/index.html";
+                if (pathValue.charAt(pathValue.length() - 1) == '/') {
+                    pathValue += "index.html";
+                } else {
+                    pathValue += "/index.html";
+                }
             }
             String fileExtension = getFileExtension(pathValue);
             HttpMediaType httpMediaType = mappingMediaTypeFileExtensionResolver.resolve(fileExtension);
@@ -46,7 +50,10 @@ public class StaticResourceHandler implements Handler {
 
         } catch (FileNotFoundException e) {
             response.setHttpResponseLine(new HttpResponseLine(httpVersion, NOT_FOUND));
-            response.setBody(NOT_FOUND.getRepresentation().getBytes());
+            byte[] notFound = NOT_FOUND.getRepresentation()
+                    .getBytes(); // TODO: BODY X, 중복된 코드 -> HttpResponse 에서 한 번에 처리하면 되지 않을까?
+            response.setBody(notFound);
+            response.setContentLength(notFound.length);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

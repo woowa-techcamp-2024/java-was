@@ -5,6 +5,7 @@ import codesquad.servlet.MappingMediaTypeFileExtensionResolver;
 import codesquad.servlet.StaticResourceReader;
 import codesquad.servlet.handler.HttpRequestHandler;
 import codesquad.servlet.handler.StaticResourceHandler;
+import codesquad.utils.time.CurrentZonedDateTimeGenerator;
 import codesquad.webserver.http.HttpRequestParser;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -22,7 +23,8 @@ public class Connector {
     private final HttpRequestParser httpRequestParser = new HttpRequestParser();
     private final HttpRequestHandler httpRequestHandler = new HttpRequestHandler(
             new HandlerMapper(),
-            new StaticResourceHandler(new StaticResourceReader(), new MappingMediaTypeFileExtensionResolver()));
+            new StaticResourceHandler(new StaticResourceReader(), new MappingMediaTypeFileExtensionResolver()),
+            new CurrentZonedDateTimeGenerator());
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     public void start() {
