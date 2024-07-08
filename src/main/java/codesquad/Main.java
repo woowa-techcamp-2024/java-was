@@ -1,6 +1,8 @@
 package codesquad;
 
-import codesquad.threadpool.ConnectionThreadPool;
+import codesquad.command.CommandManager;
+import codesquad.command.domain.UserDomain;
+import codesquad.webserver.ConnectionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,10 +12,11 @@ import java.net.Socket;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
-    private static ConnectionThreadPool connectionThreadPool;
+    private static ConnectionHandler connectionThreadPool;
 
     public static void main(String[] args) throws IOException {
-        connectionThreadPool = ConnectionThreadPool.getInstance();
+        initCommand();
+        connectionThreadPool = ConnectionHandler.getInstance();
 
         var serverSocket = new ServerSocket(8080); // 8080 포트에서 서버를 엽니다.
         log.debug("Listening for connection on port 8080 ....");
@@ -23,8 +26,12 @@ public class Main {
             Socket clientSocket = serverSocket.accept();
             log.debug("Client connected");
             connectionThreadPool.run(clientSocket);
-
         }
 
+    }
+
+    public static void initCommand() {
+        var commandManager = CommandManager.getInstance();
+        commandManager.initMethod(UserDomain.class);
     }
 }
