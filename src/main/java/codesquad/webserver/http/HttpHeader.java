@@ -19,6 +19,10 @@ public class HttpHeader {
         return headers.get(key);
     }
 
+    public boolean hasKey(String key){
+        return headers.containsKey(key);
+    }
+
     @Override
     public String toString() {
         return "headers=" + headers;

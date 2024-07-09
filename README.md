@@ -37,3 +37,33 @@
       - name=%EB%B0%95%EC%9E%AC%EC%84%B1
       - email=javajigi%40slipp.net
 - url 파싱해 User 클래스 저장
+
+# 2-1
+- 회원 가입 POST 요청
+  - query string 이 아니라 request body 지원
+  - 성공시 redirect
+  - CREATE 요청시 실패 처리
+
+# 2-2
+- User Data Base 
+  - User 를 관리한다
+- 로그인 버튼 클리식
+  - /user/loging.html 이동
+- 로그인 api
+  - 아이디와 비밀번호가 같은 User 확인
+    - 성공시 
+      - index.html 리다이렉트
+      - 응답 헤더에 쿠키 값 sid=세션ID; Path=/
+      - 세션 아이디는 무작위 숫자 또는 문자열
+      - 서버는 세션 아이드를 활용해 User 자원 요청 가능해야 한다
+    - 실패시 /user/login_failed.html 이동
+- 로그 아웃
+
+
+# 2-3
+- /index 접속시 사용자가 로그인 상태인지 쿠키로 확인
+  - 로그인 상태일 경우 /user/list 로 리다이렉트
+  - 아닐 경우 /index.html 에 로그인 버튼 사용 가능
+- /user/list 로그인 하지 않고 접근시 로그인 페이지로 리다이렉트
+- /user/list 페이지
+  - 생성된 모든 user 출력

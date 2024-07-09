@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+
+import codesquad.webserver.util.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +16,12 @@ public class HttpRequestParser {
     public static HttpRequest parse(InputStream inputStream) {
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
         HttpRequestStartLine startLine = new HttpRequestStartLine(readStartLine(br));
-        HttpHeader headers = readHeader(br);
-        return new HttpRequest(startLine, headers);
+        HttpHeader header = readHeader(br);
+        HttpBody body = null;
+        if(header.hasKey("Content-Type") && header.hasKey("Content-Length")){
+            body = readBody(br, header.getValue("Content-Type"), Integer.parseInt(header.getValue("Content-Length")));
+        }
+        return new HttpRequest(startLine, header, body);
     }
 
     private static String readStartLine(BufferedReader br) {
@@ -36,10 +42,31 @@ public class HttpRequestParser {
             String line;
             // \r\n 까지 읽는다
             while(!(line = br.readLine()).isEmpty()){
-                String[] row = line.split(":");
-                headers.add(row[0], row[1].trim());
+                String[] row = line.split(":\\s*", 2);
+                headers.add(row[0], row[1]);
+                log.debug("header line: {}", line);
             }
             return headers;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static HttpBody readBody(BufferedReader br, String contentType, int contentLength){
+        try{
+            char[] buffer = new char[contentLength];
+            br.read(buffer, 0 , contentLength);
+            String mesage = new String(buffer);
+            System.out.println("message: " + mesage);
+            if(contentType.equals("application/json")){
+                return new HttpBody(JsonParser.parseJson(mesage));
+            }
+            else if(contentType.equals("application/x-www-form-urlencoded")){
+                return new HttpBody(JsonParser.parseForm(mesage));
+            }
+            else {
+                throw new IOException("");
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
