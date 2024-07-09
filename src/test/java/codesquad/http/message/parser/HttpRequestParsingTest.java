@@ -1,9 +1,9 @@
 package codesquad.http.message.parser;
 
-import codesquad.http.message.InvalidRequestFormatException;
-import codesquad.http.message.parser.*;
-import codesquad.http.message.request.HttpMethod;
-import codesquad.http.message.request.HttpRequestMessage;
+import codesquad.was.http.message.InvalidRequestFormatException;
+import codesquad.was.http.message.parser.*;
+import codesquad.was.http.message.request.HttpMethod;
+import codesquad.was.http.message.request.HttpRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class HttpRequestParsingTest {
-    private String testGetMessage = withSystemLineSeparator("""
+    private String testGetMessage = replaceWithRNSeperator("""
             GET /index.html HTTP/1.1
             Host: localhost:8080
             User-Agent: Mozilla/5.0
@@ -25,7 +25,7 @@ class HttpRequestParsingTest {
             
             """);
 
-    private String wrongMessage = withSystemLineSeparator("""
+    private String wrongMessage = replaceWithRNSeperator("""
             Unknown uri
             Host: unknown
             """);
@@ -36,7 +36,7 @@ class HttpRequestParsingTest {
     private HttpQueryStringParser queryStringParser = new HttpQueryStringParser();
     private HttpRequestParser requestParser = new HttpRequestParser(startLineParser,headerParser,bodyParser,queryStringParser);
 
-    private void verifyHeaderValues(HttpRequestMessage req,String key,String valueString){
+    private void verifyHeaderValues(HttpRequest req, String key, String valueString){
         List<String> values = Arrays.stream(valueString.split(","))
                 .map(String::trim)
                 .filter(value -> !value.isEmpty())
@@ -49,7 +49,7 @@ class HttpRequestParsingTest {
     @Test
     public void parseGetMessage() throws InvalidRequestFormatException {
         //given
-        HttpRequestMessage req = requestParser.parse(testGetMessage);
+        HttpRequest req = requestParser.parse(testGetMessage);
 
         //when & then
         assertAll("request message validation",
@@ -70,14 +70,14 @@ class HttpRequestParsingTest {
     @Test
     public void parseWrongMessage(){
         assertThrows(InvalidRequestFormatException.class,()->{
-            HttpRequestMessage req = requestParser.parse(wrongMessage);
+            HttpRequest req = requestParser.parse(wrongMessage);
         });
     }
 
     @Test
     public void queryStringMessage(){
         //given
-        String queryStringMessage = withSystemLineSeparator("""
+        String queryStringMessage = replaceWithRNSeperator("""
             GET /create?username=hyeonuk&nickname=khu147&password=password1234 HTTP/1.1
             Host: localhost:8080
             User-Agent: Mozilla/5.0
@@ -90,7 +90,7 @@ class HttpRequestParsingTest {
             
             """);
         //when
-        HttpRequestMessage req = requestParser.parse(queryStringMessage);
+        HttpRequest req = requestParser.parse(queryStringMessage);
 
         //then
         assertAll("queryStringValidation",
@@ -102,7 +102,7 @@ class HttpRequestParsingTest {
     @Test
     public void emptyQueryStringMessage(){
         //given
-        String queryStringMessage = withSystemLineSeparator("""
+        String queryStringMessage = replaceWithRNSeperator("""
             GET /create?username=&nickname= HTTP/1.1
             Host: localhost:8080
             User-Agent: Mozilla/5.0
@@ -115,7 +115,7 @@ class HttpRequestParsingTest {
             
             """);
         //when
-        HttpRequestMessage req = requestParser.parse(queryStringMessage);
+        HttpRequest req = requestParser.parse(queryStringMessage);
 
         //then
         assertAll("blank return blank string",
@@ -126,7 +126,7 @@ class HttpRequestParsingTest {
     @Test
     public void nullQueryStringMessage(){
         //given
-        String queryStringMessage = withSystemLineSeparator("""
+        String queryStringMessage = replaceWithRNSeperator("""
             GET /create HTTP/1.1
             Host: localhost:8080
             User-Agent: Mozilla/5.0
@@ -139,7 +139,7 @@ class HttpRequestParsingTest {
             
             """);
         //when
-        HttpRequestMessage req = requestParser.parse(queryStringMessage);
+        HttpRequest req = requestParser.parse(queryStringMessage);
 
         //then
         assertAll("not exists query parameter return null",
@@ -150,7 +150,7 @@ class HttpRequestParsingTest {
     public void urlEncodingQueryString(){
         //given
         //안녕하세요 url 인코딩 = %ec%95%88%eb%85%95%ed%95%98%ec%84%b8%ec%9a%94
-        String queryStringMessage = withSystemLineSeparator("""
+        String queryStringMessage = replaceWithRNSeperator("""
             GET /create?name=%ec%95%88%eb%85%95%ed%95%98%ec%84%b8%ec%9a%94 HTTP/1.1
             Host: localhost:8080
             User-Agent: Mozilla/5.0
@@ -163,13 +163,33 @@ class HttpRequestParsingTest {
             
             """);
         //when
-        HttpRequestMessage req = requestParser.parse(queryStringMessage);
+        HttpRequest req = requestParser.parse(queryStringMessage);
 
         //then
         assertEquals("안녕하세요",req.getQueryString("name"));
     }
 
-    private String withSystemLineSeparator(String message){
-        return message.replaceAll("\r\n",System.lineSeparator()).replaceAll("\n",System.lineSeparator());
+    @Test
+    public void bodyQueryStringTest(){
+        //given
+        //안녕하세요 url 인코딩 = %ec%95%88%eb%85%95%ed%95%98%ec%84%b8%ec%9a%94
+        String message = replaceWithRNSeperator("""
+                POST /user/create HTTP/1.1
+                HOST : localhost:8080
+                Content-Type: application/x-www-form-urlencoded
+                
+                message=%ec%95%88%eb%85%95%ed%95%98%ec%84%b8%ec%9a%94&nickname=hyeonuk""");
+        //when
+        HttpRequest req = requestParser.parse(message);
+
+        //then
+        assertAll("body queryString extract",
+                ()->assertEquals("안녕하세요",req.getQueryString("message")),
+                ()->assertEquals("hyeonuk",req.getQueryString("nickname")));
+
+    }
+
+    private String replaceWithRNSeperator(String message){
+        return message.replaceAll(System.lineSeparator(),"\r\n");
     }
 }
