@@ -4,12 +4,12 @@ public class HttpResponse {
 
 	private StatusLine statusLine;
 	private HttpHeader header;
-	private byte[] body;
+	private HttpBody body;
 
 	public HttpResponse() {
 	}
 
-	public HttpResponse(StatusLine statusLine, HttpHeader header, byte[] body) {
+	public HttpResponse(StatusLine statusLine, HttpHeader header, HttpBody body) {
 		this.statusLine = statusLine;
 		this.header = header;
 		this.body = body;
@@ -17,7 +17,7 @@ public class HttpResponse {
 
 	@Override
 	public String toString() {
-		return statusLine.toString() + header.toString() + new String(body);
+		return statusLine.toString() + header.toString() + new String(body.body());
 	}
 
 	public byte[] getBytes() {
@@ -25,30 +25,30 @@ public class HttpResponse {
 	}
 
 	public byte[] getBody() {
-		return body;
+		return body.body();
+	}
+
+	public void setBody(byte[] body) {
+		this.body = new HttpBody(body);
 	}
 
 	public HttpHeader getHeader() {
 		return header;
 	}
 
-	public StatusLine getStatusLine() {
-		return statusLine;
-	}
-
 	public void setHeader(HttpHeader header) {
 		this.header = header;
 	}
 
-	public void setStatusLine() {
-		this.statusLine = new StatusLine(HttpProtocol.HTTP11, HttpStatus.OK);
+	public StatusLine getStatusLine() {
+		return statusLine;
 	}
 
 	public void setStatusLine(HttpStatus httpStatus) {
 		this.statusLine = new StatusLine(HttpProtocol.HTTP11, httpStatus);
 	}
 
-	public void setBody(byte[] body) {
-		this.body = body;
+	public void setStatusLine() {
+		this.statusLine = new StatusLine(HttpProtocol.HTTP11, HttpStatus.OK);
 	}
 }

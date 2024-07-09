@@ -1,13 +1,14 @@
 package codesquad.db;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import codesquad.domain.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import codesquad.domain.User;
 
 public class UserDatabaseTest {
 
@@ -39,7 +40,7 @@ public class UserDatabaseTest {
 		userDatabase.insert("john", user);
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
 			() -> userDatabase.insert("john", user));
-		assertThat("User with id john already exists").isEqualTo(exception.getMessage());
+		assertThat("User already exists").isEqualTo(exception.getMessage());
 	}
 
 	@Test
