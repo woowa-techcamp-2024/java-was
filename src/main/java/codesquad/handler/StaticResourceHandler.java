@@ -5,14 +5,22 @@ import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
 import codesquad.resource.Resource;
 import codesquad.resource.ResourcesReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-public class StaticResourceHandler extends RequestHandler {
+public final class StaticResourceHandler extends RequestHandler {
 
-    private final Logger log = LoggerFactory.getLogger(StaticResourceHandler.class);
+    private static StaticResourceHandler INSTANCE = new StaticResourceHandler();
+
+    private StaticResourceHandler() {
+    }
+
+    public static StaticResourceHandler getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new StaticResourceHandler();
+        }
+        return INSTANCE;
+    }
 
     @Override
     public HttpResponse handle(HttpRequest httpRequest) {

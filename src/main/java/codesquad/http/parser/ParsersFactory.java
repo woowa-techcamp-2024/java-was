@@ -10,4 +10,8 @@ public class ParsersFactory {
         return httpRequestParser;
     }
 
+    public static QueryParametersParser getQueryParametersParser() {
+        return queryParametersParser;
+    }
+
 }

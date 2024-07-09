@@ -14,16 +14,10 @@ public class QueryParametersParser implements Parser<QueryParameters> {
     private final Logger log = LoggerFactory.getLogger(QueryParametersParser.class);
 
     @Override
-    public QueryParameters parse(String uriText) {
-        if (uriText == null || uriText.isEmpty()) {
+    public QueryParameters parse(String queryString) {
+        if (queryString == null || queryString.isEmpty()) {
             return QueryParameters.empty();
         }
-
-        int queryIndex = uriText.indexOf("?");
-        if (queryIndex == -1) {
-            return QueryParameters.empty();
-        }
-        String queryString = uriText.substring(queryIndex + 1);
 
         QueryParameters queryParameters = new QueryParameters();
         Arrays.stream(queryString.split("&"))

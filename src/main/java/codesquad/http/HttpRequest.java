@@ -11,7 +11,7 @@ public class HttpRequest {
     private final String httpVersion;
     private final QueryParameters parameters;
     private final HttpHeaders headers;
-    private final String body;
+    private String body;
 
     public HttpRequest(String uri, String method, String httpVersion, QueryParameters parameters, HttpHeaders headers, String body) {
         this.uri = uri;
@@ -43,12 +43,19 @@ public class HttpRequest {
     }
 
     public Optional<String> body() {
-        return this.body == null || this.body.isEmpty() ? Optional.empty()
-                : Optional.of(this.body);
+        return this.body == null || this.body.isEmpty() ? Optional.empty() : Optional.of(this.body);
     }
 
     public Optional<String> firstParameterValue(String parameterName) {
         return parameters.getFirstValue(parameterName);
+    }
+
+    public Optional<String> firstHeaderValue(String headerName) {
+        return headers.getFirstValue(headerName);
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     @Override

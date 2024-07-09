@@ -35,9 +35,12 @@ public class HttpRequestParser implements Parser<HttpRequest> {
                 .skip(1)
                 .collect(Collectors.joining("\r\n"));
         HttpHeaders httpHeaders = headersParser.parse(headers);
-        QueryParameters queryParameters = queryParametersParser.parse(uri);
-        if (queryParameters.isExists()) {
-            uri = uri.split("\\?")[0];
+
+        QueryParameters queryParameters = null;
+        if (uri.contains("?")) {
+            String[] uriQueryString = uri.split("\\?");
+            queryParameters = queryParametersParser.parse(uriQueryString[1]);
+            uri = uriQueryString[0];
         }
         return new HttpRequest(uri, method, httpVersion, queryParameters, httpHeaders, null);
     }

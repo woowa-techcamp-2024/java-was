@@ -2,7 +2,9 @@ package codesquad;
 
 import codesquad.handler.HandlersMapper;
 import codesquad.handler.RequestHandler;
+import codesquad.http.HttpHeaders;
 import codesquad.http.HttpRequest;
+import codesquad.http.HttpRequestReader;
 import codesquad.http.HttpResponse;
 import codesquad.http.parser.HttpRequestParser;
 import codesquad.http.parser.ParsersFactory;
@@ -22,40 +24,39 @@ public class HttpRequestProcessor implements Runnable {
 
     private final Socket socket;
     private final HttpRequestParser requestParser = ParsersFactory.getHttpRequestParser();
+    private final HttpRequestReader requestReader;
     private final HandlersMapper handlersMapper;
 
-    public HttpRequestProcessor(Socket socket, HandlersMapper handlersMapper) {
+    public HttpRequestProcessor(Socket socket, HttpRequestReader requestReader, HandlersMapper handlersMapper) {
         this.socket = socket;
+        this.requestReader = requestReader;
         this.handlersMapper = handlersMapper;
         log.debug("Client connected");
     }
 
     @Override
     public void run() {
-        try {
-            HttpRequest httpRequest = requestParser.parse(readHttpRequest());
-            log.debug("httpRequest = {}", httpRequest);
+        try (InputStream inputStream = socket.getInputStream()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String requestText = requestReader.read(reader);
+            HttpRequest httpRequest = requestParser.parse(requestText);
+            if (!httpRequest.method().equals("GET")) {
+                String headerValue = httpRequest.firstHeaderValue(HttpHeaders.CONTENT_LENGTH)
+                        .orElseThrow(() -> new IllegalArgumentException("[ERROR] Content-Length가 누락되었습니다."));
+                int contentLength = Integer.parseInt(headerValue);
+                String requestBody = requestReader.readBody(reader, contentLength);
+                httpRequest.setBody(requestBody);
+            }
+            log.info("httpRequest = {}", httpRequest);
 
             RequestHandler requestHandler = handlersMapper.getRequestHandler(httpRequest);
             HttpResponse httpResponse = requestHandler.handle(httpRequest);
-            try (OutputStream clientOutput = socket.getOutputStream()) {
-                clientOutput.write(httpResponse.toBytes());
-            }
+            OutputStream clientOutput = socket.getOutputStream();
+            clientOutput.write(httpResponse.toBytes());
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-    }
-
-    private String readHttpRequest() throws IOException {
-        InputStream inputStream = socket.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder request = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            request.append(line)
-                    .append("\r\n");
-        }
-        return request.toString();
     }
 
 }
