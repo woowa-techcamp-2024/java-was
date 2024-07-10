@@ -31,14 +31,22 @@ public class ResourceHandlerAdapter<T, R> implements HttpHandlerAdapter<T,R> {
             while ((bytesRead = inputStream.read(buffer)) != -1) {
                 response.getBody().write(buffer, 0, bytesRead);
             }
+        } catch (IllegalArgumentException e) {
+            response.setStatus(HttpStatus.NOT_FOUND);
+            log.error("리소스 파일을 읽는 중 오류 발생: {}, {}", filePath, e.getMessage());
+            throw e;
         } catch (IOException e) {
-            log.error("리소스 파일을 읽는 중 오류 발생: {}", filePath, e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error("리소스 파일을 읽는 중 IO 오류 발생: {}, {}", filePath, e.getMessage());
             throw e;
         }
+        // TODO 커스텀 예외를 만들어서 예외 타입에 따라 오버로딩하는 방식으로 에외처리 중앙화하기
 
         // MIME 타입 설정
         Mime mime = Mime.ofFilePath(filePath);
         response.setStatus(HttpStatus.OK);
+        response.setHeader(HeaderConstants.CACHE_CONTROL, "public, max-age=31536000");
+
         response.getHttpHeaders()
                 .addHeader(HeaderConstants.CONTENT_TYPE, mime.getType());
     }

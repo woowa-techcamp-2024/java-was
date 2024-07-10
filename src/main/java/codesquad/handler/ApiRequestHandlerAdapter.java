@@ -2,30 +2,32 @@ package codesquad.handler;
 
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
-import codesquad.http.HttpStatus;
-import codesquad.processor.ArgumentResolver;
 import codesquad.processor.Triggerable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ApiRequestHandlerAdapter<T, R> implements HttpHandlerAdapter<T, R> {
+public abstract class ApiRequestHandlerAdapter<T, R> implements HttpHandlerAdapter<T, R> {
 
-    private final ArgumentResolver<T> argumentResolver;
-
-    public ApiRequestHandlerAdapter(ArgumentResolver<T> argumentResolver) {
-        this.argumentResolver = argumentResolver;
-    }
+    private static final Logger log = LoggerFactory.getLogger(ApiRequestHandlerAdapter.class);
 
     @Override
-    public void handle(HttpRequest httpRequest, HttpResponse response, Triggerable<T, R> triggerable) throws Exception {
-
-        T request = argumentResolver.resolve(httpRequest);
-
-        R res = triggerable.run(request);
-
-        // 결과를 response에 담아서 반환
-        response.setStatus(HttpStatus.FOUND);
-
-        response.getHttpHeaders().addHeader("Location", "/");
-
-        // 이걸 HttpHandler에 default 메서드로 두고 필요한 경우 오버라이드해서 사용하도록 하면 어떨까?
+    public final void handle(HttpRequest httpRequest, HttpResponse response, Triggerable<T, R> triggerable) throws Exception {
+        T request = resolveArgument(httpRequest);
+        try {
+            R res = triggerable.run(request);
+            log.debug("res = {}", res);
+            afterHandle(request, res, httpRequest, response);
+        }
+        catch (RuntimeException e) {
+            log.error("Exception : {}", e.getMessage());
+            applyExceptionHandler(e, response);
+        }
     }
+
+    public abstract void afterHandle(T request, R response, HttpRequest httpRequest, HttpResponse httpResponse);
+
+    public abstract T resolveArgument(HttpRequest httpRequest);
+
+    public abstract void applyExceptionHandler(RuntimeException e, HttpResponse response);
+
 }

@@ -1,12 +1,24 @@
 package codesquad;
 
-import codesquad.handler.ApiRequestHandlerAdapter;
+import codesquad.database.Database;
+import codesquad.handler.LoginRequestHandlerAdapter;
+import codesquad.handler.LogoutRequestHandlerAdapter;
+import codesquad.handler.RegisterRequestHandlerAdapter;
 import codesquad.handler.ResourceHandlerAdapter;
 import codesquad.http.HttpMethod;
 import codesquad.http.HttpResponseSerializer;
+import codesquad.model.User;
+import codesquad.model.business.LoginUserLogic;
 import codesquad.model.business.RegisterUserLogic;
-import codesquad.processor.*;
+import codesquad.processor.HandlerRegistry;
+import codesquad.processor.HttpRequestBuilder;
+import codesquad.processor.HttpRequestDispatcher;
+import codesquad.processor.HttpResponseWriter;
+import codesquad.processor.argumentresolver.ArgumentResolver;
+import codesquad.processor.argumentresolver.LoginArgumentResolver;
+import codesquad.processor.argumentresolver.RegisterArgumentResolver;
 import codesquad.server.ServerInitializer;
+import codesquad.web.user.LoginRequest;
 import codesquad.web.user.RegisterRequest;
 
 import java.util.ArrayList;
@@ -20,16 +32,31 @@ public class Main {
         HandlerRegistry handlerRegistry = new HandlerRegistry(new ArrayList<>());
         HttpRequestBuilder httpHandler = new HttpRequestBuilder();
 
+        // User DB
+        Database<User> userDatabase = new Database<>();
+
         // 회원 가입 로직
-        RegisterUserLogic registerUserLogic = new RegisterUserLogic();
+        RegisterUserLogic registerUserLogic = new RegisterUserLogic(userDatabase);
         ArgumentResolver<RegisterRequest> registerArgumentResolver = new RegisterArgumentResolver();
-        ApiRequestHandlerAdapter<RegisterRequest, Void> registerUserHandler = new ApiRequestHandlerAdapter<>(registerArgumentResolver);
+        RegisterRequestHandlerAdapter registerUserHandler = new RegisterRequestHandlerAdapter(registerArgumentResolver);
         handlerRegistry.registerHandler(HttpMethod.POST, "/users/create", registerUserHandler, registerUserLogic);
+
+        // 로그인 로직
+        LoginUserLogic loginUserLogic = new LoginUserLogic(userDatabase);
+        ArgumentResolver<LoginRequest> loginArgumentResolver = new LoginArgumentResolver();
+        LoginRequestHandlerAdapter loginUserHandler = new LoginRequestHandlerAdapter(loginArgumentResolver);
+        handlerRegistry.registerHandler(HttpMethod.POST, "/users/login", loginUserHandler, loginUserLogic);
+
+        // 로그아웃 API
+        LogoutRequestHandlerAdapter logoutRequestHandlerAdapter = new LogoutRequestHandlerAdapter();
+        handlerRegistry.registerHandler(HttpMethod.POST, "/users/logout", logoutRequestHandlerAdapter, o -> null);
 
         // 기본 리소스 핸들러
         ResourceHandlerAdapter<Void, Void> defaultResourceHandler = new ResourceHandlerAdapter<>();
         HttpResponseSerializer httpResponseSerializer = new HttpResponseSerializer();
         HttpResponseWriter httpResponseWriter = new HttpResponseWriter(httpResponseSerializer);
+
+        // 디스패처 생성
         HttpRequestDispatcher httpRequestDispatcher = new HttpRequestDispatcher(httpHandler, defaultResourceHandler, httpResponseWriter, handlerRegistry);
 
         try {
