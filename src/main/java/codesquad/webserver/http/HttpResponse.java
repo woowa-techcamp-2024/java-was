@@ -23,6 +23,11 @@ public class HttpResponse {
         this.contents = fileData;
     }
 
+    public void setCookie(String sid){
+        httpHeader.setValue("Set-Cookie", "sid="+sid +"; "+ "Path=/");
+
+    }
+
     public static HttpResponse createOkResponse(String bodyMessage){
         HttpHeader httpHeader = new HttpHeader();
         httpHeader.add("Content-Type", ContentTypeMapping.getContentType(".html"));
@@ -38,10 +43,10 @@ public class HttpResponse {
         return new HttpResponse(200, "OK", httpHeader, fileData);
     }
 
-    public static HttpResponse createRedirectResponse(){
+    public static HttpResponse createRedirectResponse(String path){
         String bodyMessage = "redirect";
         HttpHeader httpHeader = new HttpHeader();
-        httpHeader.add("Location", "/index");
+        httpHeader.add("Location", path);
         return new HttpResponse(303, "See Other", httpHeader, bodyMessage);
     }
 

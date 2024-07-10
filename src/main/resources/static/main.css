@@ -144,3 +144,14 @@
   width: 32px;
   height: 32px;
 }
+
+.header__menu {
+    display: flex;
+    align-items: center;
+}
+.header__menu__item {
+    margin-left: 10px;
+}
+#userNickname {
+    margin-left: 10px;
+}

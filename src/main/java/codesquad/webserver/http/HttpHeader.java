@@ -19,6 +19,10 @@ public class HttpHeader {
         return headers.get(key);
     }
 
+    public void setValue(String key, String value){
+        headers.put(key, value);
+    }
+
     public boolean hasKey(String key){
         return headers.containsKey(key);
     }

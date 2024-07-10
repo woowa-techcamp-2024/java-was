@@ -57,7 +57,6 @@ public class HttpRequestParser {
             char[] buffer = new char[contentLength];
             br.read(buffer, 0 , contentLength);
             String mesage = new String(buffer);
-            System.out.println("message: " + mesage);
             if(contentType.equals("application/json")){
                 return new HttpBody(JsonParser.parseJson(mesage));
             }

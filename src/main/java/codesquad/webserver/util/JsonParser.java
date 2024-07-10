@@ -39,35 +39,38 @@ public class JsonParser {
     }
 
     // Content-Type: application/json
-    private static final Pattern OBJECT_PATTERN = Pattern.compile("\\{(.*?)\\}");
     private static final Pattern KEY_VALUE_PATTERN = Pattern.compile("\"(.*?)\"\\s*:\\s*(\".*?\"|\\{.*?\\}|-?\\d+(\\.\\d+)?|true|false|null)");
 
     public static Map<String, Object> parseJson(String jsonString) {
-        Map<String, Object> jsonMap = new HashMap<>();
         jsonString = jsonString.trim();
-        Matcher objectMatcher = OBJECT_PATTERN.matcher(jsonString);
-        if(objectMatcher.find()){
-            String objectContent = objectMatcher.group(1);
-            Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(objectContent);
-            while(keyValueMatcher.find()){
-                String key = keyValueMatcher.group(1);
-                String value = keyValueMatcher.group(2);
-                jsonMap.put(key, parseJsonValue(value));
-            }
+        if (!jsonString.startsWith("{") || !jsonString.endsWith("}")) {
+            throw new IllegalArgumentException("Invalid JSON string");
+        }
+        return parseJsonObject(jsonString.substring(1, jsonString.length() - 1));
+    }
+
+    private static Map<String, Object> parseJsonObject(String jsonContent) {
+        Map<String, Object> jsonMap = new HashMap<>();
+        Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(jsonContent);
+        while (keyValueMatcher.find()) {
+            String key = keyValueMatcher.group(1);
+            String value = keyValueMatcher.group(2);
+            jsonMap.put(key, parseJsonValue(value));
         }
         return jsonMap;
     }
 
-    private static Object parseJsonValue(String value){
+    private static Object parseJsonValue(String value) {
+        value = value.trim();
         if (value.startsWith("\"") && value.endsWith("\"")) {
             return value.substring(1, value.length() - 1);
         } else if (value.startsWith("{") && value.endsWith("}")) {
-            return parseJsonValue(value);
+            return parseJsonObject(value.substring(1, value.length() - 1));
         } else if (value.equals("true") || value.equals("false")) {
             return Boolean.parseBoolean(value);
         } else if (value.equals("null")) {
             return null;
-        } else{
+        } else {
             try {
                 if (value.contains(".")) {
                     return Double.parseDouble(value);
