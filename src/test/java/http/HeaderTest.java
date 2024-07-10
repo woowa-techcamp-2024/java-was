@@ -21,7 +21,7 @@ class HeaderTest {
         Header header = Header.from(new BufferedReader(new StringReader(normalHeaderString)));
 
         // when
-        String result = header.getHeader(key);
+        String result = header.getValue(key);
 
         // then
         assertEquals(value, result);
@@ -34,7 +34,7 @@ class HeaderTest {
         Header header = Header.from(new BufferedReader(new StringReader("Host: localhost:8080\r\n")));
 
         // when
-        String result = header.getHeader("No-Exist");
+        String result = header.getValue("No-Exist");
 
         // then
         assertEquals("", result);

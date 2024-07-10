@@ -3,6 +3,8 @@ package http;
 import http.startline.RequestLine;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Map;
+import util.QueryParserUtil;
 
 public class HttpRequest extends Http {
 
@@ -25,14 +27,18 @@ public class HttpRequest extends Http {
 
     private static byte[] generateBody(BufferedReader bufferedReader, Header header)
         throws IOException {
-        if (header.getHeader("Content-Length").isEmpty()) {
+        if (header.getValue("Content-Length").isEmpty()) {
             return new byte[0];
         }
 
-        int contentLength = Integer.parseInt(header.getHeader("Content-Length"));
+        int contentLength = Integer.parseInt(header.getValue("Content-Length"));
         char[] body = new char[contentLength];
         bufferedReader.read(body, 0, contentLength);
 
         return new String(body).getBytes();
+    }
+
+    public Map<String, String> getBodyParams() {
+        return QueryParserUtil.parseQuery(new String(this.getBody()));
     }
 }

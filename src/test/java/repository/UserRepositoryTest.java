@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 
 class UserRepositoryTest {
 
-    private UserRepository userRepository = new UserRepository();
+    private UserRepository userRepository = UserRepository.getInstance();
 
     @BeforeEach
     void setUp() {
-        userRepository = new UserRepository();
+        userRepository = UserRepository.getInstance();
     }
 
     @Test
@@ -23,7 +23,7 @@ class UserRepositoryTest {
         User user = new User("testId", "testPassword", "testName", "testEmail");
         userRepository.addUser(user);
 
-        User savedUser = userRepository.getUser("testId");
+        User savedUser = userRepository.getUserById("testId");
 
         assertAll(
             () -> assertEquals("testId", savedUser.getUserId()),

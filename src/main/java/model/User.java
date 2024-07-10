@@ -38,4 +38,21 @@ public class User {
             ", email='" + email + '\'' +
             '}';
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        User user = (User) obj;
+        return userId.equals(user.userId);
+    }
+
+    @Override
+    public int hashCode() {
+        return userId.hashCode();
+    }
 }

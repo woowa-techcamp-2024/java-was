@@ -86,11 +86,11 @@ public class Header {
         return new String[]{key, value};
     }
 
-    public String getHeader(String key) {
+    public String getValue(String key) {
         return header.getOrDefault(key, "");
     }
 
-    public void addHeader(String key, String value) {
+    public void addKey(String key, String value) {
         header.put(key, value);
     }
 

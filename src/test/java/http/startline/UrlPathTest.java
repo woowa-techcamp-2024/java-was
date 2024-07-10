@@ -88,8 +88,8 @@ public class UrlPathTest {
         assertEquals("/path/to/resource", urlPath.getPath());
         Map<String, String> params = urlPath.getQueryParameters();
         assertEquals(2, params.size());
-        assertEquals("value%201", params.get("param1"));
-        assertEquals("value%202", params.get("param2"));
+        assertEquals("value 1", params.get("param1"));
+        assertEquals("value 2", params.get("param2"));
     }
 
     @Test

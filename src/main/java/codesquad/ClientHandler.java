@@ -1,10 +1,8 @@
 package codesquad;
 
-import handler.MyHandler;
-import handler.MyHandlerMapper;
+import filter.FilterChain;
 import http.HttpRequest;
 import http.HttpResponse;
-import http.startline.RequestLine;
 import http.startline.ResponseLine;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -36,12 +34,11 @@ public class ClientHandler implements Runnable {
             HttpRequest httpRequest = HttpRequest.generateHttpRequest(bufferedReader);
             HttpResponse httpResponse = HttpResponse.generateHttpResponse();
 
-            RequestLine requestLine = (RequestLine) httpRequest.getStartLine();
+            // 여기까지가 response나 requets를 받는 부분
 
-            MyHandlerMapper handlerMapper = MyHandlerMapper.getInstance();
-            MyHandler chosenHandler = handlerMapper.findHandler(requestLine.getUrlPath().getPath());
+            //filter 매핑하기
+            new FilterChain().doFilter(httpRequest, httpResponse);
 
-            chosenHandler.handle(httpRequest, httpResponse);
             sendResponse(clientOutput, httpResponse);
 
         } catch (FileNotFoundException e) {

@@ -3,14 +3,14 @@ package handler;
 import http.Header;
 import http.HttpRequest;
 import http.HttpResponse;
-import http.ResponseWriter;
+import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
 import java.util.logging.Logger;
 import util.FileReader;
 
 public class StaticHandler extends MyHandler {
-    private final Logger logger = Logger.getLogger(StaticHandler.class.getName());
+    private static final Logger logger = Logger.getLogger(StaticHandler.class.getName());
 
 
     @Override
@@ -20,20 +20,16 @@ public class StaticHandler extends MyHandler {
 
         if(requestLine.getUrlPath().getPath().equals("/register.html")) {
             logger.info("redirect to /registration/index.html");
-            ResponseWriter.redirect(httpRequest, httpResponse, "/registration/index.html");
+            ResponseValueSetter.redirect(httpRequest, httpResponse, "/registration/index.html");
             return;
         }
 
         byte[] fileContent = FileReader.readFileFromUrlPath(requestLine.getUrlPath());
         String contentType = FileReader.guessContentTypeFromUrlPath(requestLine.getUrlPath());
-        responseHeader.addHeader("Content-Type", contentType);
+        responseHeader.addKey("Content-Type", contentType);
 
 
         //httpResponse.;
-        ResponseWriter.success(httpResponse, fileContent);
-    }
-
-    @Override
-    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
+        ResponseValueSetter.success(httpResponse, fileContent);
     }
 }

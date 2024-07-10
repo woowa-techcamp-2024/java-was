@@ -16,7 +16,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userRepository = new UserRepository();
+        userRepository = UserRepository.getInstance();
         userService = new UserService(userRepository);
     }
 
@@ -24,7 +24,7 @@ class UserServiceTest {
     void createUser() {
         userService.createUser(userDto);
 
-        User savedUser = userRepository.getUser("userId");
+        User savedUser = userRepository.getUserById("userId");
 
         assertAll(
             () -> assertEquals(userDto.userId(), savedUser.getUserId()),
