@@ -59,7 +59,7 @@ public class Server {
             </html>
             """;
 
-    public Server(int port, int threadPoolSize) {
+    private Server(int port, int threadPoolSize) {
         this.port = port;
         this.threadPoolSize = threadPoolSize;
         this.threadPool = Executors.newFixedThreadPool(this.threadPoolSize);
@@ -78,6 +78,9 @@ public class Server {
         router.staticFiles(path, staticPath);
     }
 
+    public static Server defaultServer(int port, int threadPoolSize) {
+        return new Server(port, threadPoolSize);
+    }
     private void addRoute(String method, String path, Handler handler) {
         router.addRoute(method, path, handler);
     }

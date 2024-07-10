@@ -1,5 +1,6 @@
 package codesquad.http;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedOutputStream;
@@ -8,13 +9,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
-class IOPerformanceTest {
+class HttpResponseTest {
 
     private static final int ITERATIONS = 100000;
     private static final String TEST_DATA = "Hello, World! This is a test of IO performance.";
 
     @Test
-    void IOPerformanceTest() throws IOException {
+    @DisplayName("BufferedOutputStream을 사용한 경우와 사용하지 않은 경우의 성능 비교")
+    void testBufferedIOStreamPerformance() throws IOException {
         // 1. BufferedOutputStream을 사용한 경우
         HttpResponse bufferedResponse = new HttpResponse(new ByteArrayOutputStream());
         setResponse(bufferedResponse);
