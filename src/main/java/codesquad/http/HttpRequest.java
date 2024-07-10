@@ -58,6 +58,10 @@ public class HttpRequest {
         this.body = body;
     }
 
+    public String getCookie(String cookieName) {
+        return headers.getCookie(cookieName);
+    }
+
     @Override
     public String toString() {
         return """
@@ -71,5 +75,4 @@ public class HttpRequest {
                 }
                 """.formatted(uri, method, httpVersion, parameters, headers, body().orElse(""));
     }
-
 }

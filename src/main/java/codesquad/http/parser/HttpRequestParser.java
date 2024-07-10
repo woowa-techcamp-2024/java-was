@@ -1,6 +1,5 @@
 package codesquad.http.parser;
 
-import codesquad.format.Parser;
 import codesquad.http.HttpHeaders;
 import codesquad.http.HttpRequest;
 import codesquad.http.QueryParameters;
@@ -8,14 +7,23 @@ import codesquad.http.QueryParameters;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class HttpRequestParser implements Parser<HttpRequest> {
+public final class HttpRequestParser implements Parser<HttpRequest> {
+
+    private static HttpRequestParser instance;
 
     private final HttpHeadersParser headersParser;
     private final QueryParametersParser queryParametersParser;
 
-    public HttpRequestParser(HttpHeadersParser headersParser, QueryParametersParser queryParametersParser) {
+    private HttpRequestParser(HttpHeadersParser headersParser, QueryParametersParser queryParametersParser) {
         this.headersParser = headersParser;
         this.queryParametersParser = queryParametersParser;
+    }
+
+    public static HttpRequestParser getInstance(HttpHeadersParser headersParser, QueryParametersParser queryParametersParser) {
+        if (instance == null) {
+            instance = new HttpRequestParser(headersParser, queryParametersParser);
+        }
+        return instance;
     }
 
     @Override

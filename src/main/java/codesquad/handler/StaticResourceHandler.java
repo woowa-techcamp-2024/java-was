@@ -10,20 +10,20 @@ import java.util.Optional;
 
 public final class StaticResourceHandler extends RequestHandler {
 
-    private static StaticResourceHandler INSTANCE = new StaticResourceHandler();
+    private static StaticResourceHandler instance = new StaticResourceHandler();
 
     private StaticResourceHandler() {
     }
 
     public static StaticResourceHandler getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new StaticResourceHandler();
+        if (instance == null) {
+            instance = new StaticResourceHandler();
         }
-        return INSTANCE;
+        return instance;
     }
 
     @Override
-    public HttpResponse handle(HttpRequest httpRequest) {
+    protected HttpResponse handleGet(HttpRequest httpRequest) {
         String uri = httpRequest.uri();
 
         Optional<Resource> readResource = ResourcesReader.readResource(uri);
@@ -43,5 +43,4 @@ public final class StaticResourceHandler extends RequestHandler {
         }
         return responseGenerator.sendNotFound(httpRequest);
     }
-
 }

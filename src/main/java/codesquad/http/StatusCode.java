@@ -5,7 +5,8 @@ public enum StatusCode {
     OK(200, "OK"),
     NOT_FOUND(404, "Not Found"),
     SEE_OTHER(303, "See Other"),
-    BAD_REQUEST(400, "Bad Request");
+    BAD_REQUEST(400, "Bad Request"),
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed");
 
     private final int value;
     private final String phrase;

@@ -141,3 +141,16 @@
   color: #ffffff;
   cursor: hover;
 }
+
+.alert {
+  font-size: 14px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+}
+
+.alert-error {
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+  color: #b71c1c;
+}

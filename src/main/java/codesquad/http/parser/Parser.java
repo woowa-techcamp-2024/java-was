@@ -1,4 +1,4 @@
-package codesquad.format;
+package codesquad.http.parser;
 
 public interface Parser<T> {
 

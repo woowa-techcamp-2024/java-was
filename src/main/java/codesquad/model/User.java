@@ -16,4 +16,8 @@ public class User {
         return userId;
     }
 
+    public boolean matchPassword(String password) {
+        return this.password.equals(password);
+    }
+
 }

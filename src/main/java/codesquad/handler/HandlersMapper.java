@@ -10,6 +10,8 @@ public class HandlersMapper {
     private final Map<String, RequestHandler> requestHandlers = new HashMap<>();
 
     {
+        requestHandlers.put("/user/login", UserLoginHandler.getInstance());
+        requestHandlers.put("/user/logout", UserLogoutHandler.getInstance());
         requestHandlers.put("/user/create", UserRegistrationHandler.getInstance());
         requestHandlers.put("/", StaticResourceHandler.getInstance());
     }

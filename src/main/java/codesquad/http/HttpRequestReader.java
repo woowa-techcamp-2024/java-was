@@ -3,7 +3,19 @@ package codesquad.http;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-public class HttpRequestReader {
+public final class HttpRequestReader {
+
+    private static HttpRequestReader instance = new HttpRequestReader();
+
+    private HttpRequestReader() {
+    }
+
+    public static HttpRequestReader getInstance() {
+        if (instance == null) {
+            instance = new HttpRequestReader();
+        }
+        return instance;
+    }
 
     public String read(BufferedReader reader) throws IOException {
         StringBuilder request = new StringBuilder();

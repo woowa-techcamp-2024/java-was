@@ -1,7 +1,6 @@
 package codesquad;
 
 import codesquad.handler.HandlersMapper;
-import codesquad.http.HttpRequestReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,11 +18,10 @@ public class Main {
     public static void main(String[] args) throws IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(MAXIMUM_THREAD_POOL_SIZE);
         HandlersMapper handlersMapper = new HandlersMapper();
-        HttpRequestReader requestReader = new HttpRequestReader();
         try (ServerSocket serverSocket = new ServerSocket(8080)) {
             log.debug("Listening for connection on port 8080 ....");
             while (true) {
-                executorService.execute(new HttpRequestProcessor(serverSocket.accept(), requestReader, handlersMapper));
+                executorService.execute(new HttpRequestProcessor(serverSocket.accept(), handlersMapper));
             }
         }
     }

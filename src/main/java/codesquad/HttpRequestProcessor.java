@@ -24,12 +24,11 @@ public class HttpRequestProcessor implements Runnable {
 
     private final Socket socket;
     private final HttpRequestParser requestParser = ParsersFactory.getHttpRequestParser();
-    private final HttpRequestReader requestReader;
+    private final HttpRequestReader requestReader = HttpRequestReader.getInstance();
     private final HandlersMapper handlersMapper;
 
-    public HttpRequestProcessor(Socket socket, HttpRequestReader requestReader, HandlersMapper handlersMapper) {
+    public HttpRequestProcessor(Socket socket, HandlersMapper handlersMapper) {
         this.socket = socket;
-        this.requestReader = requestReader;
         this.handlersMapper = handlersMapper;
         log.debug("Client connected");
     }

@@ -15,6 +15,8 @@ public class HttpHeaders {
     public static final String CONTENT_TYPE = "Content-Type";
     public static final String CONTENT_LENGTH = "Content-Length";
     public static final String LOCATION = "Location";
+    public static final String SET_COOKIE = "Set-Cookie";
+    public static final String COOKIE = "Cookie";
 
     private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
@@ -47,6 +49,21 @@ public class HttpHeaders {
                 .findFirst();
     }
 
+    public String getCookie(String cookieName) {
+        return getFirstValue(COOKIE)
+                .map(cookie -> findCookie(cookieName, cookie))
+                .orElse("");
+    }
+
+    private String findCookie(String cookieName, String cookies) {
+        return Arrays.stream(cookies.split(";"))
+                .map(String::trim)
+                .filter(cookie -> cookie.startsWith(cookieName + "="))
+                .map(cookiePair -> cookiePair.substring(cookieName.length() + 1))
+                .findFirst()
+                .orElse("");
+    }
+
     public String toText() {
         return headers.entrySet()
                 .stream()
@@ -62,5 +79,4 @@ public class HttpHeaders {
                 "headers=" + headers +
                 '}';
     }
-
 }

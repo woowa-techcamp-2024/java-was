@@ -17,7 +17,11 @@ public class HttpResponseGenerator {
     }
 
     public HttpResponse sendBadRequest(HttpRequest httpRequest) {
-        return generate(StatusCode.BAD_REQUEST, "<h1>Bad Request</h1>".getBytes(), MediaType.TEXT_HTML, httpRequest);
+        return generate(StatusCode.BAD_REQUEST, "<h1>400 Bad Request</h1>".getBytes(), MediaType.TEXT_HTML, httpRequest);
+    }
+
+    public HttpResponse sendMethodNotAllowed(HttpRequest httpRequest) {
+        return generate(StatusCode.METHOD_NOT_ALLOWED, "<h1>405 Method Not Allowed</h1>".getBytes(), MediaType.TEXT_HTML, httpRequest);
     }
 
     private HttpResponse generate(StatusCode statusCode, byte[] body, MediaType mediaType, HttpRequest httpRequest) {
@@ -30,5 +34,4 @@ public class HttpResponseGenerator {
     private HttpResponse generate(StatusCode statusCode, byte[] body, HttpHeaders httpHeaders, HttpRequest httpRequest) {
         return new HttpResponse(statusCode, httpRequest.httpVersion(), httpHeaders, body);
     }
-
 }
