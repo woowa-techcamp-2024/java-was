@@ -1,10 +1,9 @@
-package codesquad.servlet.handler;
+package codesquad.servlet.handler.resource;
 
 import static codesquad.webserver.http.HttpStatus.NOT_FOUND;
 import static codesquad.webserver.http.HttpStatus.OK;
 
-import codesquad.servlet.MappingMediaTypeFileExtensionResolver;
-import codesquad.servlet.StaticResourceReader;
+import codesquad.servlet.handler.Handler;
 import codesquad.webserver.http.HttpMediaType;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;

@@ -1,10 +1,12 @@
 package codesquad;
 
+import codesquad.configuration.Container;
 import codesquad.webserver.Connector;
 
 public class Main {
     public static void main(String[] args) {
-        Connector connector = new Connector();
+        Container container = new Container();
+        Connector connector = container.connector();
         connector.start();
     }
 }

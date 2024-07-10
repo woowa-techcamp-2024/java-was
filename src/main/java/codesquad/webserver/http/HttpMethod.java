@@ -2,7 +2,8 @@ package codesquad.webserver.http;
 
 public enum HttpMethod {
 
-    GET("GET");
+    GET("GET"),
+    POST("POST");
 
     private final String name;
 

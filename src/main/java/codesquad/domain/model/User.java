@@ -1,4 +1,4 @@
-package codesquad.model;
+package codesquad.domain.model;
 
 public class User {
 
@@ -23,5 +23,8 @@ public class User {
                 ", email='" + email + '\'' +
                 '}';
     }
-    
+
+    public String getUserId() {
+        return userId;
+    }
 }

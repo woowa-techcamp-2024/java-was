@@ -4,8 +4,8 @@ import static codesquad.utils.string.StringUtils.CRLF;
 
 import codesquad.servlet.handler.HttpRequestHandler;
 import codesquad.webserver.http.HttpRequest;
-import codesquad.webserver.http.HttpRequestParser;
 import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.parser.HttpRequestMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,22 +19,20 @@ public class HttpProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(HttpProcessor.class);
 
-    private final HttpRequestParser httpRequestParser;
+    private final HttpRequestMapper httpRequestMapper;
     private final HttpRequestHandler httpRequestHandler;
-    private final Socket socket;
 
-    public HttpProcessor(HttpRequestParser httpRequestParser, HttpRequestHandler httpRequestHandler, Socket socket) {
-        this.httpRequestParser = httpRequestParser;
+    public HttpProcessor(HttpRequestMapper httpRequestMapper, HttpRequestHandler httpRequestHandler) {
+        this.httpRequestMapper = httpRequestMapper;
         this.httpRequestHandler = httpRequestHandler;
-        this.socket = socket;
     }
 
-    public void process() {
-        try (InputStream inputStream = socket.getInputStream();
-             OutputStream outputStream = socket.getOutputStream()
+    public void process(Socket connection) {
+        try (InputStream inputStream = connection.getInputStream();
+             OutputStream outputStream = connection.getOutputStream()
         ) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            HttpRequest httpRequest = httpRequestParser.parse(bufferedReader);
+            HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader);
             HttpResponse httpResponse = HttpResponse.ok();
             httpRequestHandler.handle(httpRequest, httpResponse);
             sendResponse(outputStream, httpResponse);
@@ -43,7 +41,7 @@ public class HttpProcessor {
             e.printStackTrace();
         } finally {
             try {
-                socket.close();
+                connection.close();
             } catch (IOException e) {
                 logger.error("Socket Close Error");
                 e.printStackTrace();

@@ -1,4 +1,4 @@
-package codesquad.servlet;
+package codesquad.servlet.handler.resource;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

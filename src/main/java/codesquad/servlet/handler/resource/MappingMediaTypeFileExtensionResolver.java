@@ -1,11 +1,11 @@
-package codesquad.servlet;
+package codesquad.servlet.handler.resource;
 
-import static codesquad.webserver.SupportFileExtension.CSS;
-import static codesquad.webserver.SupportFileExtension.HTML;
-import static codesquad.webserver.SupportFileExtension.ICO;
-import static codesquad.webserver.SupportFileExtension.JPEG;
-import static codesquad.webserver.SupportFileExtension.PNG;
-import static codesquad.webserver.SupportFileExtension.SVG;
+import static codesquad.servlet.handler.resource.SupportFileExtension.CSS;
+import static codesquad.servlet.handler.resource.SupportFileExtension.HTML;
+import static codesquad.servlet.handler.resource.SupportFileExtension.ICO;
+import static codesquad.servlet.handler.resource.SupportFileExtension.JPEG;
+import static codesquad.servlet.handler.resource.SupportFileExtension.PNG;
+import static codesquad.servlet.handler.resource.SupportFileExtension.SVG;
 
 import codesquad.webserver.http.HttpMediaType;
 import java.util.Map;

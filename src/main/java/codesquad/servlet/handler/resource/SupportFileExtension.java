@@ -1,4 +1,4 @@
-package codesquad.webserver;
+package codesquad.servlet.handler.resource;
 
 public enum SupportFileExtension {
 

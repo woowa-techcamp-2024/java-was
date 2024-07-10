@@ -1,12 +1,11 @@
 package codesquad.servlet.handler;
 
-import codesquad.servlet.HandlerMapper;
+import codesquad.servlet.handler.resource.StaticResourceHandler;
 import codesquad.utils.time.ZonedDateTimeGenerator;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
-import java.io.IOException;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +27,11 @@ public class HttpRequestHandler {
         this.zonedDateTimeGenerator = zonedDateTimeGenerator;
     }
 
-    public void handle(final HttpRequest httpRequest, final HttpResponse httpResponse) throws IOException {
+    public void handle(final HttpRequest httpRequest, final HttpResponse httpResponse) {
         HttpMethod method = httpRequest.getMethod();
         HttpPath path = httpRequest.getPath();
 
-        Optional<Handler> handler = handlerMapper.findHandler(path.getDefaultPath());
+        Optional<Handler> handler = handlerMapper.findBy(method, path.getDefaultPath());
         if (handler.isPresent()) {
             Handler userRegistrationHandler = handler.get();
             userRegistrationHandler.service(httpRequest, httpResponse);
@@ -40,14 +39,18 @@ public class HttpRequestHandler {
             return;
         }
 
-        if (method == HttpMethod.GET && path.isOnlyDefaultPath()) {
+        if (isStaticResourceRequest(method, path)) {
             staticResourceHandler.service(httpRequest, httpResponse);
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-            return;
         }
-
-        httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-        httpResponse.setBadRequest();
     }
+
+    private boolean isStaticResourceRequest(HttpMethod method, HttpPath path) {
+        if (method == HttpMethod.GET) {
+            return path.hasFileExtension() || path.isDirectoryPath();
+        }
+        return false;
+    }
+
 
 }

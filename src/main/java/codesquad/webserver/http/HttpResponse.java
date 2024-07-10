@@ -6,6 +6,7 @@ import codesquad.webserver.http.HttpHeaders.HeaderName;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 public class HttpResponse {
 
@@ -61,8 +62,12 @@ public class HttpResponse {
     }
 
     public void sendRedirect(String redirectUrl) {
-        httpResponseLine.setStatus(HttpStatus.SEE_OTHER);
+        httpResponseLine.setStatus(HttpStatus.FOUND);
         headers.setHeader(HeaderName.LOCATION.getName(), redirectUrl);
+    }
+
+    public Optional<String> getRedirect() {
+        return headers.getHeaderValue(HeaderName.LOCATION.getName());
     }
 
     public void setDefaultHeaders(ZonedDateTime zonedDateTime) {
