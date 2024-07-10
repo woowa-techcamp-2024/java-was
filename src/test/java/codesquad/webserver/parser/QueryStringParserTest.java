@@ -17,7 +17,7 @@ public class QueryStringParserTest {
         String path = "/create?userId=javajigi&password=password&name=%EB%B0%95%EC%9E%AC%EC%84%B1";
 
         // When
-        Map<String, String> params = QueryStringParser.parse(path);
+        Map<String, String> params = QueryStringParser.parseQueryString(path);
 
         // Then
         assertEquals(3, params.size(), "파싱된 쿼리 스트링의 파라미터 개수가 3개여야 합니다.");
@@ -33,7 +33,7 @@ public class QueryStringParserTest {
         String path = "/create";
 
         // When
-        Map<String, String> params = QueryStringParser.parse(path);
+        Map<String, String> params = QueryStringParser.parseQueryString(path);
 
         // Then
         assertTrue(params.isEmpty(), "빈 쿼리 스트링은 빈 맵을 반환해야 합니다.");
@@ -46,7 +46,7 @@ public class QueryStringParserTest {
         String path = "/create?userId=javajigi&invalid&password=password";
 
         // When
-        Map<String, String> params = QueryStringParser.parse(path);
+        Map<String, String> params = QueryStringParser.parseQueryString(path);
 
         // Then
         assertEquals(2, params.size(), "유효한 쿼리 파라미터의 개수가 2개여야 합니다.");
@@ -61,7 +61,7 @@ public class QueryStringParserTest {
         String path = "/create?name=%EB%B0%95%EC%9E%AC%EC%84%B1&city=%EC%84%9C%EC%9A%B8";
 
         // When
-        Map<String, String> params = QueryStringParser.parse(path);
+        Map<String, String> params = QueryStringParser.parseQueryString(path);
 
         // Then
         assertEquals(2, params.size(), "파싱된 쿼리 스트링의 파라미터 개수가 2개여야 합니다.");

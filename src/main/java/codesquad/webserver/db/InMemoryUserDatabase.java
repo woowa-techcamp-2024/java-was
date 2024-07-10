@@ -1,13 +1,14 @@
 package codesquad.webserver.db;
 
+import codesquad.webserver.annotation.Component;
 import codesquad.webserver.model.User;
-import java.util.Enumeration;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class InMemoryUserDatabase implements UserDatabase{
+@Component
+public class InMemoryUserDatabase implements UserDatabase {
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryUserDatabase.class);
     private final ConcurrentHashMap<String, User> users = new ConcurrentHashMap<>();
@@ -22,7 +23,8 @@ public class InMemoryUserDatabase implements UserDatabase{
 
     @Override
     public User findByUserId(String userId) {
-        return Optional.ofNullable(users.get(userId)).orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
+        return Optional.ofNullable(users.get(userId))
+                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
     }
 
     @Override

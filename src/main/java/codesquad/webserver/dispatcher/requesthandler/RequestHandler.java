@@ -1,4 +1,4 @@
-package codesquad.webserver.requesthandler;
+package codesquad.webserver.dispatcher.requesthandler;
 
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.httpresponse.HttpResponse;

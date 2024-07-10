@@ -14,7 +14,7 @@ public abstract class HttpParser {
 
         RequestLine requestLine = RequestLineParser.parse(in);
         Map<String, String> headers = HeaderParser.parse(in);
-        Map<String, String> params = QueryStringParser.parse(requestLine.fullPath());
+        Map<String, String> params = QueryStringParser.parseQueryString(requestLine.fullPath());
         String body = BodyParser.parse(in, headers);
 
         return new HttpRequest(requestLine, headers, params, body);

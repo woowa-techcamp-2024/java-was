@@ -1,17 +1,18 @@
-package codesquad.webserver.requesthandler;
+package codesquad.webserver.dispatcher.requesthandler;
 
-import codesquad.webserver.filereader.FileReader;
-import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.db.UserDatabase;
 import codesquad.webserver.db.UserDatabaseFactory;
+import codesquad.webserver.filereader.FileReader;
+import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.httpresponse.HttpResponse;
 import codesquad.webserver.httpresponse.HttpResponseBuilder;
 import codesquad.webserver.model.User;
+import codesquad.webserver.parser.QueryStringParser;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class UserCreateRequestHandler extends AbstractRequestHandler{
+public class UserCreateRequestHandler extends AbstractRequestHandler {
 
     private static final String HOME_PATH = "/index.html";
     private static final Logger logger = LoggerFactory.getLogger(UserCreateRequestHandler.class);
@@ -21,9 +22,9 @@ public class UserCreateRequestHandler extends AbstractRequestHandler{
     }
 
     @Override
-    protected HttpResponse handleGet(HttpRequest request) {
+    protected HttpResponse handlePost(HttpRequest request) {
         UserDatabase userDatabase = UserDatabaseFactory.getInstance();
-        Map<String, String> params = request.params();
+        Map<String, String> params = QueryStringParser.parse(request.body());
         User user = User.of(params);
 
         userDatabase.save(user);

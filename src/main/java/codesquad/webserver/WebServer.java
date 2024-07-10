@@ -1,7 +1,12 @@
 package codesquad.webserver;
 
-import codesquad.webserver.dispatcher.HttpRequestDispatcher;
+import codesquad.webserver.annotation.Autowired;
+import codesquad.webserver.annotation.Component;
+import codesquad.webserver.dispatcher.DispatcherServlet;
+import codesquad.webserver.staticresouce.StaticResourceHandler;
+import codesquad.webserver.staticresouce.StaticResourceResolver;
 import codesquad.webserver.httprequest.HttpRequest;
+import codesquad.webserver.httpresponse.HttpResponse;
 import codesquad.webserver.parser.HttpParser;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,28 +19,34 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component
 public class WebServer {
 
     private static final int TCP_KEEP_ALIVE_TIME = 30000; //ms단위
     private static final String KEEP_ALIVE = "keep-alive";
     private static final String KEEP_ALIVE_CLOSE = "close";
     private static final String KEEP_ALIVE_HEADER = "Connection";
+    private static final int PORT = 8080;
+    private static final int POOL_SIZE = 10;
 
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private final ExecutorService threadPool;
-    private final int port;
-    private final HttpRequestDispatcher dispatcher;
+    private final DispatcherServlet dispatcherServlet;
+    private final StaticResourceHandler staticResourceHandler;
+    private final StaticResourceResolver staticResourceResolver;
 
-    public WebServer(int port, int poolSize, HttpRequestDispatcher dispatcher) {
-        this.threadPool = Executors.newFixedThreadPool(poolSize);
-        this.port = port;
-        this.dispatcher = dispatcher;
+    @Autowired
+    public WebServer(DispatcherServlet dispatcherServlet, StaticResourceHandler staticResourceHandler, StaticResourceResolver staticResourceResolver) {
+        this.threadPool = Executors.newFixedThreadPool(POOL_SIZE);
+        this.dispatcherServlet = dispatcherServlet;
+        this.staticResourceHandler = staticResourceHandler;
+        this.staticResourceResolver = staticResourceResolver;
     }
 
     public void start() {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             serverSocket.setReuseAddress(true); // 작업 중 껐다 켰다 하는 상황에 발생하는 포트 사용중 발생을 피하기 위해 임시 작성
-            logger.info("Starting web server on port {}", port);
+            logger.info("Starting web server on port {}", PORT);
             while (!Thread.currentThread().isInterrupted()) {
                 Socket client = serverSocket.accept();
                 logger.info("연결");
@@ -46,38 +57,23 @@ public class WebServer {
         }
     }
 
-//    private void handleConnection(Socket client) {
-//        try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-//             OutputStream outputStream = client.getOutputStream()) {
-//            HttpRequest request = HttpParser.parse(in);
-//            dispatcher.dispatch(request, outputStream);
-//        } catch (Exception e) {
-//            logger.error("Error while handling request", e);
-//        } finally {
-//            try {
-//                client.close();
-//            } catch (IOException e) {
-//                logger.error("Error while closing connection", e);
-//            }
-//        }
-//    }
-
     private void handleConnection(Socket client) {
-        try {
-            client.setSoTimeout(TCP_KEEP_ALIVE_TIME);
-            BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-            OutputStream out = client.getOutputStream();
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+             OutputStream outputStream = client.getOutputStream()) {
 
-            while (true) {
-                HttpRequest request = HttpParser.parse(in);
-                dispatcher.dispatch(request, out);
-                if (isKeepAliveRequestClosed(request) || !isKeepAliveRequest(request)) {
-                    break;
-                }
+            HttpRequest request = createHttpRequest(in);
+            HttpResponse response;
+
+            if (staticResourceResolver.isStaticResource(request.requestLine().path())) {
+                logger.debug("정적 경로 처리 중 : {}", request.requestLine().path());
+                response = staticResourceHandler.handleRequest(request);
+            } else {
+                response = dispatcherServlet.service(request);
             }
 
+            writeResponse(outputStream, response);
         } catch (Exception e) {
-            logger.error("Error while handling connection", e);
+            logger.error("Error while handling request", e);
         } finally {
             try {
                 client.close();
@@ -87,14 +83,12 @@ public class WebServer {
         }
     }
 
-    private boolean isKeepAliveRequest(HttpRequest request) {
-        String connection = request.headers().get(KEEP_ALIVE_HEADER);
-        return KEEP_ALIVE.equalsIgnoreCase(connection);
+    private HttpRequest createHttpRequest(BufferedReader in) throws IOException {
+        return HttpParser.parse(in);
     }
 
-    private boolean isKeepAliveRequestClosed(HttpRequest request) {
-        String closed = request.headers().get(KEEP_ALIVE_HEADER);
-        return KEEP_ALIVE_CLOSE.equalsIgnoreCase(closed);
+    private void writeResponse(OutputStream out, HttpResponse response) throws IOException {
+        out.write(response.generateHttpResponse());
+        out.flush();
     }
-
 }

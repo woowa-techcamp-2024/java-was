@@ -1,10 +1,12 @@
 package codesquad.webserver.filereader;
 
+import codesquad.webserver.annotation.Component;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component
 public class FileReader {
     private static final Logger logger = LoggerFactory.getLogger(FileReader.class);
     private static final String STATIC_DIRECTORY = "static";

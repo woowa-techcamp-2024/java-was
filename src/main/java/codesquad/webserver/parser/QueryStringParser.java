@@ -12,26 +12,33 @@ public abstract class QueryStringParser {
     private static final String CHARSET = "UTF-8";
     private static final Logger logger = LoggerFactory.getLogger(QueryStringParser.class);
 
-    public static Map<String, String> parse(String path) {
-        String[] urlParams = path.split("\\?");
-        if (urlParams.length == 2) {
-            String param = path.split("\\?")[1];
-            Map<String, String> params = new HashMap<>();
-            for (String info : param.split("&")) {
-                String[] keyValue = info.split("=", 2);
-                if (keyValue.length == 2) {
-                    try {
-                        String key = URLDecoder.decode(keyValue[0].trim(), CHARSET);
-                        String value = URLDecoder.decode(keyValue[1].trim(), CHARSET);
-                        params.put(key, value);
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                        logger.error(e.getMessage());
-                    }
-                }
-            }
+    public static Map<String, String> parse(String queryString) {
+        Map<String, String> params = new HashMap<>();
+        if (queryString == null || queryString.isEmpty()) {
             return params;
         }
-        return Map.of();
+
+        String[] pairs = queryString.split("&");
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=", 2);
+            if (keyValue.length == 2) {
+                try {
+                    String key = URLDecoder.decode(keyValue[0].trim(), CHARSET);
+                    String value = URLDecoder.decode(keyValue[1].trim(), CHARSET);
+                    params.put(key, value);
+                } catch (UnsupportedEncodingException e) {
+                    logger.error("Error decoding query string: {}", e.getMessage());
+                }
+            }
+        }
+        return params;
+    }
+
+    public static Map<String, String> parseQueryString(String url) {
+        String[] urlParts = url.split("\\?");
+        if (urlParts.length == 2) {
+            return parse(urlParts[1]);
+        }
+        return new HashMap<>();
     }
 }

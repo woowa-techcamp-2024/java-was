@@ -34,10 +34,10 @@ public class HttpResponse {
     }
 
     public byte[] getBody() {
-        return body;
+        return body != null ? body.clone() : null;
     }
 
-    public byte[] getByte() {
+    public byte[] generateHttpResponse() {
         StringBuilder responseBuilder = new StringBuilder();
         responseBuilder.append("HTTP/1.1 ").append(statusCode).append(" ").append(statusMessage).append("\r\n");
 
@@ -53,5 +53,40 @@ public class HttpResponse {
         System.arraycopy(body, 0, responseBytes, headerBytes.length, body.length);
 
         return responseBytes;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private int statusCode = 200;
+        private String statusMessage = "OK";
+        private final Map<String, String> headers = new HashMap<>();
+        private byte[] body;
+
+        public Builder statusCode(int statusCode) {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder statusMessage(String statusMessage) {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public Builder header(String key, String value) {
+            headers.put(key, value);
+            return this;
+        }
+
+        public Builder body(byte[] body) {
+            this.body = body;
+            return this;
+        }
+
+        public HttpResponse build() {
+            return new HttpResponse(statusCode, statusMessage, headers, body);
+        }
     }
 }
