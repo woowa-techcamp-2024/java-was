@@ -10,6 +10,11 @@ import codesquad.webserver.http.HttpResponse;
 
 @Handler
 public class ViewHandler {
+    @RequestMapping(method = HttpMethod.GET, path = "/")
+    public HttpResponse home(HttpRequest request){
+        return StaticResourceHandler.handle("/index.html");
+    }
+
     @RequestMapping(method = HttpMethod.GET, path = "/index")
     public HttpResponse index(HttpRequest request){
         return StaticResourceHandler.handle("/index.html");
@@ -27,6 +32,11 @@ public class ViewHandler {
 
     @RequestMapping(method = HttpMethod.GET, path = "/login-failed")
     public HttpResponse loginFailed(HttpRequest request){
-        return StaticResourceHandler.handle("/login_failed/index.html");
+        return StaticResourceHandler.handle("/loginFailed/index.html");
+    }
+
+    @RequestMapping(method = HttpMethod.GET, path = "/user/list")
+    public HttpResponse userList(HttpRequest request){
+        return StaticResourceHandler.handle("/userList/index.html");
     }
 }

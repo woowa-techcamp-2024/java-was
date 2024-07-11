@@ -12,18 +12,21 @@
     <header class="header">
         <a href="/"><img src="./img/signiture.svg"/></a>
         <ul class="header__menu">
-            <li class="header__menu__item" id="userNickname" style="display: none;"></li>
-
             <li class="header__menu__item" id="loginItem">
                 <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
             </li>
-            <li class="header__menu__item" id="logoutItem" style="display: none;">
-                <a class="btn btn_contained btn_size_s" id="logoutBtn">로그아웃</a>
-            </li>
-            <li class="header__menu__item">
+            <li class="header__menu__item" id="registerItem">
                 <a class="btn btn_ghost btn_size_s" href="/registration">
                     회원 가입
                 </a>
+            </li>
+            <!--로그인 상태일 때 표시-->
+            <li class="header__menu__item" id="userNickname" style="display: none;"></li>
+            <li class="header__menu__item" id="logoutItem" style="display: none;">
+                <a class="btn btn_contained btn_size_s" id="logoutBtn">로그아웃</a>
+            </li>
+            <li class="header__menu__item" id="userListItem" style="display: none;">
+                <a class="btn btn_contained btn_size_s" href="/user/list">사용자 목록</a>
             </li>
         </ul>
     </header>
@@ -153,9 +156,11 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
     const loginItem = document.getElementById('loginItem');
+    const registerItem = document.getElementById('registerItem');
     const logoutItem = document.getElementById('logoutItem');
     const userNickname = document.getElementById('userNickname');
     const logoutBtn = document.getElementById('logoutBtn');
+    const userListItem = document.getElementById('userListItem');
 
     function checkLoginStatus() {
       fetch('/me', {
@@ -164,25 +169,31 @@
       })
       .then(response => response.text())
       .then(result => {
-        if (result === "NO_USER") {
+        if (result === "NO_USER" || result == "Not Found") {
           // 로그인하지 않은 상태
           loginItem.style.display = 'inline';
+          registerItem.style.display = 'inline';
           logoutItem.style.display = 'none';
           userNickname.style.display = 'none';
+          userListItem.style.display = 'none';
         } else {
           // 로그인한 상태
           loginItem.style.display = 'none';
+          registerItem.style.display = 'none';
           logoutItem.style.display = 'inline';
-          userNickname.textContent = result;
+          userNickname.textContent = `${result} 님`;
           userNickname.style.display = 'inline';
+          userListItem.style.display = 'inline';
         }
       })
       .catch(error => {
         console.error('Error checking login status:', error);
         // 에러 발생 시 로그인하지 않은 상태로 처리
         loginItem.style.display = 'inline';
+        registerItem.style.display = 'inline';
         logoutItem.style.display = 'none';
         userNickname.style.display = 'none';
+        userListItem.style.display = 'none';
       });
     }
 
@@ -208,72 +219,6 @@
 
     checkLoginStatus(); // 초기 로그인 상태 확인
 });
-
-<!--    document.addEventListener('DOMContentLoaded', function() {-->
-<!--        const loginItem = document.getElementById('loginItem');-->
-<!--        const logoutItem = document.getElementById('logoutItem');-->
-<!--        const userNickname = document.getElementById('userNickname');-->
-<!--        const logoutBtn = document.getElementById('logoutBtn');-->
-
-<!--        function getCookie(name) {-->
-<!--          const value = `; ${document.cookie}`;-->
-<!--          console.log("value " + value);-->
-<!--          const parts = value.split(`; ${name}=`);-->
-<!--          console.log("part " + parts);-->
-<!--          if (parts.length === 2) return parts.pop().split(';').shift();-->
-<!--        }-->
-
-<!--        function checkLoginStatus() {-->
-<!--          const token = getCookie('sid');-->
-<!--          console.log("token " + token);-->
-<!--          if (token) {-->
-<!--            loginItem.style.display = 'none';-->
-<!--            logoutItem.style.display = 'inline';-->
-<!--            fetchUserInfo();-->
-<!--          } else {-->
-<!--            loginItem.style.display = 'inline';-->
-<!--            logoutItem.style.display = 'none';-->
-<!--            userNickname.style.display = 'none';-->
-<!--          }-->
-<!--        }-->
-
-<!--        function fetchUserInfo() {-->
-<!--          fetch('/me', {-->
-<!--            method: 'GET',-->
-<!--            credentials: 'include' // 쿠키를 포함하여 요청을 보냅니다-->
-<!--          })-->
-<!--          .then(response => response.text())-->
-<!--          .then(nickname => {-->
-<!--            userNickname.textContent = nickname;-->
-<!--            userNickname.style.display = 'inline';-->
-<!--          })-->
-<!--          .catch(error => console.error('Error:', error));-->
-<!--        }-->
-
-<!--        logoutBtn.addEventListener('click', function(e) {-->
-<!--          e.preventDefault();-->
-
-<!--          fetch('/logout', {-->
-<!--            method: 'POST',-->
-<!--            credentials: 'include'-->
-<!--          })-->
-<!--          .then(response => {-->
-<!--            console.log("logout: " + response);-->
-<!--            if (response.ok) {-->
-<!--              console.log('로그아웃 성공');-->
-<!--              document.cookie = 'sid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';-->
-<!--              checkLoginStatus();-->
-<!--            } else {-->
-<!--              console.error('로그아웃 실패');-->
-<!--            }-->
-<!--          })-->
-<!--          .catch(error => {-->
-<!--            console.error('로그아웃 요청 중 오류 발생:', error);-->
-<!--          });-->
-<!--        });-->
-
-<!--        checkLoginStatus();-->
-<!--      });-->
 </script>
 </body>
 </html>

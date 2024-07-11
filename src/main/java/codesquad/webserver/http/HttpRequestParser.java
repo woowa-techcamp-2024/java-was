@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import codesquad.webserver.util.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,10 +57,10 @@ public class HttpRequestParser {
             br.read(buffer, 0 , contentLength);
             String mesage = new String(buffer);
             if(contentType.equals("application/json")){
-                return new HttpBody(JsonParser.parseJson(mesage));
+                return new HttpBody(HttpRequestBodyParser.parseJson(mesage));
             }
             else if(contentType.equals("application/x-www-form-urlencoded")){
-                return new HttpBody(JsonParser.parseForm(mesage));
+                return new HttpBody(HttpRequestBodyParser.parseForm(mesage));
             }
             else {
                 throw new IOException("");

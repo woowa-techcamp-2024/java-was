@@ -46,7 +46,7 @@ public class AuthHandler {
         }
         Session.getInstance().deleteUser(sid);
         HttpResponse response = HttpResponse.createRedirectResponse("/index");
-        response.setCookie("");
+        response.removeCookie();
         return response;
     }
 }

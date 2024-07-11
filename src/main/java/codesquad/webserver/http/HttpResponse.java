@@ -25,7 +25,10 @@ public class HttpResponse {
 
     public void setCookie(String sid){
         httpHeader.setValue("Set-Cookie", "sid="+sid +"; "+ "Path=/");
+    }
 
+    public void removeCookie(){
+        httpHeader.setValue("Set-Cookie", "sid= ''; Path=/; Max-Age=0");
     }
 
     public static HttpResponse createOkResponse(String bodyMessage){

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="../reset.css" rel="stylesheet"/>
+    <link href="../global.css" rel="stylesheet"/>
+    <link href="../main.css" rel="stylesheet"/>
+    <link href="/userList/userlist.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 class="page-title">사용자 목록</h1>
+        <a href="/index" class="btn btn_contained btn_size_m">홈</a>
+    </div>
+    <div id="userList"></div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 사용자 인증 확인
+        fetch('/me')
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'NO_USER' || data == "Not Found") {
+                    // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+                    window.location.href = '/login';
+                } else {
+                    // 인증된 사용자는 사용자 목록 가져오기
+                    fetchUserList();
+                }
+            })
+            .catch(error => {
+                console.error('인증 확인 중 오류 발생:', error);
+            });
+    });
+
+    function fetchUserList() {
+        fetch('/api/users/list')
+            .then(response => response.json())
+            .then(users => {
+                console.log(users);
+                displayUserList(users);
+            })
+            .catch(error => {
+                console.error('사용자 목록 가져오기 중 오류 발생:', error);
+            });
+    }
+
+    function displayUserList(users) {
+        const userListElement = document.getElementById('userList');
+        if (users.length === 0) {
+            userListElement.innerHTML = '<p>표시할 사용자가 없습니다.</p>';
+        } else {
+             const table = document.createElement('table');
+
+            // 테이블 헤더 생성
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Username</th>
+                    <th>Nickname</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            // 테이블 본문 생성
+            const tbody = document.createElement('tbody');
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.nickname}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            userListElement.appendChild(table);
+        }
+    }
+</script>
+</body>
+</html>

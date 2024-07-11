@@ -1,4 +1,4 @@
-package codesquad.webserver.util;
+package codesquad.webserver.http;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JsonParser {
+public class HttpRequestBodyParser {
     public static Map<String, Object> parseForm(String queryString) {
         Map<String, Object> result = new HashMap<>();
 

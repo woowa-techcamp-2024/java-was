@@ -1,4 +1,4 @@
-package codesquad.webserver.util;
+package codesquad.webserver.http;
 
 import org.junit.jupiter.api.Test;
 
@@ -6,11 +6,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JsonParseTest {
+public class HttpRequestBodyParseTest {
     @Test
     void testParseForm() {
         String queryString = "name=John%20Doe&age=30&city=New%20York";
-        Map<String, Object> result = JsonParser.parseForm(queryString);
+        Map<String, Object> result = HttpRequestBodyParser.parseForm(queryString);
 
         assertEquals(3, result.size());
         assertEquals("John Doe", result.get("name"));
@@ -20,20 +20,20 @@ public class JsonParseTest {
 
     @Test
     void testParseFormWithEmptyString() {
-        Map<String, Object> result = JsonParser.parseForm("");
+        Map<String, Object> result = HttpRequestBodyParser.parseForm("");
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testParseFormWithNullString() {
-        Map<String, Object> result = JsonParser.parseForm(null);
+        Map<String, Object> result = HttpRequestBodyParser.parseForm(null);
         assertTrue(result.isEmpty());
     }
 
     @Test
     void testParseJson() {
         String jsonString = "{\"name\":\"John Doe\",\"age\":30,\"city\":\"New York\",\"isStudent\":false,\"grade\":null}";
-        Map<String, Object> result = JsonParser.parseJson(jsonString);
+        Map<String, Object> result = HttpRequestBodyParser.parseJson(jsonString);
 
         assertEquals(5, result.size());
         assertEquals("John Doe", result.get("name"));
@@ -46,7 +46,7 @@ public class JsonParseTest {
     @Test
     void testParseJsonWithNestedObject() {
         String jsonString = "{\"name\":\"John Doe\",\"address\":{\"city\":\"New York\",\"zip\":\"10001\"}}";
-        Map<String, Object> result = JsonParser.parseJson(jsonString);
+        Map<String, Object> result = HttpRequestBodyParser.parseJson(jsonString);
 
         assertEquals(2, result.size());
         assertEquals("John Doe", result.get("name"));
@@ -61,7 +61,7 @@ public class JsonParseTest {
     @Test
     void testParseJsonWithEmptyObject() {
         String jsonString = "{}";
-        Map<String, Object> result = JsonParser.parseJson(jsonString);
+        Map<String, Object> result = HttpRequestBodyParser.parseJson(jsonString);
         assertTrue(result.isEmpty());
     }
 }

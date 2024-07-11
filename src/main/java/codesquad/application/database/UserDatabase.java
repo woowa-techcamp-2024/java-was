@@ -2,7 +2,10 @@ package codesquad.application.database;
 
 import codesquad.application.domain.User;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserDatabase {
@@ -27,5 +30,9 @@ public class UserDatabase {
 
     public User get(String key){
         return db.get(key);
+    }
+
+    public Collection<User> getUsers(){
+        return db.values();
     }
 }
