@@ -1,20 +1,26 @@
 package codesquad.was.repository;
 
 import codesquad.was.log.Log;
+import codesquad.was.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryRepository {
     private static final ConcurrentHashMap<String, Object> map = new ConcurrentHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(MemoryRepository.class);
+
+    private MemoryRepository() {}
 
     public static void put(String key, Object value) {
         map.put(key, value);
-        Log.log("key: " + key + " value: " + value + "저장");
+        logger.info("key: {} value: {}저장", key, value);
     }
 
-    public static Optional<Object> get(String key) {
-        return Optional.of(map.get(key));
+    public static Object get(String key) {
+        return map.get(key);
     }
 
     public static boolean containsKey(String key) {
@@ -26,6 +32,6 @@ public class MemoryRepository {
     }
 
     public static void printMap() {
-        map.forEach((k, v) -> Log.log("key: " + k + " value: " + v));
+        map.forEach((k, v) -> logger.info("key: {} value: {}", k, v));
     }
 }
