@@ -1,4 +1,4 @@
-package codesquad.webserver.db;
+package codesquad.webserver.db.user;
 
 import codesquad.webserver.annotation.Component;
 import codesquad.webserver.model.User;
@@ -37,5 +37,10 @@ public class InMemoryUserDatabase implements UserDatabase {
         for (String s : users.keySet()) {
             logger.debug("가입한 사용자 : {}", s);
         }
+    }
+
+    @Override
+    public void clear() {
+        users.clear();
     }
 }

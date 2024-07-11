@@ -1,4 +1,4 @@
-package codesquad.webserver.db;
+package codesquad.webserver.db.user;
 
 import codesquad.webserver.model.User;
 
@@ -10,4 +10,6 @@ public interface UserDatabase {
     boolean existsByUserId(String userId);
 
     void print();
+
+    void clear();
 }

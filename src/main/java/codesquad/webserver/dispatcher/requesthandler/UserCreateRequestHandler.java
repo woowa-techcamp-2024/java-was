@@ -1,7 +1,7 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
-import codesquad.webserver.db.UserDatabase;
-import codesquad.webserver.db.UserDatabaseFactory;
+import codesquad.webserver.db.user.UserDatabase;
+import codesquad.webserver.db.user.UserDatabaseFactory;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.httpresponse.HttpResponse;

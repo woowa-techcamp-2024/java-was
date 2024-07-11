@@ -29,8 +29,11 @@ public class StaticResourceHandler {
             return HttpResponseBuilder.buildNotFoundResponse();
         }
 
+        // TODO: 임시처리
         if ("/register.html".equals(path)) {
-            path = "/registration/index.html"; // TODO: 임시처리
+            path = "/registration/index.html";
+        } else if("/login.html".equals(path)) {
+            path = "/login/index.html";
         }
 
         try {

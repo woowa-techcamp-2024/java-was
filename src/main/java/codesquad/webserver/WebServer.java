@@ -3,6 +3,7 @@ package codesquad.webserver;
 import codesquad.webserver.annotation.Autowired;
 import codesquad.webserver.annotation.Component;
 import codesquad.webserver.dispatcher.DispatcherServlet;
+import codesquad.webserver.filter.FilterChain;
 import codesquad.webserver.staticresouce.StaticResourceHandler;
 import codesquad.webserver.staticresouce.StaticResourceResolver;
 import codesquad.webserver.httprequest.HttpRequest;
@@ -34,13 +35,15 @@ public class WebServer {
     private final DispatcherServlet dispatcherServlet;
     private final StaticResourceHandler staticResourceHandler;
     private final StaticResourceResolver staticResourceResolver;
+    private final FilterChain filterChain;
 
     @Autowired
-    public WebServer(DispatcherServlet dispatcherServlet, StaticResourceHandler staticResourceHandler, StaticResourceResolver staticResourceResolver) {
+    public WebServer(DispatcherServlet dispatcherServlet, StaticResourceHandler staticResourceHandler, StaticResourceResolver staticResourceResolver, FilterChain filterChain) {
         this.threadPool = Executors.newFixedThreadPool(POOL_SIZE);
         this.dispatcherServlet = dispatcherServlet;
         this.staticResourceHandler = staticResourceHandler;
         this.staticResourceResolver = staticResourceResolver;
+        this.filterChain = filterChain;
     }
 
     public void start() {
@@ -62,9 +65,9 @@ public class WebServer {
              OutputStream outputStream = client.getOutputStream()) {
 
             HttpRequest request = createHttpRequest(in);
-            HttpResponse response;
+            HttpResponse response = filterChain.doFilter(request);
 
-            if (staticResourceResolver.isStaticResource(request.requestLine().path())) {
+            if (response == null && staticResourceResolver.isStaticResource(request.requestLine().path())) {
                 logger.debug("정적 경로 처리 중 : {}", request.requestLine().path());
                 response = staticResourceHandler.handleRequest(request);
             } else {
@@ -90,5 +93,9 @@ public class WebServer {
     private void writeResponse(OutputStream out, HttpResponse response) throws IOException {
         out.write(response.generateHttpResponse());
         out.flush();
+    }
+
+    public FilterChain getFilterChain() {
+        return filterChain;
     }
 }

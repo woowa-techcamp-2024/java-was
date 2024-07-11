@@ -9,18 +9,21 @@ import codesquad.webserver.dispatcher.view.TemplateView;
 import codesquad.webserver.dispatcher.view.View;
 import codesquad.webserver.httprequest.HttpRequest;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class DefaultViewResolver implements ViewResolver {
+    private static final Logger log = LoggerFactory.getLogger(DefaultViewResolver.class);
+
     @Override
     public View resolveView(ModelAndView modelAndView, HttpRequest request) {
         String viewName = modelAndView.getViewName();
         Map<String, Object> model = modelAndView.getModel();
 
         Map<String, String> headers = request.headers();
-
         if (viewName.startsWith("redirect:")) {
-            return new RedirectView(viewName.substring(9));
+            return new RedirectView(viewName.substring(9), model);
         } else if (viewName.equals("jsonView")) {
             return new JsonView(model);
         } else if (viewName.equals("templateView")){

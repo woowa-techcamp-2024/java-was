@@ -6,10 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class HttpResponseBuilder {
     public static final Map<String, String> MIME_TYPES;
+    private static final Logger log = LoggerFactory.getLogger(HttpResponseBuilder.class);
+
     static {
         Map<String, String> mimeTypes = new HashMap<>();
         mimeTypes.put("html", "text/html");
@@ -24,39 +29,72 @@ public abstract class HttpResponseBuilder {
         MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
     }
 
+    public static HttpResponse build(int statusCode, String statusMessage, Map<String, List<String>> headers,
+                                     byte[] body) {
+        HttpResponse.Builder builder = HttpResponse.builder()
+                .statusCode(statusCode)
+                .statusMessage(statusMessage);
+
+        if (headers != null) {
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+
+        if (body != null) {
+            builder.body(body);
+        }
+
+        return builder.build();
+    }
+
     public static HttpResponse build(FileReader.FileResource fileName) throws IOException {
         byte[] body = readAllBytes(fileName.getInputStream());
         String contentType = getContentType(fileName.getFileName());
 
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", contentType);
-        headers.put("Content-Length", String.valueOf(body.length));
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Collections.singletonList(contentType));
+        headers.put("Content-Length", Collections.singletonList(String.valueOf(body.length)));
 
-        return new HttpResponse(200, "OK", headers, body);
+        return build(200, "OK", headers, body);
     }
 
     public static HttpResponse buildNotFoundResponse() {
-        String body = "<html><body><h1>Not Found</h1></body></html>";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "text/html");
-        headers.put("Content-Length", String.valueOf(body.length()));
+        FileReader fileReader = new FileReader();
+        byte[] body;
+        try {
+            body = readAllBytes(fileReader.read("/404.html").getInputStream());
+        } catch (Exception e) {
+            body = "<html><body>NOT FOUND</body></html>".getBytes();
+        }
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Collections.singletonList("text/html"));
+        headers.put("Content-Length", Collections.singletonList(String.valueOf(body.length)));
 
-        return new HttpResponse(404, "Not Found", headers, body.getBytes());
+        return build(404, "Not Found", headers, body);
     }
 
     public static HttpResponse buildMethodErrorResponse() {
-        return new HttpResponse(405, "Method Not Allowed", Collections.emptyMap(), null);
+        return build(405, "Method Not Allowed", Collections.emptyMap(), null);
     }
 
     public static HttpResponse buildServerErrorResponse() {
-        return new HttpResponse(500, "Internal Server Error", Collections.emptyMap(), null);
+        return build(500, "Internal Server Error", Collections.emptyMap(), null);
     }
 
     public static HttpResponse buildRedirectResponse(String location) {
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Location", location);
-        return new HttpResponse(302, "Found", headers, new byte[0]);
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Location", Collections.singletonList(location));
+        return build(302, "Found", headers, null);
     }
+
+    public static HttpResponse buildRedirectResponse(String location, Map<String, List<String>> inputHeaders) {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.putAll(inputHeaders);
+        headers.put("Location", Collections.singletonList(location));
+        return build(302, "Found", headers, null);
+    }
+
 
     private static String getContentType(String fileName) {
         int dotIndex = fileName.lastIndexOf('.');
@@ -77,6 +115,5 @@ public abstract class HttpResponseBuilder {
         buffer.flush();
         return buffer.toByteArray();
     }
-
 
 }

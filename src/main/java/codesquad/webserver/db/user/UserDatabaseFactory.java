@@ -1,4 +1,4 @@
-package codesquad.webserver.db;
+package codesquad.webserver.db.user;
 
 public class UserDatabaseFactory {
 

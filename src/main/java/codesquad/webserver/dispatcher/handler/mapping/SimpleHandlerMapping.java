@@ -2,10 +2,13 @@ package codesquad.webserver.dispatcher.handler.mapping;
 
 import codesquad.webserver.annotation.Autowired;
 import codesquad.webserver.annotation.Component;
-import codesquad.webserver.staticresouce.StaticResourceHandler;
+import codesquad.webserver.db.session.InMemorySessionManager;
+import codesquad.webserver.db.user.UserDatabaseFactory;
+import codesquad.webserver.dispatcher.requesthandler.LoginRequestHandler;
+import codesquad.webserver.dispatcher.requesthandler.UserCreateRequestHandler;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.dispatcher.requesthandler.UserCreateRequestHandler;
+import codesquad.webserver.staticresouce.StaticResourceHandler;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +28,8 @@ public class SimpleHandlerMapping implements HandlerMapping {
 
     private void initHandlers() {
         handlers.put("/create", new UserCreateRequestHandler(fileReader));
+        handlers.put("/login", new LoginRequestHandler(fileReader, UserDatabaseFactory.getInstance(),
+                InMemorySessionManager.getInstance()));
     }
 
 
