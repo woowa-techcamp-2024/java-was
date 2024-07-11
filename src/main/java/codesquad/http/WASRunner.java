@@ -6,6 +6,8 @@ import codesquad.error.BaseException;
 import codesquad.handler.HandlerMapping;
 import codesquad.utils.HttpRequestUtil;
 import codesquad.utils.HttpResponseUtil;
+import codesquad.utils.ThreadLocalFilter;
+import codesquad.utils.UserThreadLocal;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -31,12 +33,14 @@ public class WASRunner implements Runnable {
 			HttpResponse response = new HttpResponse();
 			try {
 				HttpRequest request = HttpRequestUtil.parseRequest(bi);
+				ThreadLocalFilter.doFilter(request);
 				HandlerMapping.getHandler(request).doService(request, response);
 			} catch (BaseException e) {
 				log.error("Error service request", e);
-				response.sendRedirect("/error.html");
+				response.sendRedirect("/error.html?statusCode=" + e.getStatus() + "&message=" + e.getMessage());
 			} finally {
 				HttpResponseUtil.writeResponse(bo, response);
+				UserThreadLocal.remove();
 				socket.close();
 			}
 		} catch (IOException e) {
