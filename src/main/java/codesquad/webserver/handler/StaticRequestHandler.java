@@ -1,10 +1,11 @@
 package codesquad.webserver.handler;
 
-import codesquad.http.HttpRequest;
-import codesquad.http.HttpResponse;
-import codesquad.http.type.ContentType;
-import codesquad.http.type.HttpProtocol;
-import codesquad.http.type.HttpStatus;
+import codesquad.webserver.http.HttpRequest;
+import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.http.type.ContentType;
+import codesquad.webserver.http.type.HttpHeader;
+import codesquad.webserver.http.type.HttpProtocol;
+import codesquad.webserver.http.type.HttpStatus;
 import codesquad.util.StringUtil;
 import codesquad.webserver.StaticFileReader;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class StaticRequestHandler implements RouterHandler {
         // 외부에서 전달받도록 수정 필요
         mapping.put("/", "/index.html");
         mapping.put("/registration", "/registration/index.html");
+        mapping.put("/login", "/login/index.html");
     }
 
     @Override
@@ -44,8 +46,8 @@ public class StaticRequestHandler implements RouterHandler {
         String mimeType = getMimeType(resourcePath);
 
         String fileData = "";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", mimeType);
+        HttpHeader headers = new HttpHeader();
+        headers.add("Content-Type", mimeType);
 
         try {
             fileData = getStaticFile(resourcePath);
