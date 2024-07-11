@@ -1,8 +1,9 @@
 package codesquad.was;
 
 import codesquad.was.http.handler.RequestHandlerMapper;
+import codesquad.was.http.handler.RequestHandlerMapperImpl;
 import codesquad.was.http.handler.SocketHandler;
-import codesquad.was.http.message.parser.HttpRequestParser;
+import codesquad.was.http.message.parser.RequestParser;
 import codesquad.was.utils.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.text.DateFormat;
 import java.util.concurrent.ExecutorService;
 
 public class Server {
@@ -17,15 +19,16 @@ public class Server {
     private final int port;
     private final Timer timer;
     private final ExecutorService threadPool;
-    private final HttpRequestParser httpRequestParser;
+    private final RequestParser httpRequestParser;
     private final RequestHandlerMapper requestHandlerMapper;
     private ServerSocket serverSocket;
-
+    private DateFormat dateFormatter;
     public Server(int port,
                   Timer timer,
                   ExecutorService threadPool,
-                  HttpRequestParser httpRequestParser,
-                  RequestHandlerMapper requestHandlerMapper) throws IOException {
+                  RequestParser httpRequestParser,
+                  RequestHandlerMapper requestHandlerMapper,
+                  DateFormat dateFormatter) throws IOException {
         this.port = port;
         this.timer = timer;
         this.threadPool = threadPool;
@@ -33,6 +36,7 @@ public class Server {
         logger.info("Server Socket binds on port: {}", port);
         this.httpRequestParser = httpRequestParser;
         this.requestHandlerMapper = requestHandlerMapper;
+        this.dateFormatter = dateFormatter;
     }
 
     public void start() {
@@ -43,6 +47,7 @@ public class Server {
                 SocketHandler handler = new SocketHandler(clientSocket,
                         httpRequestParser,
                         timer,
+                        dateFormatter,
                         requestHandlerMapper);
 
                 threadPool.execute(handler);

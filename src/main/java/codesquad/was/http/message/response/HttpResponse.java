@@ -1,4 +1,5 @@
 package codesquad.was.http.message.response;
+import codesquad.was.http.cookie.Cookie;
 import codesquad.was.http.message.vo.HttpHeader;
 import codesquad.was.http.exception.HttpException;
 import codesquad.was.http.message.vo.HttpBody;
@@ -33,6 +34,29 @@ public class HttpResponse {
         setHeader("Location",redirectPath);
         setStatus(HttpStatus.FOUND);
     }
+    public void addCookie(Cookie cookie){
+        String cookieHeader = extractCookieHeaderString(cookie);
+        header.addHeader("Set-Cookie",cookieHeader);
+    }
+
+    private String extractCookieHeaderString(Cookie cookie) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(cookie.getName()).append('=').append(cookie.getValue());
+        if (cookie.getPath() != null) {
+            sb.append("; Path=").append(cookie.getPath());
+        }
+
+        if (cookie.getDomain() != null) {
+            sb.append("; Domain=").append(cookie.getDomain());
+        }
+
+        if (cookie.getMaxAge() >= 0) {
+            sb.append("; Max-Age=").append(cookie.getMaxAge());
+        }
+
+        return sb.toString();
+    }
+
     public void setStatus(HttpStatus status){
         this.startLine.setStatus(status);
     }
@@ -63,6 +87,7 @@ public class HttpResponse {
                 .append(' ').append(startLine.getStatus().getMessage()).append(NEW_LINE);
         return sb.toString().getBytes();
     }
+    //TODO cookie는 라인별로 보내야함
     private byte[] parseHeaders(){
         return header.allHeaders().entrySet().stream()
                 .map(entry -> {
@@ -85,19 +110,12 @@ public class HttpResponse {
         return Arrays.stream(array)
                 .reduce(new byte[0],this::mergeByteArray);
     }
-    public byte[] parse(Timer timer){
-        setHeader("Date",getFormattedDate(timer));
+    public byte[] parse(){
         byte[] startLine = parseStartLine();
         byte[] headers = parseHeaders();
         byte[] emptyLine = NEW_LINE.getBytes();
         byte[] body = parseBody();
 
         return concatByteArray(startLine,headers,emptyLine,body);
-    }
-    private String getFormattedDate(Timer timer) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        return dateFormat.format(timer.getCurrentTime());
     }
 }

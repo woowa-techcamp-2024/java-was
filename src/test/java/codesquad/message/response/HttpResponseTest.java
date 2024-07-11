@@ -1,5 +1,6 @@
 package codesquad.message.response;
 
+import codesquad.was.http.exception.*;
 import codesquad.was.http.message.InvalidResponseFormatException;
 import codesquad.was.http.message.response.HttpResponse;
 import codesquad.was.http.message.response.HttpStatus;
@@ -7,7 +8,11 @@ import codesquad.message.mock.MockTimer;
 import codesquad.was.utils.Timer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -24,6 +29,25 @@ public class HttpResponseTest {
         dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
         mockTimer = new MockTimer(dateFormat.parse(mockDateString).getTime());
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes={
+            HttpBadRequestException.class,
+            HttpMethodNotAllowedException.class,
+            HttpNotFoundException.class,
+            HttpInternalServerErrorException.class})
+    void makeErrorResponseTest(Class<HttpException> e) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        //given
+        Constructor<HttpException> constructor = e.getConstructor(String.class);
+        HttpException exception = constructor.newInstance("message");
+
+        //when
+        HttpResponse response = new HttpResponse(exception);
+
+        //then
+        assertEquals(exception.getStatus(),response.getStatus());
+        assertEquals("message",new String(response.getBody()));
     }
 
     @Test
@@ -47,6 +71,7 @@ public class HttpResponseTest {
 
         //when
         HttpResponse response = new HttpResponse("HTTP/1.1",header);
+        response.setHeader("Date",dateFormat.format(mockTimer.getCurrentTime()));
         response.setStatus(status);
         response.setBody(body.getBytes());
 
@@ -56,7 +81,7 @@ public class HttpResponseTest {
                 ()->assertEquals(status,response.getStatus()),
                 ()->assertEquals(body,new String(response.getBody())),
                 ()->assertEquals(Integer.toString(body.length()),response.getHeaders("Content-Length").get(0)),
-                ()->assertEquals(expectedMessage,new String(response.parse(mockTimer)))
+                ()->assertEquals(expectedMessage,new String(response.parse()))
                 );
     }
 }

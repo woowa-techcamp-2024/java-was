@@ -1,14 +1,23 @@
 package codesquad;
 
+import codesquad.application.model.User;
+import codesquad.middleware.UserDatabase;
 import codesquad.was.Server;
 import codesquad.was.http.handler.RequestHandlerMapper;
+import codesquad.was.http.handler.RequestHandlerMapperImpl;
 import codesquad.was.http.message.parser.*;
+import codesquad.was.http.session.SessionManager;
+import codesquad.was.http.session.SessionStorage;
 import codesquad.was.utils.SystemTimer;
 import codesquad.was.utils.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -34,11 +43,19 @@ public class Main {
         return new HttpRequestStartLineParser();
     }
 
-    private HttpRequestParser requestParser(HttpRequestStartLineParser startLineParser,
+    private SessionStorage sessionStorage(){
+        return new SessionStorage();
+    }
+    private SessionManager sessionManager() {
+        return new SessionManager(sessionStorage(),timer());
+    }
+
+    private RequestParser requestParser(HttpRequestStartLineParser startLineParser,
                                             HttpQueryStringParser queryStringParser,
                                             HttpHeaderParser headerParser,
-                                            HttpBodyParser bodyParser) {
-        return new HttpRequestParser(startLineParser, headerParser, bodyParser, queryStringParser);
+                                            HttpBodyParser bodyParser,
+                                        SessionManager sessionManager) {
+        return new HttpRequestParser(startLineParser, headerParser, bodyParser, queryStringParser, sessionManager);
     }
 
     private Timer timer() {
@@ -50,15 +67,26 @@ public class Main {
     }
 
     private RequestHandlerMapper requestHandlerMapper() {
-        return new RequestHandlerMapper();
+        return new RequestHandlerMapperImpl();
+    }
+
+    private DateFormat dateFormat(){
+        DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+        format.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return format;
     }
 
     private Server server(int port) throws IOException {
         return new Server(port,
                 timer(),
                 executorService(),
-                requestParser(startLineParser(), queryStringParser(), headerParser(), bodyParser()),
-                requestHandlerMapper());
+                requestParser(startLineParser(), queryStringParser(), headerParser(), bodyParser(),sessionManager()),
+                requestHandlerMapper(),
+                dateFormat());
+    }
+
+    private UserDatabase userDatabase(){
+        return new UserDatabase();
     }
 
     public Main(int port) throws IOException {
