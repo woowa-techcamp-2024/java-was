@@ -1,11 +1,10 @@
 package codesquad.processor;
 
-import codesquad.handler.HttpHandlerAdapter;
+import codesquad.handler.HttpHandler;
 import codesquad.http.HttpMethod;
 import codesquad.http.Path;
 
 import java.util.List;
-import java.util.regex.Matcher;
 
 public class HandlerRegistry {
 
@@ -22,17 +21,14 @@ public class HandlerRegistry {
      * @param url        URL 패턴 (PathVariable은 {변수명}으로 표현)
      * @param handler    등록할 핸들러
      */
-    public <T, R> void registerHandler(HttpMethod httpMethod, String url, HttpHandlerAdapter<T, R> handler, Triggerable<T, R> triggerable) {
+    public <T, R> void registerHandler(HttpMethod httpMethod, String url, HttpHandler<T, R> handler, Triggerable<T, R> triggerable) {
         handlerMappings.add(new HandlerMapping<>(httpMethod, url, handler, triggerable));
     }
 
     public HandlerMapping<?, ?> getHandler(HttpMethod httpMethod, Path path) {
-        for (HandlerMapping<?, ?> mapping : handlerMappings) {
-            Matcher matcher = mapping.getPattern().matcher(path.getBasePath());
-            if (matcher.matches() && mapping.getHttpMethod() == httpMethod) {
-                return mapping;
-            }
-        }
-        return null;
+        return handlerMappings.stream()
+                .filter(mapping -> mapping.matchRequest(httpMethod, path.getBasePath()))
+                .findFirst()
+                .orElse(null);
     }
 }

@@ -2,7 +2,10 @@ package codesquad.http;
 
 import codesquad.http.header.HttpHeaders;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class HttpRequest {
 
@@ -11,6 +14,7 @@ public class HttpRequest {
     private final HttpVersion version;
     private final HttpHeaders httpHeaders;
     private final String body;
+    private final Map<String, Object> attributes;
 
     public HttpMethod getMethod() {
         return method;
@@ -32,16 +36,38 @@ public class HttpRequest {
         return body;
     }
 
+    public Optional<Object> getAttributes(String key) {
+        return Optional.ofNullable(attributes.get(key));
+    }
+
+    public void setAttributes(String key, Object value) {
+        validateAttributeKey(key);
+        validateAttributeValue(value);
+        attributes.put(key, value);
+    }
+
+    private void validateAttributeKey(String key) {
+        if (key == null || key.isEmpty()) {
+            throw new IllegalArgumentException("key는 null이거나 빈 문자열일 수 없습니다.");
+        }
+    }
+    private void validateAttributeValue(Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value는 null일 수 없습니다.");
+        }
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
-    public HttpRequest(String method, String path, String version, Map<String, String> headers, String body) {
+    public HttpRequest(String method, String path, String version, Map<String, List<String>> headers, String body) {
         this.method = HttpMethod.of(method);
         this.path = Path.of(path);
         this.version = HttpVersion.of(version);
         this.httpHeaders = HttpHeaders.of(headers);
         this.body = body;
+        this.attributes = new HashMap<>();
     }
 
     @Override
@@ -59,7 +85,7 @@ public class HttpRequest {
         private String method;
         private String path;
         private String version;
-        private Map<String, String> headers;
+        private Map<String, List<String>> headers;
         private String body;
 
         public Builder method(String method) {
@@ -77,7 +103,7 @@ public class HttpRequest {
             return this;
         }
 
-        public Builder headers(Map<String, String> headers) {
+        public Builder headers(Map<String, List<String>> headers) {
             this.headers = headers;
             return this;
         }
@@ -91,5 +117,4 @@ public class HttpRequest {
             return new HttpRequest(method, path, version, headers, body);
         }
     }
-
 }
