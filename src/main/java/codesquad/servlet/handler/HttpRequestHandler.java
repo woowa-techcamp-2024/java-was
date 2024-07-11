@@ -32,17 +32,28 @@ public class HttpRequestHandler {
         HttpPath path = httpRequest.getPath();
 
         Optional<Handler> handler = handlerMapper.findBy(method, path.getDefaultPath());
-        if (handler.isPresent()) {
-            Handler userRegistrationHandler = handler.get();
-            userRegistrationHandler.service(httpRequest, httpResponse);
+        try {
+            if (handler.isPresent()) {
+                Handler userRegistrationHandler = handler.get();
+                userRegistrationHandler.service(httpRequest, httpResponse);
+                httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
+                return;
+            }
+        } catch (IllegalArgumentException e) {
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
+            httpResponse.sendRedirect("/user/login_failed.html");
+            logger.debug("error while handling request", e);
             return;
         }
 
         if (isStaticResourceRequest(method, path)) {
             staticResourceHandler.service(httpRequest, httpResponse);
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
+            return;
         }
+
+        httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
+        httpResponse.notFound();
     }
 
     private boolean isStaticResourceRequest(HttpMethod method, HttpPath path) {
@@ -51,6 +62,5 @@ public class HttpRequestHandler {
         }
         return false;
     }
-
 
 }

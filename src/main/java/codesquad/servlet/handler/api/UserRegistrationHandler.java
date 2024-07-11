@@ -2,6 +2,7 @@ package codesquad.servlet.handler.api;
 
 import codesquad.domain.InMemoryUserStorage;
 import codesquad.domain.model.User;
+import codesquad.servlet.SessionStorage;
 import codesquad.servlet.handler.Handler;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
@@ -13,9 +14,11 @@ public class UserRegistrationHandler implements Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRegistrationHandler.class);
     private final InMemoryUserStorage inMemoryUserStorage;
+    private final SessionStorage sessionStorage;
 
-    public UserRegistrationHandler(InMemoryUserStorage inMemoryUserStorage) {
+    public UserRegistrationHandler(InMemoryUserStorage inMemoryUserStorage, SessionStorage sessionStorage) {
         this.inMemoryUserStorage = inMemoryUserStorage;
+        this.sessionStorage = sessionStorage;
     }
 
     @Override
@@ -28,7 +31,7 @@ public class UserRegistrationHandler implements Handler {
         User user = new User(userId, password, name, email);
         inMemoryUserStorage.save(user);
         Optional<User> savedUser = inMemoryUserStorage.findById(user.getUserId());
-        logger.debug("User Registration Success = {}", savedUser);
+        logger.debug("saved user: {}", savedUser);
         response.sendRedirect("/index.html");
     }
 

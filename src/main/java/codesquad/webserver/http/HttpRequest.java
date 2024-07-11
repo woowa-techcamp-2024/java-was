@@ -41,6 +41,18 @@ public class HttpRequest {
         return httpRequestBody.getParamValue(paramName);
     }
 
+    public Cookie getCookie() {
+        Optional<String> optCookieValues = getHeaderValue("Cookie");
+        if (optCookieValues.isEmpty()) {
+            return null;
+        }
+
+        String cookieValues = optCookieValues.get();
+        String[] cookieValueParts = cookieValues.split(";");
+        String[] nameAndValue = cookieValueParts[0].split("=");
+        return new Cookie(nameAndValue[0], nameAndValue[1]);
+    }
+
     @Override
     public String toString() {
         return httpRequestLine + "\n" + headers + "\n" + httpRequestBody;

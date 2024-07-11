@@ -6,6 +6,7 @@ public enum HttpStatus {
     FOUND(302, "Found"),
     SEE_OTHER(303, "See Other"),
     BAD_REQUEST(400, "Bad Request"),
+    UNAUTHORIZED(401, "Unauthorized"),
     NOT_FOUND(404, "Not Found");
 
     private final int code;
