@@ -2,6 +2,7 @@ package codesquad;
 
 import codesquad.authorization.SecurePathManager;
 import codesquad.database.Database;
+import codesquad.database.UserDatabase;
 import codesquad.handler.*;
 import codesquad.http.HttpMethod;
 import codesquad.http.HttpResponseSerializer;
@@ -17,8 +18,8 @@ import codesquad.processor.argumentresolver.ArgumentResolver;
 import codesquad.processor.argumentresolver.LoginArgumentResolver;
 import codesquad.processor.argumentresolver.RegisterArgumentResolver;
 import codesquad.server.ServerInitializer;
-import codesquad.web.user.LoginRequest;
-import codesquad.web.user.RegisterRequest;
+import codesquad.web.user.request.LoginRequest;
+import codesquad.web.user.request.RegisterRequest;
 
 import java.util.ArrayList;
 
@@ -32,7 +33,7 @@ public class Main {
         HttpRequestParser requestParser = new HttpRequestParser();
 
         // User DB
-        Database<User> userDatabase = new Database<>();
+        Database<User> userDatabase = new UserDatabase();
 
         // 회원 가입 로직
         RegisterUserLogic registerUserLogic = new RegisterUserLogic(userDatabase);
