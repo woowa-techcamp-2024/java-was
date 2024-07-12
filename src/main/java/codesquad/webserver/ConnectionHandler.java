@@ -63,7 +63,6 @@ public class ConnectionHandler {
         return connectionThreadPool;
     }
 
-    // TODO future 로 값 받아와서 리턴하기, timeout 설정하기
     public void run(Socket clientSocket) {
         var clientTask = new HttpRequestParser(clientSocket);
 
@@ -139,10 +138,10 @@ public class ConnectionHandler {
 
         try {
             var outputStream = socket.getOutputStream();
-            int offset = 0;
-            int chunkSize = 4 * 1024;
+            var offset = 0;
+            var chunkSize = 4 * 1024;
             while (offset < responseData.length) {
-                int length = Math.min(chunkSize, responseData.length - offset);
+                var length = Math.min(chunkSize, responseData.length - offset);
 
                 outputStream.write(responseData, offset, length);
                 outputStream.flush();
@@ -151,22 +150,6 @@ public class ConnectionHandler {
         } catch (IOException exception) {
             log.error("[Server Error] : data 전송 중 에러 발생");
         }
-
-    }
-
-
-
-    public void doErrorResponse(Socket socket, Exception exception) throws IOException{
-
-
-        // String responseHeader = "HTTP/1.1 " + 400 + "\r\n" +
-        //         "Content-Type: text/html\r\n" +
-        //         "Content-Length: " + byteMessage.length + "\r\n" +
-        //         "\r\n";
-        // var outputStream = socket.getOutputStream();
-        // outputStream.write(responseHeader.getBytes());
-        // outputStream.write(byteMessage);
-        // outputStream.flush();
 
     }
 }
