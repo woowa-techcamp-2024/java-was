@@ -1,5 +1,6 @@
 package codesquad.http;
 
+import codesquad.error.HttpStatusException;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
@@ -36,10 +37,10 @@ class MediaTypeTest {
         class 지원하지_않는_파일_형식의_경우 {
 
             @ParameterizedTest
-            @ValueSource(strings = {"txt", "avi", "zzz", ""})
+            @ValueSource(strings = {"avi", "zzz", ""})
             void empty_optional을_반환한다(String fileExtension) {
                 assertThatThrownBy(() -> MediaType.find(fileExtension))
-                        .isInstanceOf(IllegalArgumentException.class)
+                        .isInstanceOf(HttpStatusException.class)
                         .hasMessageContaining("[ERROR] 지원하지 않는 파일 형식입니다.");
             }
         }

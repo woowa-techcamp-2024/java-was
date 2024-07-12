@@ -1,6 +1,18 @@
 package codesquad.http;
 
-public class HttpResponseGenerator {
+public final class HttpResponseGenerator {
+
+    private static HttpResponseGenerator instance;
+
+    private HttpResponseGenerator() {
+    }
+
+    public static HttpResponseGenerator getInstance() {
+        if (instance == null) {
+            instance = new HttpResponseGenerator();
+        }
+        return instance;
+    }
 
     public HttpResponse sendOK(byte[] body, MediaType mediaType, HttpRequest httpRequest) {
         return generate(StatusCode.OK, body, mediaType, httpRequest);
@@ -22,6 +34,10 @@ public class HttpResponseGenerator {
 
     public HttpResponse sendMethodNotAllowed(HttpRequest httpRequest) {
         return generate(StatusCode.METHOD_NOT_ALLOWED, "<h1>405 Method Not Allowed</h1>".getBytes(), MediaType.TEXT_HTML, httpRequest);
+    }
+
+    public HttpResponse sendInternalServerError(HttpRequest httpRequest) {
+        return generate(StatusCode.INTERNAL_SERVER_ERROR, "<h1>500 Internal Server Error</h1>".getBytes(), MediaType.TEXT_HTML, httpRequest);
     }
 
     private HttpResponse generate(StatusCode statusCode, byte[] body, MediaType mediaType, HttpRequest httpRequest) {

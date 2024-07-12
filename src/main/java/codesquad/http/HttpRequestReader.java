@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public final class HttpRequestReader {
 
-    private static HttpRequestReader instance = new HttpRequestReader();
+    private static HttpRequestReader instance;
 
     private HttpRequestReader() {
     }

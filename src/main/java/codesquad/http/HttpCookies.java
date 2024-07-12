@@ -18,4 +18,8 @@ public class HttpCookies {
                 .map(HttpCookie::toCookieString)
                 .collect(Collectors.joining("; "));
     }
+
+    public List<HttpCookie> getCookies() {
+        return cookies;
+    }
 }

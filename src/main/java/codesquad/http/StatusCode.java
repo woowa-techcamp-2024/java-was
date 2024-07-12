@@ -3,10 +3,14 @@ package codesquad.http;
 public enum StatusCode {
 
     OK(200, "OK"),
-    NOT_FOUND(404, "Not Found"),
+
     SEE_OTHER(303, "See Other"),
+
+    NOT_FOUND(404, "Not Found"),
     BAD_REQUEST(400, "Bad Request"),
-    METHOD_NOT_ALLOWED(405, "Method Not Allowed");
+    METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+
+    INTERNAL_SERVER_ERROR(500, "Internal Server Error");
 
     private final int value;
     private final String phrase;

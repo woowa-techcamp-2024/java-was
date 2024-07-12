@@ -7,7 +7,7 @@ import codesquad.http.session.SessionManager;
 
 public class UserLogoutHandler extends RequestHandler {
 
-    private static UserLogoutHandler instance = new UserLogoutHandler();
+    private static UserLogoutHandler instance;
 
     private final SessionManager sessionManager = SessionManager.getInstance();
 

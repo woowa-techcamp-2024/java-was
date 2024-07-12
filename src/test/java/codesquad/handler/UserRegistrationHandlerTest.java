@@ -1,5 +1,6 @@
 package codesquad.handler;
 
+import codesquad.error.HttpStatusException;
 import codesquad.http.HttpHeaders;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
@@ -41,7 +42,7 @@ class UserRegistrationHandlerTest {
             httpHeaders.addValue(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON.getValue());
             HttpRequest httpRequest = new HttpRequest(null, "POST", null, null, httpHeaders, null);
             assertThatThrownBy(() -> userRegistrationHandler.handle(httpRequest))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(HttpStatusException.class)
                     .hasMessage("[ERROR] request body 타입이 올바르지 않습니다.");
         }
 
@@ -51,7 +52,7 @@ class UserRegistrationHandlerTest {
             httpHeaders.addValue(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED.getValue());
             HttpRequest httpRequest = new HttpRequest(null, "POST", null, null, httpHeaders, "");
             assertThatThrownBy(() -> userRegistrationHandler.handle(httpRequest))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(HttpStatusException.class)
                     .hasMessage("[ERROR] request body가 없습니다.");
         }
     }

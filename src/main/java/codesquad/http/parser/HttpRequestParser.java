@@ -29,8 +29,7 @@ public final class HttpRequestParser implements Parser<HttpRequest> {
     @Override
     public HttpRequest parse(String requestText) {
         if (requestText == null || requestText.isEmpty()) {
-            //TODO 커스텀 Exception을 만들어 사용하는 것은 어떨지 생각해보기
-            throw new IllegalArgumentException("[ERROR] HTTP request의 내용이 없습니다.");
+            return null;
         }
 
         String[] lines = requestText.split("\r\n");

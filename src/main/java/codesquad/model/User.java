@@ -20,4 +20,7 @@ public class User {
         return this.password.equals(password);
     }
 
+    public String getNickname() {
+        return nickname;
+    }
 }

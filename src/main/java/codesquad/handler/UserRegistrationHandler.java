@@ -1,14 +1,16 @@
 package codesquad.handler;
 
+import codesquad.error.HttpStatusException;
 import codesquad.handler.dto.RegistrationRequest;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
+import codesquad.http.StatusCode;
 import codesquad.model.User;
 import codesquad.model.UserDataBase;
 
 public final class UserRegistrationHandler extends RequestHandler {
 
-    private static UserRegistrationHandler instance = new UserRegistrationHandler();
+    private static UserRegistrationHandler instance;
 
     private final ObjectMapper objectMapper = ObjectMapper.getInstance();
     private final UserDataBase userDataBase = UserDataBase.getInstance();
@@ -28,7 +30,7 @@ public final class UserRegistrationHandler extends RequestHandler {
         RequestValidator.validateContentType(httpRequest);
 
         String body = httpRequest.body()
-                .orElseThrow(() -> new IllegalArgumentException("[ERROR] request body가 없습니다."));
+                .orElseThrow(() -> new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] request body가 없습니다."));
         RegistrationRequest registrationRequest = objectMapper.readQueryString(body, RegistrationRequest.class);
 
         User user = new User(registrationRequest.userId(), registrationRequest.nickname(), registrationRequest.password());

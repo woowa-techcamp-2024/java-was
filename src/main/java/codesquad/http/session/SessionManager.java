@@ -1,6 +1,8 @@
 package codesquad.http.session;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,16 +34,15 @@ public class SessionManager {
                 });
     }
 
-    public String findUserId(String sessionId) {
-        return sessions.get(sessionId);
+    public Optional<String> findUserId(String sessionId) {
+        if (Objects.nonNull(sessionId) && sessions.containsKey(sessionId)) {
+            return Optional.of(sessions.get(sessionId));
+        }
+        return Optional.empty();
     }
 
     public void removeSession(String sessionId) {
         sessions.remove(sessionId);
-    }
-
-    public boolean isValidSession(String sessionId) {
-        return sessions.containsKey(sessionId);
     }
 
     public void clear() {

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public final class UserLoginHandler extends RequestHandler {
 
-    private static UserLoginHandler instance = new UserLoginHandler();
+    private static UserLoginHandler instance;
 
     private final ObjectMapper objectMapper = ObjectMapper.getInstance();
     private final UserDataBase userDataBase = UserDataBase.getInstance();
@@ -42,7 +42,7 @@ public final class UserLoginHandler extends RequestHandler {
         }
 
         String sessionId = sessionManager.createSession(user.get().getUserId());
-        HttpResponse httpResponse = responseGenerator.sendRedirect(httpRequest, "/main");
+        HttpResponse httpResponse = responseGenerator.sendRedirect(httpRequest, "/");
         HttpCookies cookie = new HttpCookies();
         cookie.addCookie("sid", sessionId);
         cookie.addCookie("Path", "/");

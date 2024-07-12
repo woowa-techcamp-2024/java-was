@@ -1,6 +1,8 @@
 package codesquad.http.parser;
 
+import codesquad.error.HttpStatusException;
 import codesquad.http.HttpHeaders;
+import codesquad.http.StatusCode;
 
 import java.util.Arrays;
 
@@ -21,7 +23,7 @@ public final class HttpHeadersParser implements Parser<HttpHeaders> {
     @Override
     public HttpHeaders parse(String headersText) {
         if (headersText == null || headersText.isEmpty()) {
-            throw new IllegalArgumentException("[ERROR] HTTP header의 내용이 없습니다.");
+            throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] HTTP header의 내용이 없습니다.");
         }
 
         HttpHeaders httpHeaders = new HttpHeaders();

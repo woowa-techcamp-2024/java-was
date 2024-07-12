@@ -9,7 +9,7 @@ public abstract class RequestHandler {
     protected final HttpResponseGenerator responseGenerator;
 
     protected RequestHandler() {
-        this.responseGenerator = new HttpResponseGenerator();
+        this.responseGenerator = HttpResponseGenerator.getInstance();
     }
 
     public HttpResponse handle(HttpRequest httpRequest) {
@@ -29,5 +29,4 @@ public abstract class RequestHandler {
     protected HttpResponse handlePost(HttpRequest httpRequest) {
         return responseGenerator.sendMethodNotAllowed(httpRequest);
     }
-
 }

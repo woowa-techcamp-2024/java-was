@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -31,10 +30,9 @@ class HttpRequestParserTest {
             String emptyRequest = "";
 
             @Test
-            void 예외가_발생한다() {
-                assertThatThrownBy(() -> requestParser.parse(emptyRequest))
-                        .isInstanceOf(IllegalArgumentException.class)
-                        .hasMessage("[ERROR] HTTP request의 내용이 없습니다.");
+            void null을_반환한다() {
+                HttpRequest httpRequest = requestParser.parse(emptyRequest);
+                assertThat(httpRequest).isNull();
             }
         }
 
@@ -44,10 +42,9 @@ class HttpRequestParserTest {
             String nullRequest = null;
 
             @Test
-            void 예외가_발생한다() {
-                assertThatThrownBy(() -> requestParser.parse(nullRequest))
-                        .isInstanceOf(IllegalArgumentException.class)
-                        .hasMessage("[ERROR] HTTP request의 내용이 없습니다.");
+            void null을_반환한다() {
+                HttpRequest httpRequest = requestParser.parse(nullRequest);
+                assertThat(httpRequest).isNull();
             }
         }
 
