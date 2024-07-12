@@ -6,10 +6,10 @@ import java.util.Arrays;
 
 public enum MediaType {
 
-    TEXT_HTML("text/html", "html"),
+    TEXT_HTML("text/html; charset=utf-8", "html"),
     TEXT_CSS("text/css", "css"),
     TEXT_JAVASCRIPT("text/javascript", "js"),
-    TEXT_PLAIN("text/plain", "txt"),
+    TEXT_PLAIN("text/plain; charset=utf-8", "txt"),
 
     IMAGE_SVG("image/svg+xml", "svg"),
     IMAGE_PNG("image/png", "png"),

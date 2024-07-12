@@ -1,8 +1,10 @@
 package codesquad.handler;
 
+import codesquad.error.HttpStatusException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
+import codesquad.http.StatusCode;
 import codesquad.resource.DirectoryIndexResolver;
 import codesquad.resource.Resource;
 
@@ -34,6 +36,6 @@ public final class StaticResourceHandler extends RequestHandler {
             MediaType mediaType = MediaType.find(resource.getExtension());
             return responseGenerator.sendOK(resource.getContent(), mediaType, httpRequest);
         }
-        return responseGenerator.sendNotFound(httpRequest);
+        throw new HttpStatusException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다.");
     }
 }

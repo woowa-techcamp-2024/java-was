@@ -1,5 +1,6 @@
 package codesquad.model;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,5 +34,11 @@ public final class UserDataBase {
             return Optional.of(users.get(userId));
         }
         return Optional.empty();
+    }
+
+    public List<User> findAll() {
+        return users.values()
+                .stream()
+                .toList();
     }
 }

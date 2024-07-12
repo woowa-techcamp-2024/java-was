@@ -13,6 +13,7 @@ public class HandlersMapper {
         requestHandlers.put("/user/login", UserLoginHandler.getInstance());
         requestHandlers.put("/user/logout", UserLogoutHandler.getInstance());
         requestHandlers.put("/user/create", UserRegistrationHandler.getInstance());
+        requestHandlers.put("/user/list", UserListHandler.getInstance());
         requestHandlers.put("/", DynamicResourceHandler.getInstance());
     }
 

@@ -38,6 +38,6 @@ public final class UserRegistrationHandler extends RequestHandler {
         if (success) {
             return responseGenerator.sendRedirect(httpRequest, "/");
         }
-        return responseGenerator.sendBadRequest(httpRequest);
+        throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] 이미 사용중인 아이디입니다.");
     }
 }

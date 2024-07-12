@@ -1,6 +1,5 @@
 package codesquad;
 
-import codesquad.error.ErrorResponseHandler;
 import codesquad.error.HttpStatusException;
 import codesquad.handler.HandlersMapper;
 import codesquad.handler.RequestHandler;
@@ -31,7 +30,6 @@ public class HttpRequestProcessor implements Runnable {
     private final HttpRequestParser requestParser = ParsersFactory.getHttpRequestParser();
     private final HttpRequestReader requestReader = HttpRequestReader.getInstance();
     private final HandlersMapper handlersMapper;
-    private final ErrorResponseHandler errorResponseHandler = ErrorResponseHandler.getInstance();
     private final ResponseWriter responseWriter;
     private final SessionContextFactory sessionContextFactory = SessionContextFactory.getInstance();
 
@@ -44,13 +42,10 @@ public class HttpRequestProcessor implements Runnable {
 
     @Override
     public void run() {
-        HttpRequest httpRequest = null;
-        HttpResponse httpResponse = null;
-        try {
-            InputStream inputStream = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        try (InputStream inputStream = socket.getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String requestText = requestReader.read(reader);
-            httpRequest = requestParser.parse(requestText);
+            HttpRequest httpRequest = requestParser.parse(requestText);
             if (httpRequest == null) {
                 return;
             }
@@ -62,19 +57,12 @@ public class HttpRequestProcessor implements Runnable {
 
             sessionContextFactory.createSessionContext(httpRequest);
             RequestHandler requestHandler = handlersMapper.getRequestHandler(httpRequest);
-            httpResponse = requestHandler.handle(httpRequest);
+            HttpResponse httpResponse = requestHandler.handle(httpRequest);
+            responseWriter.write(httpResponse);
         } catch (IOException e) {
             log.error(e.getMessage(), e);
-        } catch (RuntimeException e) {
-            httpResponse = errorResponseHandler.handle(e, httpRequest);
         } finally {
-            responseWriter.write(httpResponse);
             SessionContextHolder.clear();
-            try {
-                socket.close();
-            } catch (IOException e) {
-                log.error(e.getMessage(), e);
-            }
         }
     }
 

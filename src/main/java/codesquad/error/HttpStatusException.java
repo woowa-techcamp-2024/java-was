@@ -19,4 +19,7 @@ public class HttpStatusException extends RuntimeException {
         this.statusCode = statusCode;
     }
 
+    public String getStatusMessage() {
+        return String.join(" ", String.valueOf(statusCode().getValue()), statusCode().getPhrase());
+    }
 }
