@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.parser.enums.HttpMethod;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
-import java.util.Map;
 
 public class HttpParserTest {
 
@@ -30,8 +31,8 @@ public class HttpParserTest {
         assertEquals(HttpMethod.GET, httpRequest.requestLine().method());
         assertEquals("/index.html", httpRequest.requestLine().path());
         assertEquals("HTTP/1.1", httpRequest.requestLine().httpVersion());
-        assertEquals("localhost", httpRequest.headers().get("Host"));
-        assertEquals("keep-alive", httpRequest.headers().get("Connection"));
+        assertEquals(List.of("localhost"), httpRequest.headers().get("Host"));
+        assertEquals(List.of("keep-alive"), httpRequest.headers().get("Connection"));
         assertEquals(Map.of(), httpRequest.params());
         assertEquals("", httpRequest.body());
     }
@@ -52,8 +53,8 @@ public class HttpParserTest {
         assertEquals(HttpMethod.GET, httpRequest.requestLine().method());
         assertEquals("/search?query=java", httpRequest.requestLine().fullPath());
         assertEquals("HTTP/1.1", httpRequest.requestLine().httpVersion());
-        assertEquals("localhost", httpRequest.headers().get("Host"));
-        assertEquals("keep-alive", httpRequest.headers().get("Connection"));
+        assertEquals(List.of("localhost"), httpRequest.headers().get("Host"));
+        assertEquals(List.of("keep-alive"), httpRequest.headers().get("Connection"));
         assertEquals(Map.of("query", "java"), httpRequest.params());
         assertEquals("", httpRequest.body());
     }

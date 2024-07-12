@@ -1,24 +1,29 @@
 package codesquad.webserver.dispatcher.view;
 
+import codesquad.webserver.annotation.Component;
 import codesquad.webserver.httpresponse.HttpResponse;
 import codesquad.webserver.httpresponse.HttpResponseBuilder;
 import java.util.Map;
+import java.util.Optional;
 
-
+@Component
 public class ExceptionView implements View {
-    public ExceptionView(String viewName, Map<String, Object> model) {
-    }
 
     @Override
-    public HttpResponse render(Map<String, ?> model) {
-        Integer statusCode = (Integer)model.get("statusCode");
-        if (statusCode == null) {
-            throw new IllegalStateException("statusCode cannot be null");
+    public ViewResult render(Map<String, ?> model) {
+        Map<String, Object> objectMap = (Map<String, Object>) model;
+        int statusCode = (int) Optional.ofNullable(objectMap.get("statusCode")).orElse(500);
+        HttpResponse response = HttpResponseBuilder.serverError().build();
+        switch (statusCode) {
+            case 404 -> response = HttpResponseBuilder.buildNotFoundFromFile();
+            case 403 -> response = HttpResponseBuilder.buildForbiddenFromFile();
         }
 
-        if (statusCode == 405) {
-            return HttpResponseBuilder.buildMethodErrorResponse();
-        }
-        return HttpResponseBuilder.buildNotFoundResponse();
+        return new ViewResult(
+                response.getBody(),
+                response.getCookies(),
+                response.getHeaders(),
+                response.getStatusCode()
+        );
     }
 }

@@ -9,6 +9,9 @@ public class DefaultStaticResourceResolver implements StaticResourceResolver {
     @Override
     public boolean isStaticResource(String path) {
         String extension = getExtension(path);
+        if (extension.equals("html")) {
+            return false;
+        }
         return HttpResponseBuilder.MIME_TYPES.containsKey(extension);
     }
 

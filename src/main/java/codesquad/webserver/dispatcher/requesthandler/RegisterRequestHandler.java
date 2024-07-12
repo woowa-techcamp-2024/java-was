@@ -1,28 +1,34 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
-import static codesquad.webserver.httpresponse.HttpResponseBuilder.build;
-import static codesquad.webserver.httpresponse.HttpResponseBuilder.buildNotFoundResponse;
-
+import codesquad.webserver.annotation.Autowired;
+import codesquad.webserver.annotation.Component;
+import codesquad.webserver.dispatcher.view.ModelAndView;
+import codesquad.webserver.dispatcher.view.ModelKey;
+import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.httpresponse.HttpResponse;
 import java.io.IOException;
 
+@Component
 public class RegisterRequestHandler extends AbstractRequestHandler {
 
     private static final String FILE_PATH = "/registration/index.html";
 
+    @Autowired
     public RegisterRequestHandler(FileReader fileReader) {
         super(fileReader);
     }
 
     @Override
-    protected HttpResponse handleGet(HttpRequest request) {
+    protected ModelAndView handleGet(HttpRequest request) {
         try {
             FileReader.FileResource file = fileReader.read(FILE_PATH);
-            return build(file);
+            return new ModelAndView(ViewName.TEMPLATE_VIEW)
+                    .addAttribute(ModelKey.CONTENT, file.readFileContent());
         } catch (IOException e) {
-            return buildNotFoundResponse();
+            return new ModelAndView(ViewName.EXCEPTION_VIEW)
+                    .addAttribute(ModelKey.STATUS_CODE, 404)
+                    .addAttribute(ModelKey.ERROR_MESSAGE, "Registration page not found");
         }
     }
 }

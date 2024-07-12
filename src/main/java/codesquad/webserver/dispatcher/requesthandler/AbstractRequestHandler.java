@@ -1,9 +1,10 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
+import codesquad.webserver.dispatcher.view.ModelAndView;
+import codesquad.webserver.dispatcher.view.ModelKey;
+import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.httpresponse.HttpResponse;
-import codesquad.webserver.httpresponse.HttpResponseBuilder;
 
 public abstract class AbstractRequestHandler implements RequestHandler {
 
@@ -14,7 +15,7 @@ public abstract class AbstractRequestHandler implements RequestHandler {
     }
 
     @Override
-    public HttpResponse handle(HttpRequest request) {
+    public ModelAndView handle(HttpRequest request) {
         switch (request.requestLine().method()) {
             case GET:
                 return handleGet(request);
@@ -25,27 +26,32 @@ public abstract class AbstractRequestHandler implements RequestHandler {
             case DELETE:
                 return handleDelete(request);
             default:
-                return handleMethodNotAllowed();
+                return handleMethodNotAllowed(request);
         }
     }
 
-    protected HttpResponse handleGet(HttpRequest request) {
-        return handleMethodNotAllowed();
+    protected ModelAndView handleGet(HttpRequest request) {
+        return handleMethodNotAllowed(request);
     }
 
-    protected HttpResponse handlePost(HttpRequest request) {
-        return handleMethodNotAllowed();
+    protected ModelAndView handlePost(HttpRequest request) {
+        return handleMethodNotAllowed(request);
     }
 
-    protected HttpResponse handlePut(HttpRequest request) {
-        return handleMethodNotAllowed();
+    protected ModelAndView handlePut(HttpRequest request) {
+        return handleMethodNotAllowed(request);
     }
 
-    protected HttpResponse handleDelete(HttpRequest request) {
-        return handleMethodNotAllowed();
+    protected ModelAndView handleDelete(HttpRequest request) {
+        return handleMethodNotAllowed(request);
     }
 
-    protected HttpResponse handleMethodNotAllowed() {
-        return HttpResponseBuilder.buildMethodErrorResponse();
+    protected ModelAndView handleMethodNotAllowed(HttpRequest request) {
+        ModelAndView mv = new ModelAndView(ViewName.EXCEPTION_VIEW);
+        mv.addAttribute(ModelKey.STATUS_CODE, 405);
+        mv.addAttribute(ModelKey.ERROR_MESSAGE, "Method Not Allowed");
+        mv.addAttribute(ModelKey.METHOD, request.requestLine().method());
+        mv.addAttribute(ModelKey.PATH, request.requestLine().path());
+        return mv;
     }
 }

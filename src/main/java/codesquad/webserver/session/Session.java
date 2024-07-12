@@ -1,4 +1,4 @@
-package codesquad.webserver.db.session;
+package codesquad.webserver.session;
 
 import codesquad.webserver.model.User;
 

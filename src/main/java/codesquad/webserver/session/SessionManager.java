@@ -1,4 +1,4 @@
-package codesquad.webserver.db.session;
+package codesquad.webserver.session;
 
 import codesquad.webserver.model.User;
 
@@ -8,4 +8,5 @@ public interface SessionManager {
     void removeSession(String sessionId);
     void invalidateExpiredSessions();
     void clearAllSessions();
+    void invalidateSession(String sessionId);
 }

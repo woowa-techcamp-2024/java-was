@@ -5,18 +5,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ModelAndView {
-    private String viewName;
+    private ViewName viewName;
     private Map<String, Object> model = new HashMap<>();
 
-    public ModelAndView(String viewName) {
+    public ModelAndView(ViewName viewName) {
         this.viewName = viewName;
     }
 
-    public void addAttribute(String key, Object value) {
+    public ModelAndView addAttribute(String key, Object value) {
         model.put(key, value);
+        return this;
     }
 
-    public String getViewName() {
+    public ViewName getViewName() {
         return viewName;
     }
 

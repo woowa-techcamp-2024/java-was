@@ -1,8 +1,12 @@
 package codesquad.webserver.filereader;
 
 import codesquad.webserver.annotation.Component;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +69,12 @@ public class FileReader {
 
         public String getFileName() {
             return fileName;
+        }
+
+        public String readFileContent() throws IOException {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(this.getInputStream()))) {
+                return reader.lines().collect(Collectors.joining("\n"));
+            }
         }
     }
 }

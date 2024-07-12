@@ -1,8 +1,9 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
+import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.httpresponse.HttpResponse;
 
 public interface RequestHandler {
-    HttpResponse handle(HttpRequest request);
+    ModelAndView handle(HttpRequest request);
 }

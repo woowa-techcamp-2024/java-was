@@ -26,7 +26,7 @@ public class StaticResourceHandler {
     public HttpResponse handleRequest(HttpRequest request) {
         String path = request.requestLine().path();
         if (!resourceResolver.isStaticResource(path)) {
-            return HttpResponseBuilder.buildNotFoundResponse();
+            return HttpResponseBuilder.notFound().build();
         }
 
         // TODO: 임시처리
@@ -38,10 +38,10 @@ public class StaticResourceHandler {
 
         try {
             FileReader.FileResource resource = fileReader.read(path);
-            return HttpResponseBuilder.build(resource);
+            return HttpResponseBuilder.buildFromFile(resource);
         } catch (IOException e) {
             logger.debug("Error reading file {}", path, e);
-            return HttpResponseBuilder.buildNotFoundResponse();
+            return HttpResponseBuilder.notFound().build();
         }
     }
 }

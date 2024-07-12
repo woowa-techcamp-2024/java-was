@@ -1,35 +1,51 @@
 package codesquad.webserver.dispatcher.view.resolver;
 
+import codesquad.webserver.annotation.Autowired;
 import codesquad.webserver.annotation.Component;
-import codesquad.webserver.dispatcher.view.JsonView;
 import codesquad.webserver.dispatcher.view.ExceptionView;
+import codesquad.webserver.dispatcher.view.JsonView;
 import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.dispatcher.view.RedirectView;
 import codesquad.webserver.dispatcher.view.TemplateView;
 import codesquad.webserver.dispatcher.view.View;
-import codesquad.webserver.httprequest.HttpRequest;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
 public class DefaultViewResolver implements ViewResolver {
+
     private static final Logger log = LoggerFactory.getLogger(DefaultViewResolver.class);
 
-    @Override
-    public View resolveView(ModelAndView modelAndView, HttpRequest request) {
-        String viewName = modelAndView.getViewName();
-        Map<String, Object> model = modelAndView.getModel();
+    private final TemplateView templateView;
+    private final ExceptionView exceptionView;
+    private final JsonView jsonView;
+    private final RedirectView redirectView;
 
-        Map<String, String> headers = request.headers();
-        if (viewName.startsWith("redirect:")) {
-            return new RedirectView(viewName.substring(9), model);
-        } else if (viewName.equals("jsonView")) {
-            return new JsonView(model);
-        } else if (viewName.equals("templateView")){
-            return new TemplateView(viewName, model);
-        } else {
-            return new ExceptionView(viewName, model);
+    @Autowired
+    public DefaultViewResolver(TemplateView templateView, ExceptionView exceptionView, JsonView jsonView,
+                               RedirectView redirectView) {
+        this.templateView = templateView;
+        this.exceptionView = exceptionView;
+        this.jsonView = jsonView;
+        this.redirectView = redirectView;
+    }
+
+    @Override
+    public View resolveView(ModelAndView modelAndView) {
+        switch (modelAndView.getViewName()) {
+            case TEMPLATE_VIEW -> {
+                return templateView;
+            }
+            case REDIRECT_VIEW -> {
+                return redirectView;
+            }
+            case JSON_VIEW -> {
+                return jsonView;
+            }
+            case EXCEPTION_VIEW -> {
+                return exceptionView;
+            }
         }
+        throw new IllegalArgumentException("Unknown view name: " + modelAndView.getViewName());
     }
 }

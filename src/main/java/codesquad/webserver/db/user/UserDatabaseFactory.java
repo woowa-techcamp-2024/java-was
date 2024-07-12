@@ -1,7 +1,7 @@
 package codesquad.webserver.db.user;
 
 public class UserDatabaseFactory {
-
+//TODO: 삭제예정
     private UserDatabaseFactory(){}
 
     private static class Holder {

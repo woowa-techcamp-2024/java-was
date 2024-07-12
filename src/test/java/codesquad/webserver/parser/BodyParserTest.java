@@ -1,5 +1,7 @@
 package codesquad.webserver.parser;
 
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,9 +23,9 @@ public class BodyParserTest {
     public void testParseBodyWithContentLength() throws IOException {
         // Given
         String bodyContent = "{\"name\":\"John Doe\",\"age\":30}";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Content-Length", String.valueOf(bodyContent.length()));
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Collections.singletonList("application/json"));
+        headers.put("Content-Length",Collections.singletonList(String.valueOf(bodyContent.length())));
         BufferedReader in = new BufferedReader(new StringReader(bodyContent));
 
         // When
@@ -38,8 +40,8 @@ public class BodyParserTest {
     public void testParseBodyWithoutContentLength() throws IOException {
         // Given
         String bodyContent = "{\"name\":\"John Doe\",\"age\":30}";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Collections.singletonList("application/json"));
         BufferedReader in = new BufferedReader(new StringReader(bodyContent));
 
         // When
@@ -54,15 +56,15 @@ public class BodyParserTest {
     public void testParseBodyWithInvalidContentLength() {
         // Given
         String bodyContent = "{\"name\":\"John Doe\",\"age\":30}";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Content-Length", "invalid");
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Type", Collections.singletonList("application/json"));
+        headers.put("Content-Length", Collections.singletonList("invalid"));
         BufferedReader in = new BufferedReader(new StringReader(bodyContent));
 
         // When & Then
         IOException exception = assertThrows(IOException.class, () -> {
             BodyParser.parse(in, headers);
         });
-        assertEquals("Invalid Content-Length value: invalid", exception.getMessage(), "잘못된 Content-Length 헤더 값이 있으면 IOException이 발생해야 합니다.");
+        assertEquals("Invalid Content-Length value: [invalid]", exception.getMessage(), "잘못된 Content-Length 헤더 값이 있으면 IOException이 발생해야 합니다.");
     }
 }

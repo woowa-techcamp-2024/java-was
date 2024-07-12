@@ -1,24 +1,41 @@
 package codesquad.webserver.dispatcher.view;
 
-import codesquad.webserver.httpresponse.HttpResponse;
-import codesquad.webserver.httpresponse.HttpResponseBuilder;
-import java.util.HashMap;
+import codesquad.webserver.annotation.Component;
+import codesquad.webserver.httpresponse.HttpResponse.Header;
+import codesquad.webserver.session.cookie.HttpCookie;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Component
 public class RedirectView implements View {
 
-    private final String url;
-    private final Map<String, Object> model;
+    @Override
+    public ViewResult render(Map<String, ?> model) {
+        String url = (String) model.get("redirectUrl");
+        if (url == null) {
+            throw new IllegalStateException("redirectUrl cannot be null");
+        }
 
-    public RedirectView(String url, Map<String, Object> model) {
-        this.url = url;
-        this.model = model;
+        List<HttpCookie> cookies = extractCookies(model);
+        List<Header> headers = new ArrayList<>();
+        headers.add(new Header("Location", url));
+
+        return new ViewResult(new byte[0], cookies, headers, 302);
     }
 
-    @Override
-    public HttpResponse render(Map<String, ?> model) {
-        Map<String, List<String>> headers = (Map<String, List<String>>) model.get("headers");
-        return headers != null ? HttpResponseBuilder.buildRedirectResponse(url, headers) : HttpResponseBuilder.buildRedirectResponse(url);
+    private List<HttpCookie> extractCookies(Map<String, ?> model) {
+        List<HttpCookie> cookies = new ArrayList<>();
+        if (model.containsKey("cookies")) {
+            Object cookiesObj = model.get("cookies");
+            if (cookiesObj instanceof List) {
+                for (Object cookie : (List) cookiesObj) {
+                    if (cookie instanceof HttpCookie) {
+                        cookies.add((HttpCookie) cookie);
+                    }
+                }
+            }
+        }
+        return cookies;
     }
 }

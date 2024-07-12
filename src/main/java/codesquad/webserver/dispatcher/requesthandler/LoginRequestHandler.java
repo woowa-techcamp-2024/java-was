@@ -1,35 +1,43 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
-import codesquad.webserver.db.session.Session;
-import codesquad.webserver.db.session.SessionManager;
+import codesquad.webserver.annotation.Autowired;
+import codesquad.webserver.annotation.Component;
 import codesquad.webserver.db.user.UserDatabase;
+import codesquad.webserver.dispatcher.view.ModelAndView;
+import codesquad.webserver.dispatcher.view.ModelKey;
+import codesquad.webserver.dispatcher.view.TemplateView;
+import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.httpresponse.HttpResponse;
-import codesquad.webserver.httpresponse.HttpResponseBuilder;
 import codesquad.webserver.model.User;
 import codesquad.webserver.parser.QueryStringParser;
-import java.util.Arrays;
-import java.util.HashMap;
+import codesquad.webserver.session.Session;
+import codesquad.webserver.session.SessionManager;
+import codesquad.webserver.session.cookie.HttpCookie;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Component
 public class LoginRequestHandler extends AbstractRequestHandler {
 
-    private static final String REDIRECT_PATH = "/index.html";
+    private static final String REDIRECT_PATH = "/";
     private static final String LOGIN_FAIL_REDIRECT_PATH = "/user/login_failed.html";
     private static final String USERNAME_PARAM = "username";
     private static final String PASSWORD_PARAM = "password";
-    private static final String COOKIE_NAME = "JID";
-    private static final String COOKIE_PATH = "Path=/";
+    private static final String COOKIE_NAME = "SID";
 
     private static final Logger logger = LoggerFactory.getLogger(LoginRequestHandler.class);
 
     private final UserDatabase userDatabase;
     private final SessionManager sessionManager;
 
+    @Autowired
     public LoginRequestHandler(FileReader fileReader, UserDatabase userDatabase, SessionManager sessionManager) {
         super(fileReader);
         this.userDatabase = userDatabase;
@@ -37,7 +45,20 @@ public class LoginRequestHandler extends AbstractRequestHandler {
     }
 
     @Override
-    protected HttpResponse handlePost(HttpRequest request) {
+    protected ModelAndView handleGet(HttpRequest request) {
+        try {
+            FileReader.FileResource file = fileReader.read("/login/index.html");
+            return new ModelAndView(ViewName.TEMPLATE_VIEW)
+                    .addAttribute(ModelKey.CONTENT, readFileContent(file));
+        } catch (IOException e) {
+            return new ModelAndView(ViewName.EXCEPTION_VIEW)
+                    .addAttribute(ModelKey.STATUS_CODE, 404)
+                    .addAttribute(ModelKey.ERROR_MESSAGE, "Login page not found");
+        }
+    }
+
+    @Override
+    protected ModelAndView handlePost(HttpRequest request) {
         Map<String, String> params = QueryStringParser.parse(request.body());
         String username = params.get(USERNAME_PARAM);
         String password = params.get(PASSWORD_PARAM);
@@ -61,15 +82,27 @@ public class LoginRequestHandler extends AbstractRequestHandler {
         return user.getPassword().equals(inputPassword);
     }
 
-    private HttpResponse createSuccessResponse(User user) {
+    private ModelAndView createSuccessResponse(User user) {
         Session session = sessionManager.createSession(user);
-        logger.debug("세선 생성 성공 {}", session.getId());
-        Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Set-Cookie", Arrays.asList(COOKIE_NAME + "=" + session.getId(), COOKIE_PATH));
-        return HttpResponseBuilder.buildRedirectResponse(REDIRECT_PATH, headers);
+        logger.debug("세션 생성 성공 {}", session.getId());
+
+        HttpCookie sessionCookie = new HttpCookie(COOKIE_NAME, session.getId())
+                .setHttpOnly(true)
+                .setMaxAge(30 * 24 * 60 * 60);
+
+        return new ModelAndView(ViewName.REDIRECT_VIEW)
+                .addAttribute(ModelKey.REDIRECT_URL, REDIRECT_PATH)
+                .addAttribute(ModelKey.COOKIES, List.of(sessionCookie));
     }
 
-    private HttpResponse createFailureResponse() {
-        return HttpResponseBuilder.buildRedirectResponse(LOGIN_FAIL_REDIRECT_PATH);
+    private ModelAndView createFailureResponse() {
+        return new ModelAndView(ViewName.REDIRECT_VIEW)
+                .addAttribute(ModelKey.REDIRECT_URL, LOGIN_FAIL_REDIRECT_PATH);
+    }
+
+    private String readFileContent(FileReader.FileResource file) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        }
     }
 }

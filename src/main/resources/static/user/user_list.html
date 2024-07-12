@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../reset.css" rel="stylesheet" />
+    <link href="../global.css" rel="stylesheet" />
+    <link href="../main.css" rel="stylesheet" />
+    <title>사용자 목록</title>
+    <style>
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .user-table th, .user-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .user-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .user-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .user-table tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="../img/signiture.svg" /></a>
+        <ul class="header__menu">
+            {{#if isLoggedIn}}
+            <li class="header__menu__item">
+                <p class="welcome">환영합니다, {{username}}</p>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/">홈으로</a>
+            </li>
+            <li class="header__menu__item">
+                <form action="/logout" method="post">
+                    <button class="btn btn_ghost btn_size_s" type="submit">로그아웃</button>
+                </form>
+            </li>
+            {{else}}
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/register">회원 가입</a>
+            </li>
+            {{/if}}
+        </ul>
+    </header>
+    <div class="wrapper">
+        <h1 class="title">사용자 목록</h1>
+        <table class="user-table">
+            <thead>
+            <tr>
+                <th>User ID</th>
+                <th>이름</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#for user in users}}
+            <tr>
+                <td>{{user.userId}}</td>
+                <td>{{user.name}}</td>
+            </tr>
+            {{/for}}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
