@@ -2,10 +2,10 @@ package codesquad.middleware;
 
 import codesquad.application.model.User;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class UserDatabase {
     public UserDatabase() {}
@@ -21,5 +21,11 @@ public class UserDatabase {
                 .filter(entry -> entry.getKey().equals(userId))
                 .findFirst()
                 .map(Map.Entry::getValue);
+    }
+
+    public static List<User> findAll(){
+        return store.values()
+                .stream()
+                .toList();
     }
 }
