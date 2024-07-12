@@ -16,6 +16,10 @@ public class HttpRequestParser {
 
     public HttpRequestLine parseHttpRequestFirstLine(BufferedReader bufferedReader) throws IOException {
         String requestLine = bufferedReader.readLine();
+        if (requestLine == null) {
+            throw new IllegalArgumentException("Invalid request line: " + requestLine);
+        }
+
         String[] startLineParts = requestLine.split(" ");
 
         if (startLineParts.length != 3) {

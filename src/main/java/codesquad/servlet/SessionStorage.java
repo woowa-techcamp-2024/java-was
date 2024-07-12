@@ -1,7 +1,9 @@
 package codesquad.servlet;
 
 import codesquad.domain.model.User;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,4 +25,11 @@ public class SessionStorage {
         sessions.remove(uuid);
     }
 
+    public Optional<User> findByUuid(String uuid) {
+        return Optional.ofNullable(sessions.get(uuid));
+    }
+
+    public Map<String, User> getSessions() {
+        return Collections.unmodifiableMap(sessions);
+    }
 }

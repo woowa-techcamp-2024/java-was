@@ -1,6 +1,9 @@
 package codesquad.domain;
 
 import codesquad.domain.model.User;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +18,10 @@ public class InMemoryUserStorage {
 
     public Optional<User> findById(String userId) {
         return Optional.ofNullable(users.get(userId));
+    }
+
+    public List<User> findAll() {
+        return Collections.unmodifiableList(new ArrayList<>(users.values()));
     }
 
 }

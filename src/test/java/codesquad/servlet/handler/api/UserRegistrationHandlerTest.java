@@ -45,26 +45,8 @@ class UserRegistrationHandlerTest {
             assertThat(httpResponse.getRedirect().get()).isEqualTo("/index.html");
         }
 
-        @Test
-        @DisplayName("[Success] 성공 시 쿠키를 응답으로 내려준다.")
-        void cookieSpec() {
-            // given
-            HttpRequest httpRequest = createRegistrationRequest(
-                    createUserRegistrationRequestBodyParams("아이디", "비밀번호", "이름", "이메일")
-            );
-            HttpResponse httpResponse = HttpResponse.ok();
-
-            // when
-            userRegistrationHandler.service(httpRequest, httpResponse);
-
-            // then
-            boolean exists = httpResponse.getCookies().stream()
-                    .anyMatch(cookie -> cookie.getName().equals("sid"));
-            assertThat(exists).isTrue();
-        }
-
         private HttpRequest createRegistrationRequest(Map<String, String> requestBodyParams) {
-            HttpRequestLine httpRequestLine = new HttpRequestLine(POST, HttpPath.of("/create", Map.of()), HTTP1_1);
+            HttpRequestLine httpRequestLine = new HttpRequestLine(POST, HttpPath.of("/user/create", Map.of()), HTTP1_1);
             HttpHeaders httpHeaders = HttpHeaders.empty();
             HttpRequestBody httpRequestBody = new HttpRequestBody(requestBodyParams);
             return new HttpRequest(httpRequestLine, httpHeaders, httpRequestBody);

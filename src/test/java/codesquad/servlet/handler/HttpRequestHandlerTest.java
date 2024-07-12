@@ -105,7 +105,7 @@ class HttpRequestHandlerTest {
         }
 
         private HttpRequest createRegistrationRequest(HttpMethod httpMethod, Map<String, String> requestBodyParams) {
-            HttpRequestLine httpRequestLine = new HttpRequestLine(httpMethod, HttpPath.of("/create", Map.of()),
+            HttpRequestLine httpRequestLine = new HttpRequestLine(httpMethod, HttpPath.of("/user/create", Map.of()),
                     HTTP1_1);
             HttpHeaders httpHeaders = HttpHeaders.empty();
             HttpRequestBody httpRequestBody = new HttpRequestBody(requestBodyParams);

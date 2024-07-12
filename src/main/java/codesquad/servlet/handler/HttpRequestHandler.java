@@ -2,10 +2,12 @@ package codesquad.servlet.handler;
 
 import codesquad.servlet.handler.resource.StaticResourceHandler;
 import codesquad.utils.time.ZonedDateTimeGenerator;
+import codesquad.webserver.http.Cookie;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,8 @@ public class HttpRequestHandler {
     private final HandlerMapper handlerMapper;
     private final StaticResourceHandler staticResourceHandler;
     private final ZonedDateTimeGenerator zonedDateTimeGenerator;
+
+    private List<String> staticAuthPathes = List.of("/user/list");
 
     public HttpRequestHandler(HandlerMapper handlerMapper,
                               StaticResourceHandler staticResourceHandler,
@@ -41,12 +45,15 @@ public class HttpRequestHandler {
             }
         } catch (IllegalArgumentException e) {
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-            httpResponse.sendRedirect("/user/login_failed.html");
+            httpResponse.sendRedirect("/user/fail");
             logger.debug("error while handling request", e);
             return;
         }
 
         if (isStaticResourceRequest(method, path)) {
+            if (validateStaticAuthPath(httpRequest, httpResponse, path)) {
+                return;
+            }
             staticResourceHandler.service(httpRequest, httpResponse);
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
             return;
@@ -54,6 +61,18 @@ public class HttpRequestHandler {
 
         httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
         httpResponse.notFound();
+    }
+
+    private boolean validateStaticAuthPath(HttpRequest httpRequest, HttpResponse httpResponse, HttpPath path) {
+        if (staticAuthPathes.contains(path.getDefaultPath())) {
+            Cookie cookie = httpRequest.getCookie();
+            logger.debug("cookie: {}", cookie);
+            if (cookie == null || !cookie.getName().equals("sid")) {
+                httpResponse.sendRedirect("/login");
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isStaticResourceRequest(HttpMethod method, HttpPath path) {

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="/reset.css" rel="stylesheet"/>
+    <link href="/global.css" rel="stylesheet"/>
+    <link href="/main.css" rel="stylesheet"/>
+    <script>
+        // 쿠키 값 가져오기 함수
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // 로그인 상태 확인
+        function checkLoginStatus() {
+            return !!getCookie('sid');
+        }
+
+        // 사용자 이름 가져오기
+        async function getUserName() {
+            const response = await fetch('/api/user/info', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.userName;
+            } else {
+                return '사용자';
+            }
+        }
+
+        // 사용자 목록 가져오기
+        async function getUserList() {
+            const response = await fetch('/api/user/list', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return Array.isArray(data) ? data : [];
+            } else {
+                return [];
+            }
+        }
+
+        // 페이지 로드 시 실행되는 함수
+        async function onLoad() {
+            const isLoggedIn = checkLoginStatus();
+            const menu = document.querySelector('.header__menu');
+
+            if (isLoggedIn) {
+                const userName = await getUserName();
+                menu.innerHTML = `
+                    <li class="header__menu__item">
+                        <span class="user-name">안녕하세요, ${userName}님! </span>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_ghost btn_size_s" href="/user/logout">로그아웃</a>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_contained btn_size_s" href="/user/list">사용자 목록</a>
+                    </li>
+                `;
+
+                const users = await getUserList();
+                renderUserList(users);
+            } else {
+                menu.innerHTML = `
+                    <li class="header__menu__item">
+                        <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+                    </li>
+                    <li class="header__menu__item">
+                        <a class="btn btn_ghost btn_size_s" href="/registration">회원 가입</a>
+                    </li>
+                `;
+            }
+        }
+
+        // 사용자 목록을 테이블 형태로 렌더링하는 함수
+        function renderUserList(users) {
+            const userListContainer = document.getElementById('user-list');
+            userListContainer.innerHTML = ''; // 기존 목록 초기화
+
+            users.forEach(user => {
+                const userRow = `
+                    <tr>
+                        <td>${user.userName}</td>
+                        <td>${user.userEmail}</td>
+                    </tr>
+                `;
+                userListContainer.insertAdjacentHTML('beforeend', userRow);
+            });
+        }
+
+        // 페이지 로드 시 onLoad 함수 실행
+        window.onload = onLoad;
+    </script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="../img/signiture.svg"/></a>
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/registration">
+                    회원 가입
+                </a>
+            </li>
+        </ul>
+    </header>
+</div>
+<main>
+    <h2>사용자 목록</h2>
+    <table id="user-list">
+        <thead>
+        <tr>
+            <th>사용자 이름</th>
+            <th>이메일</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 여기에 사용자 목록이 동적으로 추가됩니다 -->
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

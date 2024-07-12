@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class UserLoginHandler implements Handler {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserRegistrationHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserLoginHandler.class);
     private final InMemoryUserStorage inMemoryUserStorage;
     private final SessionStorage sessionStorage;
 
@@ -23,6 +23,7 @@ public class UserLoginHandler implements Handler {
 
     @Override
     public void service(HttpRequest request, HttpResponse response) {
+        logger.debug("UserLoginHandler start");
 
         String userId = request.getBodyParamValue("userId");
         String password = request.getBodyParamValue("password");
@@ -38,12 +39,14 @@ public class UserLoginHandler implements Handler {
 
         String createdSessionId = sessionStorage.createSession(findUser);
         logger.debug("created session id: {}", createdSessionId);
+        logger.debug("all session = {}", sessionStorage.getSessions());
 
         Cookie cookie = new Cookie("sid", createdSessionId);
         cookie.setPath("/");
         response.addCookie(cookie);
         logger.debug("crated cookie: {}", cookie);
-        response.sendRedirect("/main");
+        response.sendRedirect("/index.html");
+        logger.debug("UserLoginHandler end");
     }
 
 }
