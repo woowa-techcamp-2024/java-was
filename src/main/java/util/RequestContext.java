@@ -1,18 +1,22 @@
 package util;
 
+import java.util.Optional;
+import session.Session;
+import http.startline.UrlPath;
+
 public class RequestContext {
     private static final ThreadLocal<RequestContext> threadLocal = new ThreadLocal<>();
 
-    private final String urlPath;
-    private final int sessionId;
+    private final UrlPath urlPath;
+    private final Session session;
 
-    private RequestContext(String urlPath, int sessionId) {
+    private RequestContext(UrlPath urlPath, Session session) {
         this.urlPath = urlPath;
-        this.sessionId = sessionId;
+        this.session = session;
     }
 
-    public static RequestContext of(String urlPath, int sessionId) {
-        RequestContext requestContext = new RequestContext(urlPath, sessionId);
+    public static RequestContext of(UrlPath urlPath, Session session) {
+        RequestContext requestContext = new RequestContext(urlPath, session);
         threadLocal.set(requestContext);
         return requestContext;
     }
@@ -21,11 +25,12 @@ public class RequestContext {
         return threadLocal.get();
     }
 
-    public String getUrlPath() {
+    public UrlPath getUrlPath() {
         return urlPath;
     }
 
-    public int getSessionId() {
-        return sessionId;
+    public Optional<Session> getSession() {
+        // return SessionManager.getInstance().getSession(this.sessionId);
+        return Optional.ofNullable(session);
     }
 }

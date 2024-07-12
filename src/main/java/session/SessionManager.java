@@ -1,6 +1,5 @@
-package repository;
+package session;
 
-import handler.Session;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,7 +27,11 @@ public class SessionManager {
         return session;
     }
 
-    public Session getSession(int sessionId) {
+    public Session getSession(Integer sessionId) {
+        if (sessionId == null) {
+            return null;
+        }
+
         return sessions.get(sessionId);
     }
 

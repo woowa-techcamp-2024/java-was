@@ -21,6 +21,21 @@ public class UserService {
             return;
         }
 
+        if (userDto.userId() == null) {
+            logger.error("User ID is null");
+            return;
+        }
+
+        if (userDto.password() == null) {
+            logger.error("Password is null");
+            return;
+        }
+
+        if (userDto.name() == null) {
+            logger.error("Name is null");
+            return;
+        }
+
         userRepository.addUser(userDto.toEntity());
 
         logger.info("User created: {}", userRepository.getUserById(userDto.userId()));

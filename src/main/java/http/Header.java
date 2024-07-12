@@ -8,6 +8,8 @@ import java.util.Map;
 public class Header {
 
     private final Map<String, String> header;
+    private final Map<String, Cookie> cookieMap = new HashMap<>();
+
 
     private Header(String headerString) {
         this.header = headerMapper(headerString);
@@ -94,12 +96,21 @@ public class Header {
         header.put(key, value);
     }
 
+    public void addCookie(Cookie cookie) {
+        cookieMap.put(cookie.getName(), cookie);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : header.entrySet()) {
             sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
         }
+
+        for (Map.Entry<String, Cookie> entry : cookieMap.entrySet()) {
+            sb.append(entry.getValue().toString()).append("\r\n");
+        }
+
         return sb.toString();
     }
 }

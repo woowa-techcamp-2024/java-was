@@ -12,14 +12,7 @@
       <header class="header">
         <a href="/"><img src="./img/signiture.svg" /></a>
         <ul class="header__menu">
-          <li class="header__menu__item">
-            <a class="btn btn_contained btn_size_s" href="/loginPage">로그인</a>
-          </li>
-          <li class="header__menu__item">
-            <a class="btn btn_ghost btn_size_s" href="/registration">
-              회원 가입
-            </a>
-          </li>
+          {header-menu}
         </ul>
       </header>
       <div class="wrapper">
@@ -146,4 +139,17 @@
       </div>
     </div>
   </body>
+
+  <script>
+    const btn = document.getElementById('logout-btn')
+    btn?.addEventListener('click', function() {
+      // 동적으로 폼을 생성하여 POST 요청을 보냄
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/logout';
+
+      document.body.appendChild(form);
+      form.submit();
+    });
+  </script>
 </html>

@@ -1,7 +1,6 @@
 package http;
 
 import http.startline.ResponseLine;
-import java.io.IOException;
 
 public class HttpResponse extends Http{
 
@@ -10,7 +9,7 @@ public class HttpResponse extends Http{
         super(startLine, header, body);
     }
 
-    public static HttpResponse generateHttpResponse() throws IOException {
+    public static HttpResponse generateHttpResponse() {
         return new HttpResponse(new ResponseLine(), Header.emptyHeader(), new byte[0]);
     }
 }

@@ -2,12 +2,21 @@ package filter;
 
 import http.HttpRequest;
 import http.HttpResponse;
+import http.startline.RequestLine;
+import http.startline.UrlPath;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import session.Session;
+import session.SessionManager;
+import util.CookieUtil;
+import util.LoggerUtil;
+import util.RequestContext;
 
-public class LoginFilter implements Filter{
-    // 이곳에서 쿠키로 들어온 로그인 정보를 확인해준다.
-    // 음... 여기는 일단 로그인 정보를 채취하는 곳
-
+public class LoginFilter implements Filter {
+    private static final Logger logger = LoggerUtil.getLogger();
+    private static final Pattern pattern = Pattern.compile(".*");
 
     @Override
     public void init() {
@@ -18,11 +27,31 @@ public class LoginFilter implements Filter{
     public void doFilter(HttpRequest httpRequest, HttpResponse httpResponse,
         FilterChain filterChain) throws IOException {
         // 여기서 쿠키를 확인한다.
+        RequestLine startLine = (RequestLine) httpRequest.getStartLine();
+
+        if (!pattern.matcher(startLine.getUrlPath().getPath()).matches()) {
+            filterChain.doFilter(httpRequest, httpResponse);
+            return;
+        }
+
         String cookieStringValue = httpRequest.getHeader().getValue("Cookie");
 
+        //context 설정
+        Integer contextSessionId = getContextSessionId(cookieStringValue);
+        UrlPath urlPath = ((RequestLine) httpRequest.getStartLine()).getUrlPath();
 
-        // 쿠키가 있다면 Session에서 유저 정보를 가져온다.
+        Session session = SessionManager.getInstance().getSession(contextSessionId);
+        logger.info("urlPath: {}, session: {}", urlPath, session);
+        RequestContext.of(urlPath, session);
+
+        // 필터 작동
         filterChain.doFilter(httpRequest, httpResponse);
+    }
+
+
+    private Integer getContextSessionId(String cookieStringValue) {
+        Optional<String> sessionId = Optional.ofNullable(CookieUtil.getCookieValue(cookieStringValue, CookieUtil.sessionId));
+        return sessionId.map(Integer::parseInt).orElse(null);
     }
 
     @Override

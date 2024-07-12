@@ -27,7 +27,7 @@ public class Main {
                 logger.info("Client  connected");
 
                 // 클라이언트 요청을 처리하기 위해 스레드 풀에 작업 제출
-                threadPool.submit(new ClientHandler(clientSocket));
+                threadPool.submit(new ClientThread(clientSocket));
             }
         } catch (IOException e) {
             logger.error("Could not start server: {}", e.getMessage());

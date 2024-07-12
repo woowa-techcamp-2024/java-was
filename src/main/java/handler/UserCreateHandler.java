@@ -1,15 +1,18 @@
 package handler;
 
+import static util.HeaderStringUtil.CONTENT_TYPE;
+
 import dto.UserDto;
 import http.HttpRequest;
 import http.HttpResponse;
 import http.ResponseValueSetter;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 import service.UserService;
+import util.LoggerUtil;
 
 public class UserCreateHandler extends MyHandler {
-    private final Logger logger = Logger.getLogger(UserCreateHandler.class.getName());
+    private static final Logger logger = LoggerUtil.getLogger();
 
     // TODO: 이런식으로 json 형태로 요청이나 응답을 보내는 경우
     // TODO: Content-Type을 application/json으로 설정하는 클래스를 하나 더 만들 계획
@@ -30,7 +33,7 @@ public class UserCreateHandler extends MyHandler {
             bodyParams.get("email")
         );
         userService.createUser(userDto);
-        httpResponse.getHeader().addKey("Content-Type", "text/html");
+        httpResponse.getHeader().addKey(CONTENT_TYPE, "text/html");
         logger.info("redirect to /index.html");
         ResponseValueSetter.redirect(httpRequest, httpResponse, "/index.html");
     }

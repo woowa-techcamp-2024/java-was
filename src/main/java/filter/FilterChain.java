@@ -6,15 +6,14 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.startline.RequestLine;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import util.LoggerUtil;
+import util.RequestContext;
 
 public class FilterChain {
 
-    // filter의 이름과 filter 객체를 매핑
-    private final Map<Pattern, Filter> filterMapping;
+    private static final Logger logger = LoggerUtil.getLogger();
 
     // filter를 순서대로 넣는 리스트
     private final List<Filter> filters;
@@ -28,11 +27,6 @@ public class FilterChain {
     private int count = 0;
 
     public FilterChain() {
-        this.filterMapping = new HashMap<>(
-            Map.of(
-                Pattern.compile(".*"), new LoginFilter()
-            )
-        );
         this.filters = List.of(
             new LoginFilter()
         );
@@ -50,6 +44,13 @@ public class FilterChain {
         }
 
         // handler 매핑하기
+        RequestContext.current().getSession().ifPresentOrElse(
+            session -> logger.info("session: {}", session),
+            () -> logger.info("session is null")
+        );
+
+
+
         MyHandlerMapper handlerMapper = MyHandlerMapper.getInstance();
         RequestLine requestLine = (RequestLine) httpRequest.getStartLine();
         MyHandler chosenHandler = handlerMapper.findHandler(requestLine.getUrlPath().getPath());

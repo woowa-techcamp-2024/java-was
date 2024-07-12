@@ -14,6 +14,10 @@ public class UserRepository {
     private UserRepository() {
     }
 
+    public User[] findAll() {
+        return users.values().toArray(new User[0]);
+    }
+
     public void addUser(User user) {
         if (users.containsKey(user.getUserId())) {
             return;

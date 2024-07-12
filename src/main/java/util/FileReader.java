@@ -18,9 +18,9 @@ public class FileReader {
 
     }
 
-    public static byte[] readFileFromUrlPath(UrlPath urlPath) throws IOException {
+    public static byte[] readFileFromUrlPath(String urlPath) throws IOException {
         FilePath filePath = new FilePath(staticPath);
-        FilePath join = filePath.join(urlPath.getPath());
+        FilePath join = filePath.join(urlPath);
 
         File file = new File(join.getPath());
         byte[] fileContent = null;
@@ -38,6 +38,10 @@ public class FileReader {
         }
 
         return fileContent;
+    }
+
+    public static byte[] readFileFromUrlPath(UrlPath urlPath) throws IOException {
+        return readFileFromUrlPath(urlPath.getPath());
     }
 
     public static String guessContentTypeFromUrlPath(UrlPath urlPath) {
