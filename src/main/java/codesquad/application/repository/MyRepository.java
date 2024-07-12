@@ -1,5 +1,7 @@
 package codesquad.application.repository;
 
+import codesquad.application.domain.User;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,8 +15,9 @@ public class MyRepository {
         map.put(key, value);
     }
 
-    public void find(String key) {
-        map.get(key);
+    public User findUser(String key) {
+        if (key == null) return null;
+        return (User) map.get(key);
     }
 
     public void delete(String key) {

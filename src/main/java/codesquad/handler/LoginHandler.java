@@ -2,6 +2,8 @@ package codesquad.handler;
 
 import codesquad.application.domain.User;
 import codesquad.application.repository.MyRepository;
+import codesquad.context.SessionContext;
+import codesquad.context.SessionContextManager;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.HttpStatus;
@@ -16,8 +18,10 @@ public class LoginHandler implements HttpHandler {
     private final MyRepository repository = MyRepository.source;
     private final Logger logger = LoggerFactory.getLogger(LoginHandler.class);
     private final Map<String, Function<HttpRequest, HttpResponse>> handlers = Map.of(
-            "/registration", this::login,
-            "/user/create", this::createUser
+            "/registration", this::registrationPage,
+            "/user/create", this::createUser,
+            "/login", this::loginPage,
+            "/signin", this::login
     );
 
     @Override
@@ -32,7 +36,7 @@ public class LoginHandler implements HttpHandler {
     }
 
     // get /registration
-    public HttpResponse login(HttpRequest request) {
+    public HttpResponse registrationPage(HttpRequest request) {
         HttpResponse response = HttpResponse.of(HttpStatus.MOVED_PERMANENTLY);
         response.addHeader("Location", "/registration/index.html");
         return response;
@@ -68,5 +72,43 @@ public class LoginHandler implements HttpHandler {
         Object bodyParam = request.getBodyParam(attr);
         if (bodyParam instanceof String) return (String) bodyParam;
         return null;
+    }
+
+    private HttpResponse loginPage(HttpRequest request) {
+        HttpResponse response = HttpResponse.of(HttpStatus.MOVED_PERMANENTLY);
+        response.addHeader("Location", "/login/index.html");
+        return response;
+    }
+
+    private HttpResponse login(HttpRequest request) {
+
+        HttpResponse response;
+        if (!(
+                request.method.equals("POST") &&
+                request.getHeader("Content-Type").contains("application/x-www-form-urlencoded")
+        )) {
+            response = HttpResponse.of(HttpStatus.BAD_REQUEST);
+            return response;
+        }
+
+        String userId = readSingleBodyParam(request, "userId");
+        String password = readSingleBodyParam(request, "password");
+
+        User user = repository.findUser(userId);
+        if (user != null && user.getPassword().equals(password)) {
+
+            String sid = SessionContextManager.createContext();
+            SessionContext context = SessionContextManager.getContext(sid);
+            context.setAttributes("user", user);
+
+            response = HttpResponse.of(HttpStatus.SEE_OTHER);
+            response.addHeader("Location", "/index.html");
+            response.addHeader("Set-Cookie", "SID=" + sid);
+        } else {
+            response = HttpResponse.of(HttpStatus.SEE_OTHER);
+            response.addHeader("Location", "/login/fail.html");
+        }
+
+        return response;
     }
 }
