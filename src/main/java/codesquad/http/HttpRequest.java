@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -13,7 +15,7 @@ import java.util.*;
  */
 public class HttpRequest {
 
-    public final String method;
+    public final Method method;
     public final String path;
     public final String version;
 
@@ -29,20 +31,22 @@ public class HttpRequest {
             String line = br.readLine();
 
             String[] tokens = line.split(" ");
-            method = tokens[0];
+            method = Method.of(tokens[0]);
             path = getAndGetPath(tokens[1]);
             version = tokens[2];
 
-            while (!(line = br.readLine()).isEmpty()) {
+            line = br.readLine();
+            while (line != null && !line.isEmpty()) {
                 tokens = line.split(": ");
                 headers.put(tokens[0], tokens[1]);
+                line = br.readLine();
             }
 
             if (existBody()) {
                 int contentLength = Integer.parseInt(headers.get("Content-Length"));
                 char[] body = new char[contentLength];
                 br.read(body, 0, contentLength);
-                this.body = new String(body);
+                this.body = URLDecoder.decode(new String(body), StandardCharsets.UTF_8);
                 if (headers.get("Content-Type").equals("application/x-www-form-urlencoded"))
                     initFormData(this.body);
             }

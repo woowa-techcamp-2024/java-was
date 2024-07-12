@@ -19,6 +19,7 @@ class HttpRequestTest {
                 GET / HTTP/1.1
                 Host: localhost:8080
                 Connection: keep-alive
+                Content-Type: text/plain
                 Content-Length: 12
                 Accept: text/html
                 
@@ -31,7 +32,7 @@ class HttpRequestTest {
 
         // then
         assertAll(
-                () -> assertThat(httpRequest.method).isEqualTo("GET"),
+                () -> assertThat(httpRequest.method).isEqualTo(Method.GET),
                 () -> assertThat(httpRequest.path).isEqualTo("/"),
                 () -> assertThat(httpRequest.version).isEqualTo("HTTP/1.1"),
                 () -> assertThat(httpRequest.getHeader("Host")).isEqualTo("localhost:8080"),
