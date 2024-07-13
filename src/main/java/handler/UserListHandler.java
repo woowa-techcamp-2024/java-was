@@ -20,7 +20,7 @@ public class UserListHandler extends MyHandler {
             ));
 
         if (user.isEmpty()) {
-            ResponseValueSetter.redirect(httpRequest, httpResponse, "/index.html");
+            ResponseValueSetter.redirect(httpRequest, httpResponse, "/login/index.html");
             return;
         }
 
