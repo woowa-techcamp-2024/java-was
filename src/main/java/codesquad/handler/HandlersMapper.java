@@ -2,29 +2,26 @@ package codesquad.handler;
 
 import codesquad.http.HttpRequest;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class HandlersMapper {
 
-    private final Map<String, RequestHandler> requestHandlers = new HashMap<>();
-
-    {
-        requestHandlers.put("/user/login", UserLoginHandler.getInstance());
-        requestHandlers.put("/user/logout", UserLogoutHandler.getInstance());
-        requestHandlers.put("/user/create", UserRegistrationHandler.getInstance());
-        requestHandlers.put("/user/list", UserListHandler.getInstance());
-        requestHandlers.put("/", DynamicResourceHandler.getInstance());
-    }
+    private final Map<String, RequestHandler> requestHandlers = Map.of(
+            "/user/login", UserLoginHandler.getInstance(),
+            "/user/logout", UserLogoutHandler.getInstance(),
+            "/user/create", UserRegistrationHandler.getInstance(),
+            "/user/list", UserListHandler.getInstance(),
+            "/", DynamicResourceHandler.getInstance()
+    );
 
     public RequestHandler getRequestHandler(HttpRequest httpRequest) {
         String uri = httpRequest.uri();
         return requestHandlers.entrySet()
                 .stream()
-                .filter(entry -> uri.startsWith(entry.getKey()))
-                .findFirst()
+                .filter(entry -> entry.getKey().equals(uri))
+                .findAny()
                 .map(Map.Entry::getValue)
-                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 해당 요청을 처리할 수 있는 핸들러가 없습니다. uri: " + uri));
+                .orElse(DynamicResourceHandler.getInstance());
     }
 
 }

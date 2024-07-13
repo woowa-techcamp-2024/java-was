@@ -28,6 +28,7 @@ public final class HttpRequestParser implements Parser<HttpRequest> {
 
     @Override
     public HttpRequest parse(String requestText) {
+        // TODO 예외 처리 + optional whitespace 처리
         if (requestText == null || requestText.isEmpty()) {
             return null;
         }

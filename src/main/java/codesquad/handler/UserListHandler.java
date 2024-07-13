@@ -9,8 +9,8 @@ import codesquad.http.session.SessionContextHolder;
 import codesquad.http.session.SessionManager;
 import codesquad.model.User;
 import codesquad.model.UserDataBase;
+import codesquad.resource.DirectoryIndexResolver;
 import codesquad.resource.Resource;
-import codesquad.resource.ResourcesReader;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +21,7 @@ public class UserListHandler extends RequestHandler {
 
     private final UserDataBase userDataBase = UserDataBase.getInstance();
     private final SessionManager sessionManager = SessionManager.getInstance();
+    private final DirectoryIndexResolver directoryIndexResolver = DirectoryIndexResolver.getInstance();
 
     private UserListHandler() {
     }
@@ -42,7 +43,7 @@ public class UserListHandler extends RequestHandler {
             return responseGenerator.sendRedirect(httpRequest, "/login");
         }
 
-        Resource resource = ResourcesReader.readResource("/static/user/index.html")
+        Resource resource = directoryIndexResolver.resolve("/user")
                 .orElseThrow(() -> new HttpStatusException(StatusCode.NOT_FOUND));
         String content = new String(resource.getContent());
         List<User> users = userDataBase.findAll();
