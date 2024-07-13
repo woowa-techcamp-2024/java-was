@@ -1,41 +1,36 @@
 package codesquad.was.dispatcherServlet;
 
 import codesquad.was.exception.CommonException;
-import codesquad.was.exception.MethodNotAllowedException;
 import codesquad.was.exception.NotFoundException;
 import codesquad.was.handler.Handler;
 import codesquad.was.handler.HandlerMap;
+import codesquad.was.render.HtmlTemplateRender;
+import codesquad.was.render.Model;
 import codesquad.was.request.HttpRequest;
 import codesquad.was.common.HttpStatusCode;
 import codesquad.was.response.HttpResponse;
+import codesquad.was.session.Session;
+import codesquad.was.user.User;
 import codesquad.was.util.ResourceGetter;
 import codesquad.was.util.UrlPathResourceMap;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class DispatcherServlet {
 
     public HttpResponse callHandler(HttpRequest request) throws IOException{
         Handler handler = HandlerMap.getHandler(request.getUrlPath());
 
-        try {
-            if (handler == null) {
-                return staticResponse(request);
-            }
-            HttpResponse response = handler.doBusinessByMethod(request);
-            if(response == null) {
-                try {
-                    return staticResponse(request);
-                } catch (Exception e) {
-                    throw new MethodNotAllowedException();
-                }
-            }
+        // url 과 매핑이 안되면
+        if (handler == null) {
+            return staticResponse(request);
+        }
 
-            return response;
-        } catch (CommonException e) {
-            HttpResponse response = new HttpResponse();
-            response.setStatusCode(e.getHttpStatusCode());
-            return response;
+        try {
+            return handler.doBusinessByMethod(request);
+        } catch (CommonException e) { // method 와 매핑이 안되면
+            return staticResponse(request);
         }
     }
 
@@ -45,12 +40,22 @@ public class DispatcherServlet {
         String urlPath = request.getUrl().getPath();
         String resourcePath = UrlPathResourceMap.getResourcePathByUrlPath(urlPath);
 
-        byte[] body = ResourceGetter.getResourceBytesByPath(resourcePath);
-
-        response.setBody(body);
         response.setStatusCode(HttpStatusCode.OK);
         response.setContentType(ResourceGetter.getContentTypeByPath(resourcePath));
 
+        byte[] htmlBytes = ResourceGetter.getResourceBytesByPath(resourcePath);
+
+        Model model = new Model();
+        User user = (User) request.getSession().getAttribute(Session.userStr);
+
+        if (user != null) {
+            System.out.println("로그인 된 요청");
+            model.addSingleData("userName",user.getUsername());
+        }
+
+        String renderedHtml = HtmlTemplateRender.render(new String(htmlBytes, StandardCharsets.UTF_8), model);
+        response.setBody(renderedHtml.getBytes(StandardCharsets.UTF_8));
+        System.out.println("정적 파일 전송");
         return response;
     }
 }

@@ -1,6 +1,7 @@
 package codesquad.was.response;
 
 import codesquad.was.common.HttpCookie;
+import codesquad.was.mime.Mime;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.io.ByteArrayOutputStream;
@@ -35,7 +36,7 @@ class HttpResponseSenderTest {
     @Test
     void sendHttpResponse_withValidResponse_writesCorrectOutput() throws IOException {
         response.setStatusCode(HttpStatusCode.OK);
-        response.setContentType("text/html");
+        response.setContentType(Mime.TEXT_HTML);
         byte[] bytes = "Hello, World!".getBytes(StandardCharsets.UTF_8);
         response.setBody(bytes);
         response.addHeader("Set-Cookie", "sessionId=abc123");
@@ -59,7 +60,7 @@ class HttpResponseSenderTest {
     @Test
     void sendHttpResponse_withNoBody_writesCorrectOutput() throws IOException {
         response.setStatusCode(HttpStatusCode.NO_CONTENT);
-        response.setContentType("text/plain");
+        response.setContentType(Mime.TEXT_HTML);
 
         HttpResponseSender.sendHttpResponse(outputStream, response);
 
@@ -71,13 +72,13 @@ class HttpResponseSenderTest {
         String headers = new String(allValues.get(1), StandardCharsets.UTF_8);
 
         assertEquals("HTTP/1.1 204\r\n", statusLine);
-        assertEquals("Content-Type: text/plain\r\nContent-Length: 0\r\n\r\n", headers);
+        assertEquals("Content-Type: text/html\r\nContent-Length: 0\r\n\r\n", headers);
     }
 
     @Test
     void sendHttpResponse_withMultipleHeaders_writesCorrectOutput() throws IOException {
         response.setStatusCode(HttpStatusCode.OK);
-        response.setContentType("application/json");
+        response.setContentType(Mime.APPLICATION_JSON);
         byte[] bytes = "{\"message\":\"success\"}".getBytes(StandardCharsets.UTF_8);
         response.setBody(bytes);
         response.addHeader("X-Custom-Header", "value1");
@@ -106,7 +107,7 @@ class HttpResponseSenderTest {
         // HttpResponse 객체 생성 및 설정
         HttpResponse response = new HttpResponse();
         response.setStatusCode(HttpStatusCode.OK);
-        response.setContentType("text/html");
+        response.setContentType(Mime.TEXT_HTML);
         response.setBody("Hello, World!".getBytes());
 
         // 쿠키 설정
