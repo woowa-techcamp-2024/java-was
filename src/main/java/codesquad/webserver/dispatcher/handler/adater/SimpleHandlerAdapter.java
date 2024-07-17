@@ -24,7 +24,7 @@ public class SimpleHandlerAdapter implements HandlerAdapter {
     @Override
     public ModelAndView handle(HttpRequest request, Object handler) {
         if (!supports(handler)) {
-            logger.error("Handler not supported");
+            logger.error("Handler not supported : {]", handler);
             ModelAndView mv = new ModelAndView(ViewName.EXCEPTION_VIEW);
             mv.addAttribute(ModelKey.STATUS_CODE, 404);
             return mv;

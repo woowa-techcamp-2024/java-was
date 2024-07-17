@@ -16,7 +16,7 @@ public class FileReader {
     private static final String STATIC_DIRECTORY = "static";
     private static final String BASE_FILE = "index.html";
 
-    public FileResource read(String requestPath) throws FileNotFoundException {
+    public FileResource read(String requestPath) throws FileNotFoundException, IOException {
         String fileName = getFileName(requestPath);
         String fullPath = STATIC_DIRECTORY + "/" + fileName;
         InputStream inputStream = getResourceAsStream(fullPath);

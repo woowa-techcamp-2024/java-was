@@ -3,10 +3,16 @@ package codesquad.webserver.config.conatiner;
 import codesquad.webserver.WebServer;
 import codesquad.webserver.annotation.Component;
 import codesquad.webserver.annotation.Controller;
+import codesquad.webserver.annotation.RequestMapping;
+import codesquad.webserver.dispatcher.handler.mapping.HandlerMapping;
+import codesquad.webserver.dispatcher.requesthandler.RequestHandler;
 import codesquad.webserver.filter.Filter;
 import codesquad.webserver.filter.FilterChain;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +45,40 @@ public class SimpleApplicationContext implements ApplicationContext {
         beanContainer.instantiateAndRegister();
 
         initFilterCharin(scannedClasses);
+        initHandler(scannedClasses);
         startWebServer();
 
         logger.debug("Application context initialization completed");
+    }
+
+    private void initHandler(Set<Class<?>> scannedClasses) {
+        logger.debug("Initializing handler");
+        HandlerMapping handlerMapping = beanContainer.getBean(HandlerMapping.class);
+        Class<? extends HandlerMapping> handlerClazz = handlerMapping.getClass();
+        Map<String, Object> handlers = new HashMap<>();
+
+            for (Class<?> clazz : scannedClasses) {
+                if (RequestHandler.class.isAssignableFrom(clazz) && clazz.isAnnotationPresent(Controller.class)) {
+                    RequestMapping classMapping = clazz.getAnnotation(RequestMapping.class);
+                    if (classMapping != null && classMapping.path().length > 0) {
+                        try {
+                            Object handler = beanContainer.getBean(toBeanName(clazz.getSimpleName()));
+                            for (String path : classMapping.path()) {
+                                handlers.put(path, handler);
+                            }
+
+                            Field handlersField = handlerClazz.getDeclaredField("handlers");
+                            handlersField.setAccessible(true);
+                            handlersField.set(handlerMapping, handlers);
+                        } catch (Exception e) {
+                            logger.error("Error while initializing handler for class: " + clazz.getName(), e);
+                        }
+                    } else {
+                        logger.warn("Controller {} does not have a valid RequestMapping", clazz.getName());
+                    }
+                }
+            }
+            logger.debug("Handler initialization completed. Total handlers: {}", handlers.size());
     }
 
     private void initFilterCharin(Set<Class<?>> scannedClasses) {
@@ -75,7 +112,10 @@ public class SimpleApplicationContext implements ApplicationContext {
     }
 
     private Set<Class<?>> findBeanClasses(Set<Class<?>> scannedClasses) {
-        return annotationScanner.findAnnotatedClasses(scannedClasses, Component.class, Controller.class, codesquad.webserver.annotation.Filter.class);
+        return annotationScanner.findAnnotatedClasses(scannedClasses,
+                Component.class,
+                Controller.class,
+                codesquad.webserver.annotation.Filter.class);
     }
 
     private void registerBeans(Set<Class<?>> beanClasses) {

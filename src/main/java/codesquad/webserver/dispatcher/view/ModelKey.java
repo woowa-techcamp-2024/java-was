@@ -12,5 +12,12 @@ public final class ModelKey {
     public static final String METHOD = "method";
     public static final String PATH = "path";
 
+    public static final String ARTICLES = "articles";
+    public static final String CURRENT_PAGE = "currentPage";
+    public static final String HAS_PREVIOUS_PAGE = "hasPreviousPage";
+    public static final String PREVIOUS_PAGE = "previousPage";
+    public static final String HAS_NEXT_PAGE = "hasNextPage";
+    public static final String NEXT_PAGE = "nextPage";
+
     private ModelKey() {};
 }

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="./reset.css" rel="stylesheet"/>
+    <link href="./global.css" rel="stylesheet"/>
+    <link href="./main.css" rel="stylesheet"/>
+    <style>
+        .write-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .write-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .write-form input[type="text"],
+        .write-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .write-form input[type="text"] {
+            height: 40px;
+        }
+
+        .write-form textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .image-upload {
+            margin-top: 10px;
+        }
+
+        .image-upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .image-upload-area.dragover {
+            background-color: #f0f0f0;
+        }
+
+        .image-upload input[type="file"] {
+            display: none;
+        }
+
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .image-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="./img/signiture.svg" alt="로고"/></a>
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/">홈으로</a>
+            </li>
+        </ul>
+    </header>
+    <div class="write-container">
+        <h1>새 글 작성</h1>
+        <form class="write-form" action="/write" method="post" enctype="multipart/form-data"
+              onsubmit="return validateForm()">
+            <input type="text" name="title" placeholder="제목을 입력하세요..." required/>
+            <textarea name="content" placeholder="내용을 입력하세요..." required></textarea>
+            <div class="image-upload">
+                <div id="drop-area" class="image-upload-area">
+                    <p>이미지를 여기에 드래그하거나 클릭하여 업로드하세요 (최대 5개)</p>
+                    <input type="file" id="image-upload" name="images" accept="image/*" multiple/>
+                </div>
+                <div class="image-preview" id="image-preview"></div>
+            </div>
+            <button class="btn btn_contained btn_size_m" type="submit">글 올리기</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('image-upload');
+    const preview = document.getElementById('image-preview');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropArea.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        dropArea.classList.remove('dragover');
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    dropArea.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', function (e) {
+        handleFiles(this.files);
+    });
+
+    function handleFiles(files) {
+        preview.innerHTML = '';  // Clear existing previews
+        ([...files]).forEach((file, index) => {
+            if (index >= 5) return;  // Limit to 5 images
+            if (!file.type.startsWith('image/')) return;  // Only process images
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.title = file.name;
+                preview.appendChild(img);
+            }
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function validateForm() {
+        const files = fileInput.files;
+        if (files.length === 0) {
+            alert("최소 1개의 이미지를 첨부해주세요.");
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

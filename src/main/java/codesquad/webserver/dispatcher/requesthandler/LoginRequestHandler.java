@@ -1,15 +1,15 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
 import codesquad.webserver.annotation.Autowired;
-import codesquad.webserver.annotation.Component;
+import codesquad.webserver.annotation.Controller;
+import codesquad.webserver.annotation.RequestMapping;
 import codesquad.webserver.db.user.UserDatabase;
 import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.dispatcher.view.ModelKey;
-import codesquad.webserver.dispatcher.view.TemplateView;
 import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.model.User;
+import codesquad.webserver.db.user.User;
 import codesquad.webserver.parser.QueryStringParser;
 import codesquad.webserver.session.Session;
 import codesquad.webserver.session.SessionManager;
@@ -23,11 +23,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
+@Controller
+@RequestMapping(path = "/login")
 public class LoginRequestHandler extends AbstractRequestHandler {
 
     private static final String REDIRECT_PATH = "/";
-    private static final String LOGIN_FAIL_REDIRECT_PATH = "/user/login_failed.html";
+    private static final String LOGIN_FAIL_REDIRECT_PATH = "/login/login_failed";
     private static final String USERNAME_PARAM = "username";
     private static final String PASSWORD_PARAM = "password";
     private static final String COOKIE_NAME = "SID";
@@ -51,20 +52,21 @@ public class LoginRequestHandler extends AbstractRequestHandler {
             return new ModelAndView(ViewName.TEMPLATE_VIEW)
                     .addAttribute(ModelKey.CONTENT, readFileContent(file));
         } catch (IOException e) {
-            return new ModelAndView(ViewName.EXCEPTION_VIEW)
+            return new ModelAndView(ViewName.TEMPLATE_VIEW)
                     .addAttribute(ModelKey.STATUS_CODE, 404)
-                    .addAttribute(ModelKey.ERROR_MESSAGE, "Login page not found");
+                    .addAttribute(ModelKey.CONTENT, "Login page not found");
         }
     }
 
     @Override
     protected ModelAndView handlePost(HttpRequest request) {
-        Map<String, String> params = QueryStringParser.parse(request.body());
+        Map<String, String> params = QueryStringParser.parse(request.getBody());
         String username = params.get(USERNAME_PARAM);
         String password = params.get(PASSWORD_PARAM);
 
         try {
-            User user = userDatabase.findByUserId(username);
+            User user = userDatabase.findByUserId(username)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
             if (isValidPassword(user, password)) {
                 logger.info("로그인 성공: {}", username);
                 return createSuccessResponse(user);

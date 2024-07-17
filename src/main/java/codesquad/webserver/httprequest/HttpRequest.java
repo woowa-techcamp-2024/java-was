@@ -2,17 +2,49 @@ package codesquad.webserver.httprequest;
 
 
 import codesquad.webserver.parser.RequestLine;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public record HttpRequest(RequestLine requestLine, Map<String, List<String>> headers, Map<String, String> params,
-                          String body) {
+public class HttpRequest {
+
+    private RequestLine requestLine;
+    private Map<String, List<String>> headers;
+    private Map<String, String> params;
+    private String body;
+    private Map<String, List<String>> multipartFields = new HashMap<>();
+    ;
+    private Map<String, List<FileItem>> multipartFiles = new HashMap<>();
+    ;
+
+    public HttpRequest() {
+    }
+
+    public HttpRequest(RequestLine requestLine, Map<String, List<String>> headers, Map<String, String> params,
+                       String body) {
+        this.requestLine = requestLine;
+        this.headers = headers;
+        this.params = params;
+        this.body = body;
+    }
+
+    public HttpRequest(RequestLine requestLine, Map<String, List<String>> headers, Map<String, String> params,
+                       String body,
+                       Map<String, List<String>> multipartFields, Map<String, List<FileItem>> multipartFiles) {
+        this.requestLine = requestLine;
+        this.headers = headers;
+        this.params = params;
+        this.body = body;
+        this.multipartFields = multipartFields;
+        this.multipartFiles = multipartFiles;
+    }
 
     private static final String SESSION_KEY = "SID";
 
     public String getSessionIdFromRequest() {
-        List<String> cookie = this.headers().get("Cookie");
+        List<String> cookie = this.headers.get("Cookie");
         if (cookie == null || cookie.isEmpty()) {
             return "";
         }
@@ -29,6 +61,59 @@ public record HttpRequest(RequestLine requestLine, Map<String, List<String>> hea
         }
 
         return sessionId.get();
+    }
+
+    public RequestLine getRequestLine() {
+        return requestLine;
+    }
+
+    public Map<String, List<String>> getHeaders() {
+        return Collections.unmodifiableMap(headers);
+    }
+
+    public Map<String, String> getParams() {
+        return Collections.unmodifiableMap(params);
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public HttpRequest setRequestLine(RequestLine requestLine) {
+        this.requestLine = requestLine;
+        return this;
+    }
+
+    public HttpRequest setHeaders(Map<String, List<String>> headers) {
+        this.headers = headers;
+        return this;
+    }
+
+    public HttpRequest setParams(Map<String, String> params) {
+        this.params = params;
+        return this;
+    }
+
+    public HttpRequest setBody(String body) {
+        this.body = body;
+        return this;
+    }
+
+    public Map<String, List<String>> getMultipartFields() {
+        return multipartFields;
+    }
+
+    public void setMultipartFields(Map<String, List<String>> multipartFields) {
+        this.multipartFields = multipartFields;
+    }
+
+    public Map<String, List<FileItem>> getMultipartFiles() {
+        return multipartFiles;
+    }
+
+    public void setMultipartFiles(
+            Map<String, List<FileItem>> multipartFiles) {
+        this.multipartFiles = multipartFiles;
     }
 
     @Override
@@ -48,5 +133,30 @@ public record HttpRequest(RequestLine requestLine, Map<String, List<String>> hea
         }
 
         return httpRequestString.toString();
+    }
+
+    public static class FileItem {
+        public final String filename;
+        public final byte[] content;
+
+        public FileItem(String filename, byte[] content) {
+            this.filename = filename;
+            this.content = content;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public byte[] getContent() {
+            return content;
+        }
+
+        @Override
+        public String toString() {
+            return "FileItem{" +
+                    "filename='" + filename +
+                    '}';
+        }
     }
 }

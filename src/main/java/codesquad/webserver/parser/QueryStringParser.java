@@ -1,5 +1,6 @@
 package codesquad.webserver.parser;
 
+import codesquad.webserver.httprequest.HttpRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -34,11 +35,13 @@ public abstract class QueryStringParser {
         return params;
     }
 
-    public static Map<String, String> parseQueryString(String url) {
+    public static void parseQueryString(HttpRequest request) {
+        String url = request.getRequestLine().getFullPath();
         String[] urlParts = url.split("\\?");
         if (urlParts.length == 2) {
-            return parse(urlParts[1]);
+            request.setParams(parse(urlParts[1]));
+            return;
         }
-        return new HashMap<>();
+        request.setParams(new HashMap<>());
     }
 }

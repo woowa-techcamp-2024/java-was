@@ -1,7 +1,5 @@
 package codesquad.webserver.db.user;
 
-import codesquad.webserver.annotation.Component;
-import codesquad.webserver.model.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +7,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
 public class InMemoryUserDatabase implements UserDatabase {
 
     private static final Logger logger = LoggerFactory.getLogger(InMemoryUserDatabase.class);
@@ -30,9 +27,8 @@ public class InMemoryUserDatabase implements UserDatabase {
     }
 
     @Override
-    public User findByUserId(String userId) {
-        return Optional.ofNullable(users.get(userId))
-                .orElseThrow(() -> new IllegalArgumentException("User with id " + userId + " not found"));
+    public Optional<User> findByUserId(String userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
@@ -43,13 +39,6 @@ public class InMemoryUserDatabase implements UserDatabase {
     @Override
     public boolean existsByUserId(String userId) {
         return users.containsKey(userId);
-    }
-
-    @Override
-    public void print() {
-        for (String s : users.keySet()) {
-            logger.debug("가입한 사용자 : {}", s);
-        }
     }
 
     @Override

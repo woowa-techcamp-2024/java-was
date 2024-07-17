@@ -2,6 +2,8 @@ package codesquad.webserver.dispatcher.requesthandler;
 
 import codesquad.webserver.annotation.Autowired;
 import codesquad.webserver.annotation.Component;
+import codesquad.webserver.annotation.Controller;
+import codesquad.webserver.annotation.RequestMapping;
 import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.dispatcher.view.ModelKey;
 import codesquad.webserver.dispatcher.view.ViewName;
@@ -9,7 +11,8 @@ import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
 import java.io.IOException;
 
-@Component
+@Controller
+@RequestMapping(path = "/register")
 public class RegisterRequestHandler extends AbstractRequestHandler {
 
     private static final String FILE_PATH = "/registration/index.html";

@@ -16,7 +16,7 @@ public abstract class AbstractRequestHandler implements RequestHandler {
 
     @Override
     public ModelAndView handle(HttpRequest request) {
-        switch (request.requestLine().method()) {
+        switch (request.getRequestLine().getMethod()) {
             case GET:
                 return handleGet(request);
             case POST:
@@ -50,8 +50,8 @@ public abstract class AbstractRequestHandler implements RequestHandler {
         ModelAndView mv = new ModelAndView(ViewName.EXCEPTION_VIEW);
         mv.addAttribute(ModelKey.STATUS_CODE, 405);
         mv.addAttribute(ModelKey.ERROR_MESSAGE, "Method Not Allowed");
-        mv.addAttribute(ModelKey.METHOD, request.requestLine().method());
-        mv.addAttribute(ModelKey.PATH, request.requestLine().path());
+        mv.addAttribute(ModelKey.METHOD, request.getRequestLine().getMethod());
+        mv.addAttribute(ModelKey.PATH, request.getRequestLine().getPath());
         return mv;
     }
 }

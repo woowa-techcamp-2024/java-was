@@ -1,5 +1,6 @@
 package codesquad.webserver.parser;
 
+import codesquad.webserver.httprequest.HttpRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,7 +10,7 @@ import java.util.Map;
 
 public abstract class HeaderParser {
 
-    public static Map<String, List<String>> parse(BufferedReader in) throws IOException {
+    public static void parse(BufferedReader in, HttpRequest request) throws IOException {
         String headerLine;
         Map<String, List<String>> headers = new HashMap<>();
         while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
@@ -20,6 +21,7 @@ public abstract class HeaderParser {
                 headers.computeIfAbsent(headerName, k -> new ArrayList<>()).add(headerValue);
             }
         }
-        return headers;
+
+        request.setHeaders(headers);
     }
 }

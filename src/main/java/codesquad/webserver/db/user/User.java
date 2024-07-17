@@ -1,4 +1,4 @@
-package codesquad.webserver.model;
+package codesquad.webserver.db.user;
 
 import java.util.Map;
 

@@ -1,6 +1,6 @@
 package codesquad.webserver.session;
 
-import codesquad.webserver.model.User;
+import codesquad.webserver.db.user.User;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

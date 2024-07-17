@@ -15,6 +15,7 @@ public class ExceptionView implements View {
         int statusCode = (int) Optional.ofNullable(objectMap.get("statusCode")).orElse(500);
         HttpResponse response = HttpResponseBuilder.serverError().build();
         switch (statusCode) {
+            case 405 -> response = HttpResponseBuilder.buildForbiddenFromFile();
             case 404 -> response = HttpResponseBuilder.buildNotFoundFromFile();
             case 403 -> response = HttpResponseBuilder.buildForbiddenFromFile();
         }

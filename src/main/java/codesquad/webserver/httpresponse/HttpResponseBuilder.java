@@ -1,7 +1,7 @@
 package codesquad.webserver.httpresponse;
 
-import codesquad.webserver.session.cookie.HttpCookie;
 import codesquad.webserver.filereader.FileReader;
+import codesquad.webserver.session.cookie.HttpCookie;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +27,7 @@ public class HttpResponseBuilder {
         mimeTypes.put("gif", "image/gif");
         mimeTypes.put("svg", "image/svg+xml");
         mimeTypes.put("ico", "image/x-icon");
+        mimeTypes.put("txt", "text/plain");
         MIME_TYPES = Collections.unmodifiableMap(mimeTypes);
     }
 
@@ -99,7 +100,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildNotFoundFromFile() {
         try {
-            return buildFromFile(new FileReader().read("/404.html"), 404, "NotFound");
+            return buildFromFile(new FileReader().read("error/404.html"), 404, "NotFound");
         } catch (IOException e) {
             return notFound()
                     .body("NotFound".getBytes())
@@ -116,7 +117,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildForbiddenFromFile() {
         try {
-            return buildFromFile(new FileReader().read("/403.html"), 403, "Forbidden");
+            return buildFromFile(new FileReader().read("error/403.html"), 403, "Forbidden");
         } catch (IOException e) {
             return forbidden()
                     .body("Forbidden".getBytes())
@@ -135,8 +136,28 @@ public class HttpResponseBuilder {
         return new HttpResponseBuilder().statusCode(405).statusMessage("Method Not Allowed");
     }
 
+    public static HttpResponse buildMethodNotAllowedFromFile() {
+        try {
+            return buildFromFile(new FileReader().read("error/405.html"), 405, "Method Not Allowed");
+        } catch (IOException e) {
+            return methodNotAllowed()
+                    .body("Method Not Allowed".getBytes())
+                    .build();
+        }
+    }
+
     public static HttpResponseBuilder serverError() {
         return new HttpResponseBuilder().statusCode(500).statusMessage("Internal Server Error");
+    }
+
+    public static HttpResponse buildServerErrorFromFile() {
+        try {
+            return buildFromFile(new FileReader().read("error/500.html"), 500, "Internal Server Error");
+        } catch (IOException e) {
+            return serverError()
+                    .body("ServerError".getBytes())
+                    .build();
+        }
     }
 
     public static HttpResponse buildFromFile(FileReader.FileResource resource, int statusCode, String statusMessage)

@@ -24,18 +24,7 @@ public class StaticResourceHandler {
     }
 
     public HttpResponse handleRequest(HttpRequest request) {
-        String path = request.requestLine().path();
-        if (!resourceResolver.isStaticResource(path)) {
-            return HttpResponseBuilder.notFound().build();
-        }
-
-        // TODO: 임시처리
-        if ("/register.html".equals(path)) {
-            path = "/registration/index.html";
-        } else if("/login.html".equals(path)) {
-            path = "/login/index.html";
-        }
-
+        String path = request.getRequestLine().getPath();
         try {
             FileReader.FileResource resource = fileReader.read(path);
             return HttpResponseBuilder.buildFromFile(resource);

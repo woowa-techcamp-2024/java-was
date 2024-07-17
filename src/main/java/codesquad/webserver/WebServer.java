@@ -4,11 +4,11 @@ import codesquad.webserver.annotation.Autowired;
 import codesquad.webserver.annotation.Component;
 import codesquad.webserver.dispatcher.DispatcherServlet;
 import codesquad.webserver.filter.FilterChain;
-import codesquad.webserver.staticresouce.StaticResourceHandler;
-import codesquad.webserver.staticresouce.StaticResourceResolver;
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.httpresponse.HttpResponse;
 import codesquad.webserver.parser.HttpParser;
+import codesquad.webserver.staticresouce.StaticResourceHandler;
+import codesquad.webserver.staticresouce.StaticResourceResolver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,10 +23,6 @@ import org.slf4j.LoggerFactory;
 @Component
 public class WebServer {
 
-    private static final int TCP_KEEP_ALIVE_TIME = 30000; //ms단위
-    private static final String KEEP_ALIVE = "keep-alive";
-    private static final String KEEP_ALIVE_CLOSE = "close";
-    private static final String KEEP_ALIVE_HEADER = "Connection";
     private static final int PORT = 8080;
     private static final int POOL_SIZE = 10;
 
@@ -38,7 +34,8 @@ public class WebServer {
     private final FilterChain filterChain;
 
     @Autowired
-    public WebServer(DispatcherServlet dispatcherServlet, StaticResourceHandler staticResourceHandler, StaticResourceResolver staticResourceResolver, FilterChain filterChain) {
+    public WebServer(DispatcherServlet dispatcherServlet, StaticResourceHandler staticResourceHandler,
+                     StaticResourceResolver staticResourceResolver, FilterChain filterChain) {
         this.threadPool = Executors.newFixedThreadPool(POOL_SIZE);
         this.dispatcherServlet = dispatcherServlet;
         this.staticResourceHandler = staticResourceHandler;
@@ -68,9 +65,9 @@ public class WebServer {
             HttpResponse response = filterChain.doFilter(request);
 
             if (response.getStatusCode() != 200) {
-
-            } else if (staticResourceResolver.isStaticResource(request.requestLine().path())) {
-                logger.debug("정적 경로 처리 중 : {}", request.requestLine().path());
+                
+            } else if (staticResourceResolver.isStaticResource(request.getRequestLine().getPath())) {
+                logger.debug("정적 경로 처리 중 : {}", request.getRequestLine().getPath());
                 response = staticResourceHandler.handleRequest(request);
             } else {
                 response = dispatcherServlet.service(request);

@@ -3,15 +3,23 @@ package codesquad.webserver.parser;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.parser.enums.HttpMethod;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class RequestLineParserTest {
 
+    private HttpRequest request;
+
+    @BeforeEach
+    public void setUp() {
+        request = new HttpRequest();
+    }
 
     @Test
     @DisplayName("정상적인 요청 라인을 파싱해야 한다")
@@ -21,12 +29,13 @@ public class RequestLineParserTest {
         BufferedReader in = new BufferedReader(new StringReader(requestLine));
 
         // When
-        RequestLine result = RequestLineParser.parse(in);
+        RequestLineParser.parse(in, request);
+        RequestLine result = request.getRequestLine();
 
         // Then
-        assertEquals(HttpMethod.GET, result.method());
-        assertEquals("/index.html", result.path());
-        assertEquals("HTTP/1.1", result.httpVersion());
+        assertEquals(HttpMethod.GET, result.getMethod());
+        assertEquals("/index.html", result.getPath());
+        assertEquals("HTTP/1.1", result.getHttpVersion());
     }
 
     @Test
@@ -38,7 +47,7 @@ public class RequestLineParserTest {
 
         // When & Then
         IOException exception = assertThrows(IOException.class, () -> {
-            RequestLineParser.parse(in);
+            RequestLineParser.parse(in, request);
         });
 
         assertEquals("Invalid request line: " + requestLine, exception.getMessage());
@@ -52,7 +61,7 @@ public class RequestLineParserTest {
 
         // When & Then
         IOException exception = assertThrows(IOException.class, () -> {
-            RequestLineParser.parse(in);
+            RequestLineParser.parse(in, request);
         });
 
         assertEquals("Invalid request line", exception.getMessage());
@@ -67,7 +76,7 @@ public class RequestLineParserTest {
 
         // When & Then
         IOException exception = assertThrows(IOException.class, () -> {
-            RequestLineParser.parse(in);
+            RequestLineParser.parse(in, request);
         });
 
         assertEquals("Invalid request line: " + requestLine, exception.getMessage());

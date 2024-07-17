@@ -3,7 +3,7 @@ package codesquad.webserver.parser.enums;
 import java.util.Arrays;
 
 public enum HttpMethod {
-    GET("get"), POST("post"), PUT("put"), DELETE("delete");
+    GET("get"), POST("post"), PUT("put"), DELETE("delete"), PATCH("patch");
 
     private final String description;
 

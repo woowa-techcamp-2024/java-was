@@ -33,6 +33,7 @@ public class BeanContainer {
 
     public void instantiateAndRegister() {
         List<String> remainingBeans = new ArrayList<>(beanClasses.keySet());
+
         while (!remainingBeans.isEmpty()) {
             boolean progress = false;
             Iterator<String> iterator = remainingBeans.iterator();
@@ -84,6 +85,8 @@ public class BeanContainer {
             }
             beans.put(beanName, bean);
             logger.debug("Created and registered bean '{}': {}", beanName, bean);
+        } catch (CircularDependencyException e) {
+            throw e; // 순환 의존성 예외를 그대로 전파
         } catch (Exception e) {
             throw new BeanCreationException("Failed to create bean: " + beanName, e);
         } finally {
@@ -99,6 +102,14 @@ public class BeanContainer {
         return bean;
     }
 
+    public <T> T getBean(Class<T> type) {
+        String beanName = typeToNameMap.get(type);
+        if (beanName == null) {
+            throw new BeanNotFoundException("No bean found for type: " + type.getName());
+        }
+        return (T) getBean(beanName);
+    }
+
     private void registerType(Class<?> type, String name) {
         typeToNameMap.putIfAbsent(type, name);
     }
@@ -112,7 +123,17 @@ public class BeanContainer {
 
     private Object[] getConstructorParams(Constructor<?> constructor) {
         return Arrays.stream(constructor.getParameterTypes())
-                .map(this::resolveParameter)
+                .map(paramType -> {
+                    String dependencyName = typeToNameMap.get(paramType);
+                    if (dependencyName == null) {
+                        throw new BeanNotFoundException("No bean found for type: " + paramType.getName());
+                    }
+                    if (beansInCreation.contains(dependencyName)) {
+                        throw new CircularDependencyException(
+                                "Circular dependency detected for bean: " + dependencyName);
+                    }
+                    return getBean(dependencyName);
+                })
                 .toArray();
     }
 

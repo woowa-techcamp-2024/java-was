@@ -1,5 +1,6 @@
 package codesquad.webserver.parser;
 
+import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.parser.enums.HttpMethod;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +11,7 @@ public abstract class RequestLineParser {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestLineParser.class);
 
-    public static RequestLine parse(BufferedReader in) throws IOException {
+    public static HttpRequest parse(BufferedReader in, HttpRequest request) throws IOException {
         String requestLine = in.readLine();
         if (requestLine == null) {
             throw new IOException("Invalid request line");
@@ -28,7 +29,7 @@ public abstract class RequestLineParser {
 
         logger.debug("Request Line : {} {} {}", method, fullPath, httpVersion);
 
-        return new RequestLine(method, path, fullPath, httpVersion);
+        return request.setRequestLine(new RequestLine(method, path, fullPath, httpVersion));
     }
 
     private static String extractPath(String fullPath){

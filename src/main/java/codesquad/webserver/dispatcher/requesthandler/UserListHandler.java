@@ -1,7 +1,8 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
 import codesquad.webserver.annotation.Autowired;
-import codesquad.webserver.annotation.Component;
+import codesquad.webserver.annotation.Controller;
+import codesquad.webserver.annotation.RequestMapping;
 import codesquad.webserver.db.user.UserDatabase;
 import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.dispatcher.view.ModelKey;
@@ -9,7 +10,7 @@ import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.filereader.FileReader.FileResource;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.model.User;
+import codesquad.webserver.db.user.User;
 import codesquad.webserver.session.Session;
 import codesquad.webserver.session.SessionManager;
 import java.io.IOException;
@@ -18,7 +19,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
+@Controller
+@RequestMapping(path = "/user/list")
 public class UserListHandler extends AbstractRequestHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(UserListHandler.class);

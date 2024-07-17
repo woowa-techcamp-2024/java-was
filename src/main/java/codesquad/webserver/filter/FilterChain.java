@@ -7,6 +7,7 @@ import codesquad.webserver.httpresponse.HttpResponseBuilder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class FilterChain {
@@ -25,6 +26,8 @@ public class FilterChain {
 
         try {
             processFilters(request);
+        } catch (Exception e) {
+            return HttpResponseBuilder.serverError().body("Internal Server Error".getBytes()).build();
         } finally {
             HttpResponse response = currentResponse.get();
             currentFilterIndex.remove();
@@ -33,25 +36,31 @@ public class FilterChain {
         }
     }
 
-    public List<OrderedFilter> getFilters() {
-        return filters;
-    }
-
     public void setResponse(HttpResponse response) {
         currentResponse.set(response);
+        currentFilterIndex.set(filters.size());
     }
 
     private void processFilters(HttpRequest request) {
         while (currentFilterIndex.get() < filters.size()) {
             Filter currentFilter = filters.get(currentFilterIndex.get()).getFilter();
             currentFilter.doFilter(request, currentResponse.get(), this);
-
-            if (currentResponse.get().getStatusCode() != 200) {
-                break;
-            }
-
             currentFilterIndex.set(currentFilterIndex.get() + 1);
         }
+    }
+
+    public HttpResponse getResponse(){
+        return currentResponse.get();
+    }
+
+    public List<Filter> getFilters(){
+        return filters.stream().map(OrderedFilter::getFilter).collect(Collectors.toUnmodifiableList());
+    }
+
+    public List<Filter> getFiltersInOrder() {
+        return filters.stream()
+                .map(OrderedFilter::getFilter)
+                .collect(Collectors.toList());
     }
 
     private static class OrderedFilter {
