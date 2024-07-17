@@ -125,9 +125,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 .nav__menu__item {
+    flex: 1;
+    text-align: center;
+}
+
+.nav__menu__item:first-child {
+    text-align: left;
+}
+
+.nav__menu__item:last-child {
+    text-align: right;
 }
 
 .nav__menu__item__btn {
@@ -155,3 +166,6 @@
 #userNickname {
     margin-left: 10px;
 }
+
+
+

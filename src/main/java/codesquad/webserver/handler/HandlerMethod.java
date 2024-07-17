@@ -20,7 +20,7 @@ public class HandlerMethod {
         }catch (Exception e){
 
         }
-        return HttpResponse.createNotFoundResponse();
+        return HttpResponse.notFound();
     }
 
     @Override

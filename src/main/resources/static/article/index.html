@@ -1,47 +1,105 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="../reset.css" rel="stylesheet" />
-    <link href="../global.css" rel="stylesheet" />
-  </head>
-  <body>
-    <div class="container">
-      <header class="header">
-        <a href="/main"><img src="../img/signiture.svg" /></a>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="../reset.css" rel="stylesheet"/>
+    <link href="../global.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/main"><img src="../img/signiture.svg"/></a>
         <ul class="header__menu">
-          <li class="header__menu__item">
-            <a class="btn btn_contained btn_size_s" href="/article">글쓰기</a>
-          </li>
-          <li class="header__menu__item">
-            <button id="logout-btn" class="btn btn_ghost btn_size_s">
-              로그아웃
-            </button>
-          </li>
+            <li class="header__menu__item" id="userNickname"></li>
+            <li class="header__menu__item" id="logoutItem">
+                <button id="logoutBtn" class="btn btn_ghost btn_size_s">
+                    로그아웃
+                </button>
+            </li>
         </ul>
-      </header>
-      <div class="page">
+    </header>
+    <div class="page">
         <h2 class="page-title">게시글 작성</h2>
-        <form class="form">
-          <div class="textfield textfield_size_m">
-            <p class="title_textfield">내용</p>
-            <textarea
-              class="input_textfield"
-              placeholder="글의 내용을 입력하세요"
-              autocomplete="username"
-            ></textarea>
-          </div>
-          <button
-            id="registration-btn"
-            class="btn btn_contained btn_size_m"
-            style="margin-top: 24px"
-            type="button"
-          >
-            작성 완료
-          </button>
+        <form class="form" method="post" action="/write">
+            <div class="">
+                <p class="title_textfield">제목</p>
+                <input
+                        type="text"
+                        class="input_textfield"
+                        placeholder="글의 제목을 입력하세요"
+                        name="title"
+                        required
+                >
+            </div>
+            <div class="textfield textfield_size_m">
+                <p class="title_textfield">내용</p>
+                <textarea
+                        name="content"
+                        class="input_textfield"
+                        placeholder="글의 내용을 입력하세요"
+                ></textarea>
+            </div>
+            <button
+                    id="registration-btn"
+                    class="btn btn_contained btn_size_m"
+                    style="margin-top: 24px"
+                    type="submit"
+            >
+                작성 완료
+            </button>
         </form>
-      </div>
     </div>
-  </body>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const logoutItem = document.getElementById('logoutItem');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userNickname = document.getElementById('userNickname');
+
+    function checkLoginStatus() {
+      fetch('/me', {
+        method: 'GET',
+        credentials: 'include'
+      })
+      .then(response => response.text())
+      .then(result => {
+        if (result === "NO_USER" || result == "Not Found") {
+          // 로그인하지 않은 상태
+          location.href = "/login"
+        } else {
+          // 로그인한 상태
+          userNickname.textContent = `${result} 님`;
+        }
+      })
+      .catch(error => {
+        console.error('Error checking login status:', error);
+        // 에러 발생 시 로그인하지 않은 상태로 처리
+        location.href = "/login"
+      });
+    }
+
+    logoutBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      fetch('/logout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      .then(response => {
+        if (response.ok) {
+          console.log('로그아웃 성공');
+          checkLoginStatus(); // 로그아웃 후 상태 다시 확인
+        } else {
+          console.error('로그아웃 실패');
+        }
+      })
+      .catch(error => {
+        console.error('로그아웃 요청 중 오류 발생:', error);
+      });
+    });
+
+    checkLoginStatus(); // 초기 로그인 상태 확인
+});
+</script>
+</body>
 </html>

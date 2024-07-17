@@ -31,194 +31,225 @@
         </ul>
     </header>
     <div class="wrapper">
-        <div class="post">
-            <div class="post__account">
-                <img class="post__account__img"/>
-                <p class="post__account__nickname">account</p>
+        <div id="articleContainer"></div>
+        <template id="articleTemplate">
+            <div class="post">
+                <div class="post__account">
+                    <img class="post__account__img"/>
+                    <p class="post__account__nickname"></p>
+                </div>
+                <p class="post__title"></p>
+                <img class="post__img"/>
+                <div class="post__menu">
+                    <ul class="post__menu__personal">
+                        <li>
+                            <button class="post__menu__btn">
+                                <img src="./img/like.svg"/>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="post__menu__btn">
+                                <img src="./img/sendLink.svg"/>
+                            </button>
+                        </li>
+                    </ul>
+                    <button class="post__menu__btn">
+                        <img src="./img/bookMark.svg"/>
+                    </button>
+                </div>
+                <p class="post__article"></p>
             </div>
-            <img class="post__img"/>
-            <div class="post__menu">
-                <ul class="post__menu__personal">
-                    <li>
-                        <button class="post__menu__btn">
-                            <img src="./img/like.svg"/>
-                        </button>
-                    </li>
-                    <li>
-                        <button class="post__menu__btn">
-                            <img src="./img/sendLink.svg"/>
-                        </button>
-                    </li>
-                </ul>
-                <button class="post__menu__btn">
-                    <img src="./img/bookMark.svg"/>
-                </button>
-            </div>
-            <p class="post__article">
-                우리는 시스템 아키텍처에 대한 일관성 있는 접근이 필요하며, 필요한
-                모든 측면은 이미 개별적으로 인식되고 있다고 생각합니다. 즉, 응답이
-                잘 되고, 탄력적이며 유연하고 메시지 기반으로 동작하는 시스템 입니다.
-                우리는 이것을 리액티브 시스템(Reactive Systems)라고 부릅니다.
-                리액티브 시스템으로 구축된 시스템은 보다 유연하고, 느슨한 결합을
-                갖고, 확장성 이 있습니다. 이로 인해 개발이 더 쉬워지고 변경 사항을
-                적용하기 쉬워집니다. 이 시스템은 장애 에 대해 더 강한 내성을 지니며,
-                비록 장애가 발생 하더라도, 재난이 일어나기 보다는 간결한 방식으로
-                해결합니다. 리액티브 시스템은 높은 응답성을 가지며 사용자 에게
-                효과적인 상호적 피드백을 제공합니다.
-            </p>
-        </div>
-        <ul class="comment">
-            <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    군인 또는 군무원이 아닌 국민은 대한민국의 영역안에서는 중대한
-                    군사상 기밀·초병·초소·유독음식물공급·포로·군용물에 관한 죄중
-                    법률이 정한 경우와 비상계엄이 선포된 경우를 제외하고는 군사법원의
-                    재판을 받지 아니한다.
-                </p>
-            </li>
-            <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    대통령의 임기연장 또는 중임변경을 위한 헌법개정은 그 헌법개정 제안
-                    당시의 대통령에 대하여는 효력이 없다. 민주평화통일자문회의의
-                    조직·직무범위 기타 필요한 사항은 법률로 정한다.
-                </p>
-            </li>
-            <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    민주평화통일자문회의의 조직·직무범위 기타 필요한 사항은 법률로
-                    정한다.
-                </p>
-            </li>
-            <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">Comment 1</p>
-            </li>
-            <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">Comment 2</p>
-            </li>
-            <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">Comment 3</p>
-            </li>
-            <button id="show-all-btn" class="btn btn_ghost btn_size_m">
-                모든 댓글 보기(3개)
-            </button>
-        </ul>
+        </template>
+
         <nav class="nav">
             <ul class="nav__menu">
                 <li class="nav__menu__item">
-                    <a class="nav__menu__item__btn" href="">
-                        <img
-                                class="nav__menu__item__img"
-                                src="./img/ci_chevron-left.svg"
-                        />
-                        이전 글
+                    <a id="prevArticleBtn" class="nav__menu__item__btn" href="#" style="display: none;">
+                        <img class="nav__menu__item__img" src="./img/ci_chevron-left.svg"/> 이전 글
                     </a>
                 </li>
                 <li class="nav__menu__item">
-                    <a class="btn btn_ghost btn_size_m">댓글 작성</a>
+                    <span id="pageIndicator" style="display: none;"></span>
                 </li>
                 <li class="nav__menu__item">
-                    <a class="nav__menu__item__btn" href="">
-                        다음 글
-                        <img
-                                class="nav__menu__item__img"
-                                src="./img/ci_chevron-right.svg"
-                        />
+                    <a id="nextArticleBtn" class="nav__menu__item__btn" href="#" style="display: none;"> 다음 글
+                        <img class="nav__menu__item__img" src="./img/ci_chevron-right.svg"/>
                     </a>
                 </li>
             </ul>
         </nav>
+        <div>
+            <a class="btn btn_contained btn_size_s" href="/article">글쓰기</a>
+        </div>
+        <div id="articleList"></div>
     </div>
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const loginItem = document.getElementById('loginItem');
-    const registerItem = document.getElementById('registerItem');
-    const logoutItem = document.getElementById('logoutItem');
-    const userNickname = document.getElementById('userNickname');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userListItem = document.getElementById('userListItem');
+        const loginItem = document.getElementById('loginItem');
+        const registerItem = document.getElementById('registerItem');
+        const logoutItem = document.getElementById('logoutItem');
+        const userNickname = document.getElementById('userNickname');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userListItem = document.getElementById('userListItem');
 
-    function checkLoginStatus() {
-      fetch('/me', {
-        method: 'GET',
-        credentials: 'include'
-      })
-      .then(response => response.text())
-      .then(result => {
-        if (result === "NO_USER" || result == "Not Found") {
-          // 로그인하지 않은 상태
-          loginItem.style.display = 'inline';
-          registerItem.style.display = 'inline';
-          logoutItem.style.display = 'none';
-          userNickname.style.display = 'none';
-          userListItem.style.display = 'none';
-        } else {
-          // 로그인한 상태
-          loginItem.style.display = 'none';
-          registerItem.style.display = 'none';
-          logoutItem.style.display = 'inline';
-          userNickname.textContent = `${result} 님`;
-          userNickname.style.display = 'inline';
-          userListItem.style.display = 'inline';
+        function checkLoginStatus() {
+          fetch('/me', {
+            method: 'GET',
+            credentials: 'include'
+          })
+          .then(response => response.text())
+          .then(result => {
+            if (result === "NO_USER" || result == "Not Found") {
+              // 로그인하지 않은 상태
+              loginItem.style.display = 'inline';
+              registerItem.style.display = 'inline';
+              logoutItem.style.display = 'none';
+              userNickname.style.display = 'none';
+              userListItem.style.display = 'none';
+            } else {
+              // 로그인한 상태
+              loginItem.style.display = 'none';
+              registerItem.style.display = 'none';
+              logoutItem.style.display = 'inline';
+              userNickname.textContent = `${result} 님`;
+              userNickname.style.display = 'inline';
+              userListItem.style.display = 'inline';
+            }
+          })
+          .catch(error => {
+            console.error('Error checking login status:', error);
+            // 에러 발생 시 로그인하지 않은 상태로 처리
+            loginItem.style.display = 'inline';
+            registerItem.style.display = 'inline';
+            logoutItem.style.display = 'none';
+            userNickname.style.display = 'none';
+            userListItem.style.display = 'none';
+          });
         }
-      })
-      .catch(error => {
-        console.error('Error checking login status:', error);
-        // 에러 발생 시 로그인하지 않은 상태로 처리
-        loginItem.style.display = 'inline';
-        registerItem.style.display = 'inline';
-        logoutItem.style.display = 'none';
-        userNickname.style.display = 'none';
-        userListItem.style.display = 'none';
-      });
-    }
 
-    logoutBtn.addEventListener('click', function(e) {
-      e.preventDefault();
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          fetch('/logout', {
+            method: 'POST',
+            credentials: 'include'
+          })
+          .then(response => {
+            if (response.ok) {
+              console.log('로그아웃 성공');
+              checkLoginStatus(); // 로그아웃 후 상태 다시 확인
+            } else {
+              console.error('로그아웃 실패');
+            }
+          })
+          .catch(error => {
+            console.error('로그아웃 요청 중 오류 발생:', error);
+          });
+        });
 
-      fetch('/logout', {
-        method: 'POST',
-        credentials: 'include'
-      })
-      .then(response => {
-        if (response.ok) {
-          console.log('로그아웃 성공');
-          checkLoginStatus(); // 로그아웃 후 상태 다시 확인
-        } else {
-          console.error('로그아웃 실패');
+        function fetchArticleList() {
+            fetch('/api/articles')
+                .then(response => response.json())
+                .then(articles => {
+                    console.log(articles);
+                    displayArticleList(articles);
+                })
+                .catch(error => {
+                    console.error('글 목록 가져오기 중 오류 발생:', error);
+                });
         }
-      })
-      .catch(error => {
-        console.error('로그아웃 요청 중 오류 발생:', error);
-      });
+
+        function displayArticleList(articles) {
+            const articleContainer = document.getElementById('articleContainer')
+            const prevBtn = document.getElementById('prevArticleBtn')
+            const nextBtn = document.getElementById('nextArticleBtn')
+            const pageIndicator = document.getElementById('pageIndicator');
+
+            articleContainer.innerHTML = '';
+
+            if(articles.length == 0){
+                const noArticleMessage = document.createElement('p');
+                noArticleMessage.textContent = "작성된 글이 없습니다";
+                noArticleMessage.style.textAlign = 'center';
+                noArticleMessage.style.padding = '20px';
+                noArticleMessage.style.fontSize = '16px';
+                noArticleMessage.style.color = '#666';
+                articleContainer.appendChild(noArticleMessage);
+
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+                pageIndicator.style.display = 'none';
+                return;
+            }
+
+            pageIndicator.style.display = 'inline-block';
+
+            articles.forEach((article, index) => {
+                const articleElement = createArticleElement(article);
+                articleContainer.appendChild(articleElement);
+
+                if(index > 0){
+                    articleElement.style.display = 'none';
+                }
+            })
+
+            let currentIndex = 0;
+            updateButtonVisibility();
+            updatePageIndicator();
+
+            prevBtn.onclick = function(e) {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    articleContainer.children[currentIndex].style.display = 'none';
+                    currentIndex--;
+                    articleContainer.children[currentIndex].style.display = 'block';
+                }
+                updateButtonVisibility();
+                updatePageIndicator();
+            };
+
+            nextBtn.onclick = function(e) {
+                e.preventDefault();
+                if (currentIndex < articles.length - 1) {
+                    articleContainer.children[currentIndex].style.display = 'none';
+                    currentIndex++;
+                    articleContainer.children[currentIndex].style.display = 'block';
+                }
+                updateButtonVisibility();
+                updatePageIndicator();
+            };
+
+            function updateButtonVisibility() {
+                prevBtn.style.display = currentIndex > 0 ? 'inline-block' : 'none';
+                nextBtn.style.display = currentIndex < articles.length - 1 ? 'inline-block' : 'none';
+            }
+
+            function updatePageIndicator() {
+                pageIndicator.textContent = `${currentIndex + 1} / ${articles.length}`;
+            }
+        }
+
+        function createArticleElement(article) {
+            const template = document.getElementById('articleTemplate');
+            const articleElement = template.content.cloneNode(true);
+            const nickname = articleElement.querySelector('.post__account__nickname');
+            nickname.textContent = article.author || 'account';
+
+            const title = articleElement.querySelector('.post__title');
+            title.textContent = article.title;
+
+            const content = articleElement.querySelector('.post__article');
+            content.textContent = article.content;
+
+            // 필요한 경우 이미지 src 설정
+            // const img = articleElement.querySelector('.post__img');
+            // img.src = article.imageUrl || '';
+            return articleElement.firstElementChild;
+        }
+
+        checkLoginStatus(); // 초기 로그인 상태 확인
+        fetchArticleList();
     });
-
-    checkLoginStatus(); // 초기 로그인 상태 확인
-});
 </script>
 </body>
 </html>

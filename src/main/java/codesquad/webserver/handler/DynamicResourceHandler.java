@@ -8,7 +8,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DynamicResourceHandler implements Handler{
+public class DynamicResourceHandler implements ApiHandler {
     private final Logger log = LoggerFactory.getLogger(DynamicResourceHandler.class);
     private Map<HttpMethod, Map<String, HandlerMethod>> routes = new HashMap<>();
 
@@ -19,12 +19,27 @@ public class DynamicResourceHandler implements Handler{
     }
     public HttpResponse handle(HttpRequest request){
         log.info("DynamicResourceHandler handle");
-        HandlerMethod handlerMethod = routes.get(request.getHttpMethod()).get(request.getPath());
+        Map<String, HandlerMethod> pathToHandlerMethod = routes.get(request.getHttpMethod());
+        if(pathToHandlerMethod == null){
+            return HttpResponse.methodNotAllowed();
+        }
+        HandlerMethod handlerMethod = pathToHandlerMethod.get(request.getPath());
+        if(handlerMethod == null){
+            return handle4xxError(request);
+        }
         return handlerMethod.invoke(request);
     }
 
+    private HttpResponse handle4xxError(HttpRequest request) {
+        boolean pathExists = routes.values().stream().anyMatch(pathMap -> pathMap.containsKey(request.getPath()));
+        if(pathExists){
+            return HttpResponse.methodNotAllowed();
+        }
+        return HttpResponse.notFound();
+    }
+
     public boolean canHandle(HttpRequest request){
-        return routes.get(request.getHttpMethod()).containsKey(request.getPath());
+        return routes.values().stream().anyMatch(pathMap -> pathMap.containsKey(request.getPath()));
     }
 
     public void addRoute(HttpMethod httpMethod, String path, HandlerMethod handlerMethod){

@@ -6,16 +6,18 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Session {
+public class SessionManager {
+    // ToDo: Session 클래스 생성
     private Map<String, User> session;
-    private static Session instance;
-    private Session(){
+    private static SessionManager instance;
+    private SessionManager(){
         session = new ConcurrentHashMap<>();
     }
 
-    public static Session getInstance(){
+    // ToDo: multi thread
+    public static SessionManager getInstance(){
         if(instance == null){
-            instance = new Session();
+            instance = new SessionManager();
         }
         return instance;
     }

@@ -1,6 +1,8 @@
 package codesquad.webserver.util;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
 public class JsonStringConverter {
@@ -55,7 +57,10 @@ public class JsonStringConverter {
             return "\"" + escapeJson(value.toString()) + "\"";
         } else if (value instanceof Number || value instanceof Boolean) {
             return value.toString();
-        } else {
+        } else if(value instanceof LocalDateTime){
+            return "\"" + ((LocalDateTime) value).format(DateTimeFormatter.ISO_DATE_TIME) + "\"";
+        }
+        else {
             return objectToJsonString(value);
         }
     }

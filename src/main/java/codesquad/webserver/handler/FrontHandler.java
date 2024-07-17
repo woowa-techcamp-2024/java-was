@@ -16,7 +16,7 @@ public class FrontHandler implements Runnable{
     private final Logger log = LoggerFactory.getLogger(FrontHandler.class);
 
     private Socket connect;
-    private List<Handler> handlers;
+    private List<ApiHandler> handlers;
 
     public FrontHandler(Socket connect, DynamicResourceHandler dynamicResourceHandler) {
         this.connect = connect;
@@ -34,16 +34,19 @@ public class FrontHandler implements Runnable{
                     .filter(handler -> handler.canHandle(request))
                     .findFirst()
                     .map(handler -> handler.handle(request))
-                    .orElseThrow(() -> new IllegalStateException("No Handler Found For Request"));
+                    .orElse(HttpResponse.badRequest());
             log.info("response: {}", response);
             sendResponse(response);
-            connect.close();
-        }
-        catch (IllegalStateException e){
-            sendResponse(HttpResponse.createNotFoundResponse());
         }
         catch (IOException e){
-            log.error(e.getMessage(), e);
+            log.error("Error get input stream" + e.getMessage(), e);
+            sendResponse(HttpResponse.serverError());
+        }finally {
+            try{
+                connect.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 
@@ -52,8 +55,7 @@ public class FrontHandler implements Runnable{
             HttpResponseParser.parse(outputStream, response);
             outputStream.flush();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage(), e);
         }
     }
-
 }

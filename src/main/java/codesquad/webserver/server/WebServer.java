@@ -1,6 +1,7 @@
 package codesquad.webserver.server;
 
-import codesquad.webserver.handler.DynamicResourceHandlerInitializer;
+import codesquad.webserver.init.DataHandlerInitializer;
+import codesquad.webserver.init.DynamicResourceHandlerInitializer;
 import codesquad.webserver.handler.DynamicResourceHandler;
 import codesquad.webserver.handler.FrontHandler;
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class WebServer {
             this.serverSocket = new ServerSocket(PORT);
             this.dynamicResourceHandler = new DynamicResourceHandler();
             List<Class<?>> classes =  ClassFinder.findAllClass(rootPackageName);
-            DynamicResourceHandlerInitializer.init(dynamicResourceHandler, classes);
+            DynamicResourceHandlerInitializer.init(dynamicResourceHandler, classes, DataHandlerInitializer.init(classes));
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
