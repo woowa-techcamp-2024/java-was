@@ -5,6 +5,8 @@ import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.HttpStatus;
 import codesquad.model.User;
+import codesquad.server.db.TestSessionRepository;
+import codesquad.server.db.TestUserRepository;
 import codesquad.utils.JsonConverter;
 import org.junit.jupiter.api.*;
 
@@ -45,10 +47,11 @@ class UserHandlerTest {
     byte[] user;
     InputStream is;
     int sid = 0;
-
+    UserHandler userHandler;
     @BeforeEach
     void setUp() {
         user = JsonConverter.toJson(new User("javajigi", "password", "박재성", "javajigi@slipp.net")).getBytes();
+        userHandler = new UserHandler(new TestUserRepository(), new TestSessionRepository());
     }
 
     @Test
@@ -64,10 +67,10 @@ class UserHandlerTest {
         Context ctx = new Context(req, res);
 
         // when
-        UserHandler.login(ctx);
+        userHandler.login(ctx);
 
         // then
-        assertEquals("사용자를 찾을 수 없습니다.", new String(res.getBody()));
+        assertEquals("/user/login_failed", res.getHeader("Location"));
     }
 
     @Test
@@ -81,7 +84,7 @@ class UserHandlerTest {
         Context ctx = new Context(req, res);
 
         // when
-        UserHandler.createUser(ctx);
+        userHandler.createUser(ctx);
 
         // then
         assertArrayEquals(user, res.getBody());
@@ -94,13 +97,14 @@ class UserHandlerTest {
     @DisplayName("회원가입 후 로그인 성공")
     void testCreateAndLogin() throws IOException {
         // given
+        createUser();
         is = new ByteArrayInputStream(loginRequest.getBytes());
         var req = HttpRequest.from(is);
         var res = new HttpResponse();
         var ctx = new Context(req, res);
 
         // when
-        UserHandler.login(ctx);
+        userHandler.login(ctx);
 
         // then
         assertEquals(HttpStatus.REDIRECT_FOUND.getCode(), res.getStatusCode());
@@ -115,13 +119,14 @@ class UserHandlerTest {
     @DisplayName("로그아웃 성공")
     void testLogout() throws IOException {
         // given
+        testCreateAndLogin();
         is = new ByteArrayInputStream(("GET /user/logout HTTP/1.1\r\nCookie: sid=" + sid + "\r\n").getBytes());
         var req = HttpRequest.from(is);
         var res = new HttpResponse();
         var ctx = new Context(req, res);
 
         // when
-        UserHandler.logout(ctx);
+        userHandler.logout(ctx);
 
         // then
         assertEquals(HttpStatus.REDIRECT_FOUND.getCode(), res.getStatusCode());
@@ -139,7 +144,7 @@ class UserHandlerTest {
         var ctx = new Context(req, res);
 
         // when
-        UserHandler.logout(ctx);
+        userHandler.logout(ctx);
 
         // then
         assertEquals(HttpStatus.REDIRECT_FOUND.getCode(), res.getStatusCode());

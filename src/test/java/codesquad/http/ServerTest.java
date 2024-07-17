@@ -1,6 +1,8 @@
 package codesquad.http;
 
 import codesquad.model.User;
+import codesquad.server.db.TestSessionRepository;
+import codesquad.server.db.TestUserRepository;
 import codesquad.server.handlers.UserHandler;
 import codesquad.utils.JsonConverter;
 import org.junit.jupiter.api.AfterEach;
@@ -11,11 +13,9 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.ServerSocket;
 import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,32 +23,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ServerTest {
 
     private static final int THREAD_POOL_SIZE = 10;
-    private int port = 9000;
+    private final int PORT = 9000;
     private Server server;
     private ExecutorService executorService;
+    private UserHandler userHandler;
 
     @BeforeEach
-    void setUp() {// 사용 가능한 랜덤 포트 찾기
-
-        try (ServerSocket socket = new ServerSocket(0)) {
-            port = socket.getLocalPort();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        server = Server.defaultServer(port, THREAD_POOL_SIZE);
+    void setUp() {
+        server = Server.defaultServer(PORT, THREAD_POOL_SIZE);
         executorService = Executors.newSingleThreadExecutor();
+        userHandler = new UserHandler(new TestUserRepository(), new TestSessionRepository());
     }
 
     @AfterEach
-    void tearDown() throws InterruptedException {
+    void tearDown() throws IOException {
         // ExecutorService 종료
         executorService.shutdownNow();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+
+        // 서버 종료
+        server.stop();
+
+        // 서버 종료 대기
+        while (!server.isClose()) {
+        }
+
     }
 
     @Test
     @DisplayName("서버 시작 및 요청 처리")
-    void testServerStartAndHandleRequest() throws IOException, InterruptedException {
+    void testServerStartAndHandleRequest() throws IOException {
         // 테스트용 핸들러 등록
         server.get("/test", ctx -> {
             ctx.response()
@@ -58,16 +61,16 @@ class ServerTest {
         });
 
         // 별도의 스레드에서 서버 시작
-        executorService.submit(() -> {
-            try {
-                server.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        executorService.execute(() -> {
+            server.start();
         });
 
+        // 서버 연결 대기
+        while (!server.isConnected()) {
+        }
+
         // HTTP 요청 보내기
-        URL url = new URL("http://localhost:" + port + "/test");
+        URL url = new URL("http://localhost:" + PORT + "/test");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
@@ -82,16 +85,16 @@ class ServerTest {
 
     @Test
     @DisplayName("요청 경로 없음")
-    void testNotFoundRoute() throws IOException, InterruptedException {
-        executorService.submit(() -> {
-            try {
-                server.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    void testNotFoundRoute() throws IOException {
+        // 별도의 스레드에서 서버 시작
+        executorService.execute(() -> {
+            server.start();
         });
 
-        URL url = new URL("http://localhost:" + port + "/nonexistent");
+        while (!server.isConnected()) {
+        }
+
+        URL url = new URL("http://localhost:" + PORT + "/nonexistent");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
@@ -104,18 +107,19 @@ class ServerTest {
     @Test
     @DisplayName("회원가입 실패 - 잘못된 메소드 요청")
     void testCreateUserFailure() throws IOException {
-        server.post("/create", UserHandler::createUser);
+        server.post("/create", userHandler::createUser);
 
-        executorService.submit(() ->
-        {
-            try {
-                server.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        // 별도의 스레드에서 서버 시작
+        executorService.execute(() -> {
+            server.start();
         });
 
-        URL url = new URL("http://localhost:" + port + "/create?userId=javajigi&password=password&name=%EB%B0%95%EC%9E%AC%EC%84%B1&email=javajigi%40slipp.net");
+        // 서버 연결 대기
+        while (!server.isConnected()) {
+        }
+
+
+        URL url = new URL("http://localhost:" + PORT + "/create?userId=javajigi&password=password&name=%EB%B0%95%EC%9E%AC%EC%84%B1&email=javajigi%40slipp.net");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Host", "localhost:8080");
@@ -128,18 +132,19 @@ class ServerTest {
     void testCreateUser() throws IOException {
         byte[] expect = JsonConverter.toJson(new User("javajigi1", "password1", "박재성", "javajigi@slipp.net")).getBytes();
         server.staticFiles("/", "/static");
-        server.post("/create", UserHandler::createUser);
+        server.post("/create", userHandler::createUser);
 
-        executorService.submit(() ->
-        {
-            try {
-                server.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        // 별도의 스레드에서 서버 시작
+        executorService.execute(() -> {
+            server.start();
         });
 
-        URL url = new URL("http://localhost:" + port + "/create");
+        // 서버 연결 대기
+        while (!server.isConnected()) {
+        }
+
+
+        URL url = new URL("http://localhost:" + PORT + "/create");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Host", "localhost:8080");

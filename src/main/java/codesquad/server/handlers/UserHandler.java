@@ -10,26 +10,31 @@ import codesquad.utils.JsonConverter;
 import java.util.Optional;
 
 public class UserHandler {
-    private UserHandler() {
+    private final UserRepository userRepository;
+    private final SessionRepository sessionRepository;
+
+    public UserHandler(UserRepository userRepository, SessionRepository sessionRepository) {
+        this.userRepository = userRepository;
+        this.sessionRepository = sessionRepository;
     }
 
-    public static void createUser(Context ctx) {
+    public void createUser(Context ctx) {
         User user = new User(ctx.request().getQuery("userId"), ctx.request().getQuery("password"), ctx.request().getQuery("name"), ctx.request().getQuery("email"));
         var json = JsonConverter.toJson(user).getBytes();
-        UserRepository.addUser(user);
+        userRepository.addUser(user);
         ctx.response().setStatus(HttpStatus.REDIRECT_FOUND)
                 .addHeader("Location", "/")
                 .addHeader("Content-Type", "application/json")
                 .setBody(json);
     }
 
-    public static void login(Context ctx) {
+    public void login(Context ctx) {
         User user;
         int sid = -1;
 
         try {
-            user = UserRepository.getUser(ctx.request().getQuery("userId")).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-            sid = SessionRepository.addSession(user.getUserId());
+            user = userRepository.getUser(ctx.request().getQuery("userId")).orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            sid = sessionRepository.addSession(user.getUserId());
         } catch (IllegalArgumentException e) {
             ctx.response()
                     .setStatus(HttpStatus.REDIRECT_FOUND)
@@ -42,18 +47,18 @@ public class UserHandler {
             ctx.response()
                     .setStatus(HttpStatus.REDIRECT_FOUND)
                     .addHeader("Location", "/")
-                    .addHeader("set-cookie", String.format("sid=%d; Path=/; Max-Age=86400; HttpOnly; Secure;", sid));
+                    .addHeader("set-cookie", String.format("sid=%d; Path=/; Max-Age=86400; HttpOnly;", sid));
         } else {
             ctx.response().setStatus(HttpStatus.UNAUTHORIZED);
         }
     }
 
-    public static void logout(Context ctx) {
-        Optional<String> cookie = ctx.request().getHeader("Cookie");
+    public void logout(Context ctx) {
+        Optional<String> cookie = ctx.request().getCookie("sid");
         if (cookie.isPresent()) { // 쿠키가 있으면 세션 확인
-            int sid = Integer.parseInt(cookie.get().split("=")[1]);
-            if (SessionRepository.isValid(sid)) { // 유효한 세션인지 확인
-                SessionRepository.removeSession(sid);
+            int sid = Integer.parseInt(cookie.get());
+            if (sessionRepository.isValid(sid)) { // 유효한 세션인지 확인
+                sessionRepository.removeSession(sid);
 
                 ctx.response()
                         .setStatus(HttpStatus.REDIRECT_FOUND)
