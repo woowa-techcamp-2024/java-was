@@ -1,22 +1,20 @@
 package codesquad.webserver;
 
+import codesquad.webserver.file.ErrorPageResponseFactory;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
-import codesquad.webserver.http.type.HttpProtocol;
-import codesquad.webserver.http.type.HttpStatus;
 import codesquad.webserver.handler.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 요청에 해당하는 로직을 수행하고, HTTP 응답을 진행합니다.
+ * 요청에 해당하는 handler를 찾아 처리하고 HTTP 응답을 반환합니다.
  */
 public class RequestHandler {
-    private static final List<RouterHandler> handlers = new ArrayList<>();
-    static {
-        handlers.add(new DynamicRequestHandler());
-        handlers.add(new StaticRequestHandler());
+    private final List<RouterHandler> handlers;
+
+    public RequestHandler(final List<RouterHandler> handlers) {
+        this.handlers = handlers;
     }
 
     public HttpResponse handle(HttpRequest httpRequest) {
@@ -28,6 +26,6 @@ public class RequestHandler {
     }
 
     private HttpResponse createBadRequest() {
-        return new HttpResponse(HttpProtocol.HTTP_1_1, HttpStatus.BAD_REQUEST, null, "요청이 잘못된 것 같은데요?");
+        return ErrorPageResponseFactory.badRequest();
     }
 }

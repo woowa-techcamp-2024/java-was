@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="../reset.css" rel="stylesheet" />
+    <link href="../global.css" rel="stylesheet" />
+    <link href="../main.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <a href="/"><img src="./img/signiture.svg" /></a>
+        <ul class="header__menu">
+          <li class="header__menu__item">
+            ${holder}
+          </li>
+          <li class="header__menu__item">
+            ${signupOrLogoutButton}
+          </li>
+        </ul>
+      </header>
+
+      <div class="wrapper">
+        <div class="post">
+          <div class="post__account">
+            <img class="post__account__img" />
+            <p class="post__account__nickname">
+              ${title}
+            </p>
+          </div>
+          <img class="post__img" />
+          <div class="post__menu">
+            <ul class="post__menu__personal">
+              <li>
+                <button class="post__menu__btn">
+                  <img src="./img/like.svg" />
+                </button>
+              </li>
+              <li>
+                <button class="post__menu__btn">
+                  <img src="./img/sendLink.svg" />
+                </button>
+              </li>
+            </ul>
+            <button class="post__menu__btn">
+              <img src="./img/bookMark.svg" />
+            </button>
+          </div>
+          <p class="post__article">
+            ${content}
+          </p>
+        </div>
+        <ul class="comment">
+          ${comments}
+        </ul>
+
+        <form class="form" method="POST" action="/article/comment">
+          <input type="hidden" id="articleId" name="articleId" value="${articleId}"/>
+          <div class="textfield textfield_size_s">
+            <p class="title_textfield">댓글</p>
+            <textarea
+                    id="content"
+                    name="content"
+                    class="input_textfield"
+                    placeholder="댓글 내용을 입력하세요"
+            ></textarea>
+          </div>
+          <button
+                  id="registration-btn"
+                  class="btn btn_contained btn_size_m"
+                  style="margin-top: 24px"
+                  type="submit"
+          >
+            작성 완료
+          </button>
+        </form>
+
+        <nav class="nav">
+          <ul class="nav__menu">
+            <li class="nav__menu__item">
+              <a id="previous-article" class="nav__menu__item__btn" href="#">
+                이전 글
+                <img class="nav__menu__item__img" src="./img/ci_chevron-left.svg" />
+              </a>
+            </li>
+            <li class="nav__menu__item">
+              <a id="next-article" class="nav__menu__item__btn" href="#">
+                다음 글
+                <img class="nav__menu__item__img" src="./img/ci_chevron-right.svg" />
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const articleId = parseInt(document.getElementById("articleId").value);
+
+        const previousArticleLink = document.getElementById("previous-article");
+        const nextArticleLink = document.getElementById("next-article");
+
+        if (articleId > 1) {
+          previousArticleLink.href = `/article?id=${articleId - 1}`;
+        } else {
+          previousArticleLink.classList.add("disabled");
+          previousArticleLink.href = "#";
+        }
+
+        nextArticleLink.href = `/article?id=${articleId + 1}`;
+      });
+    </script>
+  </body>
+</html>

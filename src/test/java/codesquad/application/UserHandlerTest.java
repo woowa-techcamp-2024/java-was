@@ -2,8 +2,12 @@ package codesquad.application;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import codesquad.database.SessionDatabase;
-import codesquad.database.UserDatabase;
+import codesquad.application.dao.UserDao;
+import codesquad.application.handler.UserHandler;
+import codesquad.application.domain.User;
+import codesquad.database.JdbcConnector;
+import codesquad.database.JdbcProperty;
+import codesquad.database.h2.UserH2;
 import codesquad.webserver.authentication.AuthenticationHolder;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
@@ -21,16 +25,21 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class UserHandlerTest {
+    private UserHandler userHandler;
     private SessionManager sessionManager;
     private User testUser;
+    private UserDao userDao;
 
     @BeforeEach
     public void setUp() {
         AuthenticationHolder.clear();
         sessionManager = new SessionManager();
         testUser = new User("testUser", "testPass", "testNick", "test@example.com");
-        UserDatabase.clear();  // UserDatabase 초기화
-        SessionDatabase.clear();
+
+        userDao = new UserH2(new JdbcConnector(new JdbcProperty()));
+        userHandler = new UserHandler(userDao);
+        userDao.clear();  // UserDatabase 초기화
+        sessionManager.clear();
         AuthenticationHolder.clear();  // AuthenticationHolder 초기화
     }
 
@@ -44,155 +53,30 @@ class UserHandlerTest {
         requestBody.put("email", "test@example.com");
         HttpRequest httpRequest = new HttpRequest(HttpMethod.POST, "/user/create", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), requestBody);
 
-        HttpResponse response = UserHandler.createUser(httpRequest);
+        HttpResponse response = userHandler.createUser(httpRequest);
 
         assertEquals(HttpStatus.FOUND, response.status());
-        assertEquals("/index.html", response.headers().get("Location"));
+        assertEquals("/", response.headers().get("Location"));
         assertEquals("유저가 생성되었습니다.", response.body());
     }
 
     @Test
-    @DisplayName("로그인을 성공적으로 수행한다.")
-    public void test_login_success() {
-        User user = new User("testUser", "testPass", "testNick", "test@example.com");
-        UserDatabase.addUser(user);
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("username", "testUser");
-        requestBody.put("password", "testPass");
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.POST, "/user/login", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), requestBody);
-
-        HttpResponse response = UserHandler.login(httpRequest);
-
-        assertEquals(HttpStatus.FOUND, response.status());
-        assertEquals("/main/index.html", response.headers().get("Location"));
-        assertTrue(response.headers().contains("Set-Cookie"));
-        assertEquals("로그인 완료!", response.body());
-    }
-
-    @Test
-    @DisplayName("유저 생성에 필요한 값이 부족한 경우 BAD_REQUEST를 응답합니다.")
+    @DisplayName("유저 생성에 필요한 값이 부족한 경우 IllegalArgumentException이 발생합니다.")
     public void test_create_user_missing_fields() {
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("name", "testUser");  // password, nickname, email fields 없음
         HttpRequest httpRequest = new HttpRequest(HttpMethod.POST, "/user/create", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), requestBody);
 
-        HttpResponse response = UserHandler.createUser(httpRequest);
-
-        assertEquals(HttpStatus.FOUND, response.status());
-    }
-
-    @Test
-    @DisplayName("인증 정보가 잘못된 경우 로그인에 실패합니다.")
-    public void test_login_failure() {
-        Map<String, String> requestBody = new HashMap<>();
-        requestBody.put("username", "wrongUser");
-        requestBody.put("password", "wrongPass");
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.POST, "/user/login", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), requestBody);
-
-        HttpResponse response = UserHandler.login(httpRequest);
-
-        assertEquals(HttpStatus.FOUND, response.status());
-        assertEquals("/user/login_failed.html", response.headers().get("Location"));
-    }
-
-    @Test
-    @DisplayName("로그아웃을 성공적으로 수행합니다.")
-    public void test_logout_success() {
-        User user = new User("testUser", "testPass", "testNick", "test@example.com");
-        UserDatabase.addUser(user);
-
-        // Assume login process and session creation
-        final SessionManager sessionManager = new SessionManager();
-        final Session session = sessionManager.createSession(user);
-        String sessionId = session.id();
-        AuthenticationHolder.setContext(user);
-
-        final HttpHeader cookie = HttpHeader.of("Cookie", "SID=" + sessionId);
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/logout", new HashMap<>(), HttpProtocol.HTTP_1_1, cookie, new HashMap<>());
-
-        HttpResponse response = UserHandler.logout(httpRequest);
-
-        assertEquals(HttpStatus.FOUND, response.status());
-        assertEquals("/index.html", response.headers().get("Location"));
-        assertFalse(sessionManager.validSession(sessionId));
-    }
-
-    @Test
-    @DisplayName("세션이 만료된 경우 로그아웃을 실패(401)합니다.")
-    public void test_logout_session_expired_failure() {
-        User user = new User("testUser", "testPass", "testNick", "test@example.com");
-        UserDatabase.addUser(user);
-
-        // Assume login process and session creation, then session expiration
-        final SessionManager sessionManager = new SessionManager();
-        final Session session = sessionManager.createSession(user);
-        String sessionId = session.id();
-
-        // Manually expire the session
-        sessionManager.removeSession(sessionId);
-
-        final HttpHeader cookie = HttpHeader.of("Cookie", "SID=" + sessionId);
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/logout", new HashMap<>(), HttpProtocol.HTTP_1_1, cookie, new HashMap<>());
-
-        HttpResponse response = UserHandler.logout(httpRequest);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.status());
-        assertEquals("세션이 존재하지 않습니다.", response.body());
-    }
-
-    @Test
-    @DisplayName("해당하는 세션이 없는 경우 로그아웃을 실패(401)합니다.")
-    public void test_logout_have_not_session_failure() {
-        User user = new User("testUser", "testPass", "testNick", "test@example.com");
-        UserDatabase.addUser(user);
-
-        String invalidSessionId = "invalid-session-id";
-        final HttpHeader cookie = HttpHeader.of("Cookie", "SID=" + invalidSessionId);
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/logout", new HashMap<>(), HttpProtocol.HTTP_1_1, cookie, new HashMap<>());
-
-        HttpResponse response = UserHandler.logout(httpRequest);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.status());
-        assertEquals("세션이 존재하지 않습니다.", response.body());
-    }
-
-    @Test
-    @DisplayName("홈페이지 요청을 성공적으로 처리합니다.")
-    void testGetHomepage() {
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), new HashMap<>());
-
-        HttpResponse response = UserHandler.getHomepage(httpRequest);
-
-        assertEquals(HttpStatus.OK, response.status());
-        assertTrue(response.body().contains("로그인"));
-    }
-
-    @Test
-    @DisplayName("로그인된 사용자의 홈페이지 요청을 성공적으로 처리합니다.")
-    void testGetHomepageWithLoggedInUser() {
-        // UserDatabase에 유저 추가
-        UserDatabase.addUser(testUser);
-
-        // 세션 생성 및 설정
-        Session session = sessionManager.createSession(testUser);
-        AuthenticationHolder.setContext(testUser);
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("Cookie", "SID=" + session.id());
-
-        HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/", headers, HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), new HashMap<>());
-
-        HttpResponse response = UserHandler.getHomepage(httpRequest);
-
-        assertEquals(HttpStatus.OK, response.status());
-        assertTrue(response.body().contains(testUser.getName() + "님 환영합니다."));
+        assertThrows(IllegalArgumentException.class, () -> {
+            userHandler.createUser(httpRequest);
+        });
     }
 
     @Test
     @DisplayName("유저 목록 요청을 성공적으로 처리합니다.")
     void testGetUserList() {
         // UserDatabase에 유저 추가
-        UserDatabase.addUser(testUser);
+        userDao.add(testUser);
 
         // 세션 생성 및 설정
         Session session = sessionManager.createSession(testUser);
@@ -203,7 +87,7 @@ class UserHandlerTest {
 
         HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", headers, HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), new HashMap<>());
 
-        HttpResponse response = UserHandler.getUserList(httpRequest);
+        HttpResponse response = userHandler.getUserList(httpRequest);
 
         assertEquals(HttpStatus.OK, response.status());
         assertTrue(response.body().contains(testUser.getName()));
@@ -216,7 +100,7 @@ class UserHandlerTest {
     void testGetUserListWithoutLogin() {
         HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", new HashMap<>(), HttpProtocol.HTTP_1_1, HttpHeader.createEmpty(), new HashMap<>());
 
-        HttpResponse response = UserHandler.getUserList(httpRequest);
+        HttpResponse response = userHandler.getUserList(httpRequest);
 
         assertEquals(HttpStatus.FOUND, response.status());
         assertEquals("/user/login_failed.html", response.headers().get("Location"));

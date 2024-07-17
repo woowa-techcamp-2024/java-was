@@ -1,0 +1,67 @@
+package codesquad.application.handler;
+
+import static codesquad.webserver.file.FileHttpResponseCreator.create;
+
+import codesquad.application.dao.UserDao;
+import codesquad.application.domain.User;
+import codesquad.webserver.annotation.Controller;
+import codesquad.webserver.annotation.RequestMapping;
+import codesquad.webserver.authentication.AuthenticationHolder;
+import codesquad.webserver.http.HttpRequest;
+import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.http.type.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+
+@Controller
+public class UserHandler {
+    private static final Logger logger = LoggerFactory.getLogger(UserHandler.class);
+    private final UserDao userDao;
+
+    public UserHandler(UserDao userDao) {
+        this.userDao = userDao;
+    }
+
+    @RequestMapping(method = HttpMethod.GET, path = "/user/list")
+    public HttpResponse getUserList(HttpRequest httpRequest) {
+        final Cookie cookies = httpRequest.headers().getCookies();
+        final String sid = cookies.get("SID");
+
+        User context = AuthenticationHolder.getContext();
+        if (context == null) {
+            logger.debug("세션이 존재하지 않습니다. sid:{}", sid);
+            return HttpResponse.found("/user/login_failed.html", null);
+        }
+
+        // HTML 값 생성
+        List<User> users = userDao.findAll();
+        StringBuilder sb = new StringBuilder();
+        users.forEach(user -> {
+            sb.append("<tr>");
+            sb.append("<td>").append(user.getName()).append("</td>");
+            sb.append("<td>").append(user.getEmail()).append("</td>");
+            sb.append("<td>").append(user.getNickname()).append("</td>");
+            sb.append("</tr>");
+        });
+
+        // HTML 페이지 불러오기
+        String resourcePath = "/user/list.html";
+        return create(resourcePath, Map.of("holder", sb.toString()));
+    }
+
+    @RequestMapping(method = HttpMethod.POST, path = "/user/create")
+    public HttpResponse createUser(HttpRequest httpRequest) {
+        String name = httpRequest.body().get("name");
+        String password = httpRequest.body().get("password");
+        String nickname = httpRequest.body().get("nickname");
+        String email = httpRequest.body().get("email");
+
+        final User user = new User(name, password, nickname, email);
+        userDao.add(user);
+        logger.debug("회원가입을 완료했습니다. {}", user);
+        return HttpResponse.found("/", "유저가 생성되었습니다.");
+    }
+}
