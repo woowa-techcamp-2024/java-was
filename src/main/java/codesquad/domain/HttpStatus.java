@@ -1,5 +1,7 @@
 package codesquad.domain;
 
+import java.util.Arrays;
+
 public enum HttpStatus {
 
 	OK(200, "OK"),
@@ -12,6 +14,7 @@ public enum HttpStatus {
 	FORBIDDEN(403, "Forbidden"),
 	NOT_FOUND(404, "Not Found"),
 	METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+	CONFLICT(409, "conflict"),
 	PAYLOAD_TOO_LARGE(413, "Payload Too Large"),
 	UNSUPPORTED_MEDIA_TYPE(415, "Unsupported Media Type"),
 	REQUEST_HEADER_FIELDS_TOO_LARGE(431, "Request Header Fields Too Large"),
@@ -27,6 +30,13 @@ public enum HttpStatus {
 		this.value = value;
 	}
 
+	public static HttpStatus from(String code) {
+		return Arrays.stream(values())
+			.filter(httpStatus -> String.valueOf(httpStatus.getCode()).equals(code))
+			.findFirst()
+			.orElse(null);
+	}
+
 	public int getCode() {
 		return code;
 	}
@@ -34,7 +44,6 @@ public enum HttpStatus {
 	public String getValue() {
 		return value;
 	}
-
 
 	@Override
 	public String toString() {

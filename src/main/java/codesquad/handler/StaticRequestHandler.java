@@ -1,56 +1,97 @@
 package codesquad.handler;
 
+import codesquad.annotation.PathVariable;
+import codesquad.annotation.RequestMapping;
+import codesquad.data.Post;
+import codesquad.data.User;
+import codesquad.db.CommentDatabase;
+import codesquad.db.PostDatabase;
 import codesquad.db.UserDatabase;
 import codesquad.domain.ContentType;
 import codesquad.domain.HttpHeader;
+import codesquad.domain.HttpMethod;
 import codesquad.domain.HttpRequest;
 import codesquad.domain.HttpResponse;
 import codesquad.domain.HttpStatus;
-import codesquad.domain.User;
 import codesquad.error.BaseException;
+import codesquad.utils.TemplateEngine;
 import codesquad.utils.UserThreadLocal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StaticRequestHandler implements Handler {
+public class StaticRequestHandler {
 
 	public static final String STATIC_PATH = "static";
-	private static final StaticRequestHandler instance = new StaticRequestHandler();
-	private final UserDatabase userDatabase = UserDatabase.getInstance();
-
+	private static final UserDatabase userDatabase = UserDatabase.getInstance();
+	private static final PostDatabase postDatabase = PostDatabase.getInstance();
+	private static final CommentDatabase commentDatabase = CommentDatabase.getInstance();
 	private final Logger log = LoggerFactory.getLogger(StaticRequestHandler.class);
 
 	private StaticRequestHandler() {
 	}
 
-	public static StaticRequestHandler getInstance() {
-		return instance;
-	}
-
-	@Override
-	public void doService(HttpRequest request, HttpResponse response) {
+	@RequestMapping(httpMethod = HttpMethod.GET, url = "/static")
+	public void getStaticResource(HttpRequest request, HttpResponse response) {
 		try {
-			byte[] body = readBytesFromFile(request.requestLine().getUrl());
-			body = applyDynamicHeaderComponents(body);
-			if (request.isGet() && request.getUrl().equals("/user/list.html")) {
-				if (!UserThreadLocal.isLogin()) {
-					response.sendRedirect("/user/login.html");
-					return;
-				}
-				body = applyUserListHtml(body);
+			byte[] body = applyDynamicComponents(request, response);
+			if (body == null) {
+				return;
 			}
-			if (request.isGet() && request.getUrl().equals("/error.html")) {
-				body = applyErrorPlaceHolder(body, request);
-			}
-			HttpHeader header = makeHttpHeader(body.length, request);
+			HttpHeader header = makeHttpHeader(request);
 			setResponse(response, header, body);
 		} catch (IOException e) {
 			log.error("io exception", e);
 		}
+	}
+
+	@RequestMapping(httpMethod = HttpMethod.GET, url = "/post/{postId}")
+	public void getPost(HttpRequest request, HttpResponse response, @PathVariable("postId") Long postId)
+		throws IOException {
+		byte[] body = readBytesFromFile("/post.html");
+		Map<String, Object> context = new HashMap<>();
+		Post post = postDatabase.get(postId);
+		User user = userDatabase.get(post.userId());
+
+		context.put("post_nickname", user.nickname());
+		context.put("title", post.title());
+		context.put("content", post.content());
+		context.put("comments", commentDatabase.findAll());
+		body = TemplateEngine.render(new String(body), context).getBytes();
+		setResponse(response, makeHttpHeader(request), body);
+	}
+
+	private byte[] applyDynamicComponents(HttpRequest request, HttpResponse response) throws IOException {
+		byte[] body = readBytesFromFile(request.requestLine().getUrl());
+		Map<String, Object> context = new HashMap<>();
+		if (request.isGet() && request.getUrl().equals("/user/list.html")) {
+			context.put("users", userDatabase.findAll());
+		}
+		if (UserThreadLocal.isLogin()) {
+			context.put("nickname", UserThreadLocal.get().userId());
+			context.put("isLogin", true);
+		}
+		context.put("posts", postDatabase.findAll());
+		if (request.isGet() && request.getUrl().equals("/error.html")) {
+			setErrorResponse(request, response, body, context);
+			return null;
+		}
+		return TemplateEngine.render(new String(body), context).getBytes();
+	}
+
+	private void setErrorResponse(HttpRequest request, HttpResponse response, byte[] body,
+								  Map<String, Object> context) {
+		context.put("statusCode", request.getParameters().getValueByKey("statusCode"));
+		context.put("message", request.getParameters().getValueByKey("message"));
+		String html = TemplateEngine.render(new String(body), context);
+		body = html.getBytes();
+		response.setStatusLine(HttpStatus.from(request.getParameters().getValueByKey("statusCode").split(" ")[0]));
+		response.setBody(body);
+		response.setHeader(makeHttpHeader(request));
 	}
 
 	private void setResponse(HttpResponse response, HttpHeader header, byte[] body) {
@@ -59,9 +100,8 @@ public class StaticRequestHandler implements Handler {
 		response.setBody(body);
 	}
 
-	private HttpHeader makeHttpHeader(long length, HttpRequest request) {
+	private HttpHeader makeHttpHeader(HttpRequest request) {
 		HttpHeader httpHeader = HttpHeader.of();
-		httpHeader.setHeaderValue("Content-Length", String.valueOf(length));
 		httpHeader.setHeaderValue("Content-Type", ContentType.from(request.getExtension()).getMimeType());
 		return httpHeader;
 	}
@@ -74,47 +114,5 @@ public class StaticRequestHandler implements Handler {
 		try (InputStream inputStream = resource.openStream()) {
 			return inputStream.readAllBytes();
 		}
-	}
-
-	private byte[] applyDynamicHeaderComponents(byte[] body) throws IOException {
-		String html = new String(body);
-		String headerFile = UserThreadLocal.isLogin() ? "/login_header.html" : "/logout_header.html";
-		byte[] headerBytes = readBytesFromFile(headerFile);
-		String headerHtml = new String(headerBytes);
-
-		if (UserThreadLocal.isLogin()) {
-			String nickname = UserThreadLocal.get().nickname();
-			headerHtml = headerHtml.replace("{{nickname}}", nickname);
-		}
-
-		html = html.replace("<div class=\"container\">", "<div class=\"container\">" + headerHtml);
-		return html.getBytes();
-	}
-
-	private byte[] applyUserListHtml(byte[] body) {
-		String templateHtml = new String(body);
-
-		List<User> users = userDatabase.findAll();
-		StringBuilder userListHtml = new StringBuilder();
-		for (User user : users) {
-			userListHtml.append("<tr>");
-			userListHtml.append("<td>").append(user.userId()).append("</td>");
-			userListHtml.append("<td>").append(user.nickname()).append("</td>");
-			userListHtml.append("<td>").append(user.email()).append("</td>");
-			userListHtml.append("</tr>");
-		}
-
-		templateHtml = templateHtml.replace("<!-- USER_LIST_PLACEHOLDER -->", userListHtml.toString());
-		return templateHtml.getBytes();
-	}
-
-	private byte[] applyErrorPlaceHolder(byte[] body, HttpRequest request) {
-		String statusCode = request.getParameters().getValueByKey("statusCode");
-		String message = request.getParameters().getValueByKey("message");
-		String templateHtml = new String(body);
-
-		templateHtml = templateHtml.replace("{{statusCode}}", statusCode);
-		templateHtml = templateHtml.replace("{{message}}", message);
-		return templateHtml.getBytes();
 	}
 }

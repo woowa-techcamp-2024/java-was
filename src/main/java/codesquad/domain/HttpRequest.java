@@ -1,6 +1,5 @@
 package codesquad.domain;
 
-import codesquad.error.BaseException;
 import java.util.Arrays;
 
 public record HttpRequest(
@@ -46,13 +45,17 @@ public record HttpRequest(
 		return requestLine.getUrl();
 	}
 
+	public HttpMethod getMethod() {
+		return requestLine.method();
+	}
+
 	@Override
 	public String toString() {
 		return "HttpRequest{" +
-			"requestLine=" + requestLine +
-			", header=" + header +
-			", body=" + body +
-			", cookies=" + Arrays.toString(cookies) +
-			'}';
+			   "requestLine=" + requestLine +
+			   ", header=" + header +
+			   ", body=" + body +
+			   ", cookies=" + Arrays.toString(cookies) +
+			   '}';
 	}
 }
