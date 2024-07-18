@@ -1,8 +1,8 @@
 package codesquad.application.database.dao;
 
 import codesquad.application.database.DatabaseConfig;
-import codesquad.application.database.PostListVO;
-import codesquad.application.database.PostVO;
+import codesquad.application.database.vo.PostListVO;
+import codesquad.application.database.vo.PostVO;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -50,7 +50,8 @@ public class PostDaoImpl implements PostDao {
                             rs.getLong("post_id"),
                             rs.getLong("user_id"),
                             rs.getString("content"),
-                            rs.getString("image_path")
+                            rs.getString("image_path"),
+                            rs.getTimestamp("created_at").toLocalDateTime()
                     ));
                 }
             }
@@ -99,7 +100,8 @@ public class PostDaoImpl implements PostDao {
                         rs.getLong("post_id"),
                         rs.getLong("user_id"),
                         rs.getString("content"),
-                        rs.getString("image_path")
+                        rs.getString("image_path"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
                 ));
             }
         } catch (SQLException e) {
@@ -110,7 +112,7 @@ public class PostDaoImpl implements PostDao {
 
     @Override
     public List<PostListVO> findAllJoinFetch() {
-        String sql = "SELECT p.post_id, p.user_id, p.content, p.image_path, u.nickname " +
+        String sql = "SELECT p.post_id, p.user_id, p.content, p.image_path, u.nickname, p.created_at " +
                 "FROM posts p " +
                 "LEFT JOIN users u ON p.user_id = u.user_id";
         List<PostListVO> posts = new ArrayList<>();
@@ -123,7 +125,8 @@ public class PostDaoImpl implements PostDao {
                         rs.getLong("user_id"),
                         rs.getString("nickname"),
                         rs.getString("content"),
-                        rs.getString("image_path")
+                        rs.getString("image_path"),
+                        rs.getTimestamp("created_at").toLocalDateTime()
                 ));
             }
         } catch (SQLException e) {

@@ -1,7 +1,7 @@
 package codesquad.application.mapper;
 
 import codesquad.application.domain.post.model.Post;
-import codesquad.application.database.PostVO;
+import codesquad.application.database.vo.PostVO;
 
 public class PostMapper {
 
@@ -10,7 +10,8 @@ public class PostMapper {
                 post.getPostId(),
                 post.getUserId(),
                 post.getContent().getValue(),
-                post.getImagePath().getValue()
+                post.getImagePath().getValue(),
+                post.getCreatedAt()
         );
     }
 
@@ -18,7 +19,8 @@ public class PostMapper {
         Post post = new Post(
                 postVO.userId(),
                 postVO.content(),
-                postVO.imagePath()
+                postVO.imagePath(),
+                postVO.createdAt()
         );
         post.initPostId(postVO.postId());
         return post;

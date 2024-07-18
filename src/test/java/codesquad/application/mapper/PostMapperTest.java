@@ -1,7 +1,7 @@
 package codesquad.application.mapper;
 
 import codesquad.application.domain.post.model.Post;
-import codesquad.application.database.PostVO;
+import codesquad.application.database.vo.PostVO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class PostMapperTest {
     @Test
     void testToPostVO() {
         // given
-        Post post = new Post(1L, "This is a post", "image.png");
+        Post post = new Post(1L, "This is a post", "image.png", null);
         post.initPostId(1L);
 
         // when
@@ -29,7 +29,7 @@ public class PostMapperTest {
     @Test
     void testToPost() {
         // given
-        PostVO postVO = new PostVO(1L, 1L, "This is a post", "image.png");
+        PostVO postVO = new PostVO(1L, 1L, "This is a post", "image.png", null);
 
         // when
         Post post = PostMapper.toPost(postVO);

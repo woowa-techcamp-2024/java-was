@@ -2,12 +2,12 @@ package codesquad.application.domain.post.business;
 
 import codesquad.application.database.dao.CommentDao;
 import codesquad.application.database.dao.PostDao;
+import codesquad.application.database.vo.CommentListVO;
 import codesquad.application.domain.comment.response.CommentListResponse;
 import codesquad.application.domain.comment.response.CommentResponse;
 import codesquad.application.domain.post.response.PostListResponse;
 import codesquad.application.domain.post.response.PostResponse;
 import codesquad.application.processor.Triggerable;
-import codesquad.application.database.CommentVO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,12 +41,12 @@ public class GetPostListLogic implements Triggerable<Void, PostListResponse> {
         // TODO 혹시 모르니깐 기존 로직은 살려두고 join을 쓰는 방법으로 변경
         List<PostResponse> postResponseList = postDao.findAllJoinFetch().stream()
                 .map(post -> {
-                    List<CommentVO> commentsOfPost = commentDao.findByPostId(post.postId());
+                    List<CommentListVO> commentsOfPost = commentDao.findCommentsJoinFetch(post.postId());
 
                     List<CommentResponse> commentResponse = commentsOfPost.stream()
-                            .map(comment -> new CommentResponse(comment.commentId(), "commentNickname", comment.content()))
+                            .map(comment -> new CommentResponse(comment.commentId(), comment.nickname(), comment.content(), comment.createdDate()))
                             .toList();
-                    return new PostResponse(post.postId(), post.nickname(), post.content(), post.imagePath(), CommentListResponse.of(post.postId(), commentResponse));
+                    return new PostResponse(post.postId(), post.nickname(), post.content(), post.imagePath(), CommentListResponse.of(post.postId(), commentResponse), post.createdAt());
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
         Collections.reverse(postResponseList);
