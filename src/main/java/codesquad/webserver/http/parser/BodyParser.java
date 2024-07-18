@@ -1,15 +1,18 @@
 package codesquad.webserver.http.parser;
 
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BodyParser {
+    private static final Logger logger = LoggerFactory.getLogger(BodyParser.class);
     private BodyParser() {}
 
     public static String parse(String[] lines, int contentLength) {
         return extractBody(lines, contentLength);
     }
 
-    public static Map<String, String> parseFormBody(String[] lines, int contentLength) {
+    public static Map<String, String> pasreFormXwww(String[] lines, int contentLength) {
         String body = extractBody(lines, contentLength);
         return KeyValueParser.parseQuertString(body);
     }

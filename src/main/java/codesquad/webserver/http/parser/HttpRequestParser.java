@@ -1,6 +1,7 @@
 package codesquad.webserver.http.parser;
 
 import codesquad.webserver.http.HttpRequest;
+import codesquad.webserver.http.type.FormEnctype;
 import codesquad.webserver.http.type.HttpHeader;
 import codesquad.webserver.http.type.StartLine;
 
@@ -10,7 +11,16 @@ import java.util.Map;
 public class HttpRequestParser {
     private HttpRequestParser() {}
 
-    public static HttpRequest parse(String message) {
+
+    public static HttpRequest parse(byte[] bytes) {
+        return parse(new String(bytes), bytes);
+    }
+
+    public static HttpRequest parse(String message) {  // TODO For TEST
+        return parse(message, new byte[1]);
+    }
+
+    public static HttpRequest parse(String message, byte[] bytes) {
         String[] lines = message.split("\n");
 
         StartLine startLine = StartLineParser.parse(lines);
@@ -19,11 +29,12 @@ public class HttpRequestParser {
         // Body
         int contentLength = getContentLength(headers);
         Map<String, String> body = new HashMap<>();
-        if (isFormUrlencoded(headers)) {
-            body = BodyParser.parseFormBody(lines, contentLength);
-        } else {
-            String rawBody = BodyParser.parse(lines, contentLength);
-            body.put("raw", rawBody);
+
+        switch (getFormEnctype(headers)) {
+            case X_WWW_FORM_URLENCODED -> body = BodyParser.pasreFormXwww(lines, contentLength);
+            case MULTIPART_FORM_DATA -> body = MultiPartParser.parse(bytes, FormEnctype.getBoundary(headers.get("Content-Type")));
+            case TEXT_PLAIN -> body.put("raw", BodyParser.parse(lines, contentLength));
+            case NOT_FORM_DATA -> body.put("raw", BodyParser.parse(lines, contentLength));
         }
 
         return new HttpRequest(
@@ -43,10 +54,10 @@ public class HttpRequestParser {
         return contentLength;
     }
 
-    private static boolean isFormUrlencoded(HttpHeader headers) {
+    private static FormEnctype getFormEnctype(HttpHeader headers) {
         if (!headers.contains("Content-Type")) {
-            return false;
+            return FormEnctype.NOT_FORM_DATA;
         }
-        return headers.get("Content-Type").equals("application/x-www-form-urlencoded");
+        return FormEnctype.from(headers.get("Content-Type"));
     }
 }
