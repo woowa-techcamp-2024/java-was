@@ -1,5 +1,8 @@
 package codesquad.was.server;
 
+import codesquad.application.db.DBConfig;
+import codesquad.was.dbcp.ConnectionPool;
+import codesquad.was.dbcp.DefaultConnectionPool;
 import codesquad.was.http.HttpRequest;
 import codesquad.was.http.HttpResponse;
 import codesquad.was.http.HttpStatus;
@@ -10,39 +13,70 @@ import codesquad.was.server.exception.MalformedPathException;
 import codesquad.was.server.exception.MethodNotAllowedException;
 import codesquad.was.server.exception.ResourceNotFoundException;
 import codesquad.was.server.session.SessionManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ServerContext {
 
-    private static final String DEFAULT_PATH = "/";
-
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final SessionManager sessionManager;
+    private static final String DEFAULT_PATH = "/";
 
-    private final Authenticator authenticator;
+    private SessionManager sessionManager;
 
-    private final Map<String, Handler> mappings;
+    private Authenticator authenticator;
 
-    private final List<Filter> filters;
+    private Map<String, Handler> mappings;
 
-    private final Pattern supportedPathPattern = Pattern.compile("^[\\w\\-./가-힣]*$");
+    private Pattern supportedPathPattern = Pattern.compile("^[\\w\\-./가-힣]*$");
 
+    private List<Filter> filters;
+
+    private ConnectionPool connectionPool;
 
     public ServerContext(
             SessionManager sessionManager,
-            Authenticator authenticator
+            Authenticator authenticator,
+            DBConfig dbConfig
     ) {
         this.sessionManager = sessionManager;
         this.authenticator = authenticator;
+        this.connectionPool = setUpConnectionPool(dbConfig);
         mappings = new HashMap<>();
         filters = new ArrayList<>();
+    }
+
+    public ServerContext() {
+        this.mappings = new HashMap<>();
+        this.filters = new ArrayList<>();
+    }
+
+    private ConnectionPool setUpConnectionPool(DBConfig dbConfig) {
+        ConnectionPool pool = new DefaultConnectionPool(
+                dbConfig.getUrl(),
+                dbConfig.getUsername(),
+                dbConfig.getPassword(),
+                dbConfig.getMaxPoolSize(),
+                dbConfig.getMinIdle(),
+                dbConfig.getConnectionTimeout(),
+                dbConfig.getIdleTimeout()
+        );
+        if (dbConfig.getUrl().startsWith("jdbc:h2")) {
+            try {
+                Server h2console = Server.createWebServer("-web", "-webAllowOthers", "-webPort", "8082");
+                h2console.start();
+                log.info("h2 console started");
+            } catch (SQLException exception) {
+            }
+        }
+        return pool;
     }
 
     public void addHandler(String path, Handler handler) {
@@ -56,6 +90,18 @@ public class ServerContext {
         this.mappings.put(path, handler);
     }
 
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+
+    public void setAuthenticator(Authenticator authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    public void setConnectionPool(DBConfig config) {
+        this.connectionPool = setUpConnectionPool(config);
+    }
+
     private void addFilter(int order, Filter filter) {
         if (filters.size() != order) {
             log.warn("fail to register {}. order should be {}", filter.getClass().getName(), filters.size());
@@ -66,6 +112,10 @@ public class ServerContext {
             throw new FilterRegistrationException();
         }
         filters.add(filter);
+    }
+
+    public ConnectionPool getConnectionPool() {
+        return connectionPool;
     }
 
     public void handle(HttpRequest request, HttpResponse response) {

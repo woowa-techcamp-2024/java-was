@@ -1,42 +1,41 @@
-package codesquad.application.handler;
+package codesquad.was.server;
 
-import codesquad.was.http.HttpHeaders;
-import codesquad.was.http.HttpStatus;
-import codesquad.was.http.MimeTypes;
 import codesquad.was.http.HttpRequest;
 import codesquad.was.http.HttpResponse;
-import codesquad.was.server.Handler;
+import codesquad.was.http.MimeTypes;
 import codesquad.was.server.exception.ResourceNotFoundException;
+import codesquad.was.server.exception.ServerException;
+import codesquad.was.util.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultHandler implements Handler {
+public class DefaultHandler extends Handler {
 
     private static final String STATIC_FOLDER = "static";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-
     @Override
     public void doGet(HttpRequest request, HttpResponse response) {
-        InputStream file = getFile(request.getPath());
+        String path =  request.getPath();
+
+        if(path.equals("/")){
+            response.sendRedirect("/index.html");
+            return;
+        }
+
+        InputStream file = getFile(path);
         byte[] bytes;
 
         try {
             bytes = file.readAllBytes();
         } catch (IOException e) {
-            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR);
-            return;
+            throw new ServerException();
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        HttpHeaders.setCommonHeader(headers);
-        headers.setHeader(HttpHeaders.CONTENT_LENGTH_HEADER, String.valueOf(bytes.length));
-        headers.setHeader(HttpHeaders.CONTENT_TYPE_HEADER, MimeTypes.getMimeTypeFromExtension(request.getPath()));
-
-        response.send(headers, bytes);
+        response.send(MimeTypes.getMimeTypeFromExtension(path), bytes);
     }
 
     private InputStream getFile(String path) {
@@ -44,7 +43,7 @@ public class DefaultHandler implements Handler {
             throw new ResourceNotFoundException();
         }
 
-        InputStream resource = getClass().getClassLoader().getResourceAsStream(STATIC_FOLDER + path);
+        InputStream resource = IOUtil.getClassPathResource(STATIC_FOLDER + path);
         if (resource == null) {
             throw new ResourceNotFoundException();
         }

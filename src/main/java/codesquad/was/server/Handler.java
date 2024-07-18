@@ -4,13 +4,16 @@ import codesquad.was.http.HttpRequest;
 import codesquad.was.http.HttpResponse;
 import codesquad.was.server.exception.MethodNotAllowedException;
 
-public interface Handler {
+public abstract class Handler {
 
-    default void doGet(HttpRequest request, HttpResponse response) {
+    protected Handler() {
+    }
+
+    public void doGet(HttpRequest request, HttpResponse response) {
         throw new MethodNotAllowedException();
     }
 
-    default void doPost(HttpRequest request, HttpResponse response) {
+    public void doPost(HttpRequest request, HttpResponse response) {
         throw new MethodNotAllowedException();
     }
 }

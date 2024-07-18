@@ -1,6 +1,8 @@
 package codesquad.was.http;
 
+import codesquad.was.util.IOUtil;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 public class HttpResponse {
 
@@ -83,6 +85,14 @@ public class HttpResponse {
 
     public void sendError(HttpStatus status) {
         setStatus(status);
+        addHeader(new HttpHeader(HttpHeaders.CONTENT_TYPE_HEADER, "text/html"));
+        String errorPage = "static/error/" + status.getCode() + ".html";
+        try {
+            byte[] file = IOUtil.getClassPathResource(errorPage).readAllBytes();
+            addHeader(new HttpHeader(HttpHeaders.CONTENT_LENGTH_HEADER, String.valueOf(file.length)));
+            this.out.writeBytes(file);
+        } catch (NullPointerException | IOException e) {
+        }
     }
 
     public void sendRedirect(String redirectUrl) {
@@ -90,8 +100,10 @@ public class HttpResponse {
         addHeader(new HttpHeader(HttpHeaders.LOCATION, redirectUrl));
     }
 
-    public void send(HttpHeaders headers, byte[] body) {
-        setHeaders(headers);
+    public void send(MimeTypes contentType, byte[] body) {
+        setHeaders(HttpHeaders.getDefault());
+        addHeader(new HttpHeader(HttpHeaders.CONTENT_LENGTH_HEADER, String.valueOf(body.length)));
+        addHeader(new HttpHeader(HttpHeaders.CONTENT_TYPE_HEADER, contentType.getMIMEType()));
         this.out.writeBytes(body);
     }
 
