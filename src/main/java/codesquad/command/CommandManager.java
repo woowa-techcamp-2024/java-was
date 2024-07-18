@@ -13,7 +13,7 @@ import java.util.Objects;
 import codesquad.command.annotation.custom.RequestParam;
 import codesquad.command.annotation.preprocess.PreHandle;
 import codesquad.command.annotation.redirect.Redirect;
-import codesquad.command.domain.user.UserDynamicResponseBody;
+import codesquad.command.domain.DynamicResponseBody;
 import codesquad.command.domainResponse.DomainResponse;
 import codesquad.command.annotation.method.Command;
 import codesquad.command.annotation.method.GetMapping;
@@ -115,7 +115,8 @@ public class CommandManager {
 		}
 	}
 
-	public DomainResponse execute(HttpRequest httpRequest) {
+	public DomainResponse execute(HttpRequest
+										  httpRequest) {
 		log.debug("[Executing] {}", httpRequest);
 		var httpMethod = httpRequest.method();
 		var path = httpRequest.uri();
@@ -132,16 +133,19 @@ public class CommandManager {
 		checkHandling(path, method);
 
 
+		var httpClientRequest = new HttpClientRequest(httpRequest);
+		var httpClientResponse = new HttpClientResponse();
+
 		// 실패하면 /index.html로 리다이렉트
 		if (!callInterceptor(path, httpRequest)) {
-			var httpClientResponse = new HttpClientResponse();
-			httpClientResponse.setHeader("Location","/login/index.html");
-			return new DomainResponse(HttpStatus.FOUND,  httpClientResponse, false, method.getReturnType(), null);
-		} else{
-			// 정적 파일 동적 처리
-			if (httpRequest.uri().contains(".html")) {
-				return getStaticResponse(httpRequest);
-
+			httpClientResponse.setHeader("Location", "/login/index.html");
+			return new DomainResponse(HttpStatus.FOUND, httpClientResponse, false, method.getReturnType(), null);
+		} else {
+			var cookieInfo = httpRequest.cookie();
+			Cookie cookie = cookieInfo.get("sessionKey");
+			if (Objects.nonNull(cookie)) {
+				SessionUserInfo userInfo = Session.getInstance().getSession(cookie.value());
+				httpClientRequest.setUserInfo(userInfo);
 			}
 		}
 		log.info("[Execute Method] : , {}",method);
@@ -150,8 +154,6 @@ public class CommandManager {
 			var className = method.getDeclaringClass().getName();
 			var instance = findInstance(className);
 
-			var httpClientRequest = new HttpClientRequest(httpRequest);
-			var httpClientResponse = new HttpClientResponse();
 			var userInputData = parsingQueryParameterResources(resources);
 			var parameters = makeParameterArgs(method, userInputData, httpClientRequest, httpClientResponse);
 			log.info("[User Parameters] : {}", Arrays.toString(parameters));
@@ -212,22 +214,6 @@ public class CommandManager {
 		}
 	}
 
-
-	/**
-	 *
-	 * 정적 파일인 경우 처리하는 메소드
-	 */
-	private DomainResponse getStaticResponse(HttpRequest httpRequest) {
-		var cookieInfo = httpRequest.cookie();
-		Cookie cookie = cookieInfo.get("sessionKey");
-		SessionUserInfo sessionUserInfo = null;
-
-		if (Objects.nonNull(cookie)) {
-			sessionUserInfo = Session.getInstance().getSession(cookie.value());
-		}
-		var body = UserDynamicResponseBody.getInstance().getMainHtml(httpRequest.uri(), sessionUserInfo);
-		return new DomainResponse(HttpStatus.OK, new HttpClientResponse(), true, String.class, body);
-	}
 
 	public boolean callInterceptor(String path, HttpRequest httpRequest) {
 		boolean result = true;

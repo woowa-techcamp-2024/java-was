@@ -69,12 +69,25 @@ public class HttpRequestParser {
         var method = HttpMethod.fromString(firstLine[0]);
         var uri = firstLine[1];
         var fileExtension = getFileExtension(uri);
+
+        if(uri.contains("/index.html")) {
+            uri = uri.substring(0,uri.lastIndexOf("/index.html"));
+            if (uri.length() == 0) {
+                uri = "/";
+            }
+        }
         var httpVersion = firstLine[2];
 
         var headers = new HashMap<String,String>();
         var cookies = new HashMap<String, Cookie>();
         var bodyIdx = parsingHeader(lines, headers, cookies);
         var body = getBody(lines, bodyIdx);
+
+        if (uri.contains("?")) {
+            var uriSplit = uri.split("\\?");
+            uri = uriSplit[0];
+            body = uriSplit[1];
+        }
 
         return new HttpRequest(method, uri, fileExtension, httpVersion, headers, cookies, body);
     }

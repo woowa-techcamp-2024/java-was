@@ -1,17 +1,10 @@
 package codesquad.command.model;
 
-import codesquad.command.model.User;
-import codesquad.command.model.UserInfo;
+import codesquad.db.user.MemberRepository;
+import codesquad.db.user.Member;
 import codesquad.exception.CustomException;
 import org.junit.jupiter.api.*;
 
-import java.net.CookieManager;
-import java.net.CookieStore;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -20,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UserTest {
+class MemberTest {
 
 
     String userId = "testId";
@@ -34,7 +27,8 @@ class UserTest {
 
     @BeforeEach
     void setUp(){
-        User.getInstance().deleteUserInfo(userId);
+        Member member = new Member(userId, userPass, userName, userEmail);
+        MemberRepository.getInstance().delete(member);
     }
 
     @Nested
@@ -45,9 +39,9 @@ class UserTest {
         @DisplayName("같은 아이디의 사용자가 있으면, 회원 가입 시에 예외를 반환한다.")
         void request_with_already_existed_userId() throws InterruptedException {
             // given
-            User user = User.getInstance();
-            UserInfo userInfo = new UserInfo(userId, userPass, userName, userEmail);
-            user.addUserInfo(userInfo);
+            MemberRepository memberRepository = MemberRepository.getInstance();
+            Member member = new Member(userId, userPass, userName, userEmail);
+            memberRepository.save(member);
             ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<>(queueCapacity));
             CountDownLatch countDownLatch = new CountDownLatch(queueCapacity);
             AtomicInteger exceptionCount = new AtomicInteger(0);
@@ -58,7 +52,7 @@ class UserTest {
             for (int i = 0; i < queueCapacity; i++) {
                 threadPoolExecutor.execute(() -> {
                     try {
-                        user.addUserInfo(new UserInfo(userId, userPass, userName, userEmail));
+                        memberRepository.save(new Member(userId, userPass, userName, userEmail));
 
                     } catch (CustomException exception) {
                         exceptionCount.getAndIncrement();
@@ -75,14 +69,22 @@ class UserTest {
             // then
             assertEquals(exceptionCount.get(), queueCapacity);
             assertEquals(otherExceptionCount.get(), 0);
-            assertEquals(user.getUserInfo(userId), userInfo);
+            assertEquals(memberRepository.findById(userId), member);
         }
 
         @Test
         @DisplayName("다른 아이디로 회원가입 하면 정상적으로 사용자 정보가 저장된다.")
         void request_with_different_user_id() throws InterruptedException {
             // given
-            User user = User.getInstance();
+            for (int i = 0; i < queueCapacity; i++) {
+                int idx = i;
+                Member findMember = MemberRepository.getInstance().findById(userId+idx);
+                if(findMember != null) {
+                    MemberRepository.getInstance().delete(findMember);
+                }
+            }
+
+            MemberRepository user = MemberRepository.getInstance();
             ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS, new LinkedBlockingQueue<>(queueCapacity));
             CountDownLatch countDownLatch = new CountDownLatch(queueCapacity);
             AtomicInteger exceptionCount = new AtomicInteger(0);
@@ -95,7 +97,7 @@ class UserTest {
                 int idx = i;
                 threadPoolExecutor.execute(() -> {
                     try {
-                        user.addUserInfo(new UserInfo(userId+idx, userPass, userName, userEmail));
+                        user.save(new Member(userId+idx, userPass, userName, userEmail));
 
                     } catch (CustomException exception) {
                         exceptionCount.getAndIncrement();
@@ -111,9 +113,9 @@ class UserTest {
             countDownLatch.await();
 
             // then
-            assertEquals(exceptionCount.get(), 0);
-            assertEquals(otherExceptionCount.get(), 0);
-            assertEquals(successCount.get(), queueCapacity);
+            assertEquals(0,exceptionCount.get());
+            assertEquals(0,otherExceptionCount.get());
+            assertEquals(queueCapacity,successCount.get());
         }
     }
 }
