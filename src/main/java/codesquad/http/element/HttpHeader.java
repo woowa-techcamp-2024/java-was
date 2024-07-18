@@ -17,6 +17,9 @@ public class HttpHeader {
     }
 
     public void append(String value) { header.add(value); }
+
+    public String getFirstHeaderValue() { return header.get(0); }
+    
     public String getHeaderValue(String key) {
         for (String value: header) {
             if (value.startsWith(key)) return value.split("=")[1].trim();

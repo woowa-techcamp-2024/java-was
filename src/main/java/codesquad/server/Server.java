@@ -40,7 +40,7 @@ public class Server {
     }
 
     private void start(ClientSocket clientSocket) throws Exception {
-        String inputMessage = clientSocket.read();
+        byte[] inputMessage = clientSocket.read();
         HttpRequest httpRequest = processor.processRequest(inputMessage);
 
         HttpResponse httpResponse = router.handle(httpRequest);

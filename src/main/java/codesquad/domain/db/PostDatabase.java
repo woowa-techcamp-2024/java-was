@@ -16,11 +16,12 @@ public class PostDatabase implements Database<Integer, Post> {
     public Integer append(Post data) {
         Integer id = null;
         try (Connection connection = DatabaseSource.connect()){
-            String createPostSQL = "INSERT INTO posts (userid, title, contents) VALUES (?, ?, ?)";
+            String createPostSQL = "INSERT INTO posts (userid, title, contents, image) VALUES (?, ?, ?, ?)";
             PreparedStatement pstmt = connection.prepareStatement(createPostSQL, Statement.RETURN_GENERATED_KEYS);
             pstmt.setString(1, data.userid());
             pstmt.setString(2, data.title());
             pstmt.setString(3, data.contents());
+            pstmt.setString(4, data.image());
             pstmt.executeUpdate();
 
             ResultSet rs = pstmt.getGeneratedKeys();
@@ -41,7 +42,7 @@ public class PostDatabase implements Database<Integer, Post> {
 
             var resultSet = pstmt.executeQuery();
             if (!resultSet.next()) return null;
-            post = new Post(resultSet.getString("userid"), resultSet.getString("title"), resultSet.getString("contents"));
+            post = new Post(resultSet.getString("userid"), resultSet.getString("title"), resultSet.getString("contents"), resultSet.getString("image"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -55,7 +56,7 @@ public class PostDatabase implements Database<Integer, Post> {
             String getAllPostsSQL = "SELECT * FROM posts";
             var resultSet = connection.prepareStatement(getAllPostsSQL).executeQuery();
             while (resultSet.next()) {
-                result.put(resultSet.getInt("id"), new Post(resultSet.getString("userid"), resultSet.getString("title"), resultSet.getString("contents")));
+                result.put(resultSet.getInt("id"), new Post(resultSet.getString("userid"), resultSet.getString("title"), resultSet.getString("contents"), resultSet.getString("image")));
             }
         } catch (Exception e) {
             e.printStackTrace();

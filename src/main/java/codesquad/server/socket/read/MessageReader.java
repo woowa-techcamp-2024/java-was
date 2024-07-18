@@ -2,34 +2,58 @@ package codesquad.server.socket.read;
 
 import java.io.*;
 
-import static codesquad.utils.StringUtil.CRLF;
-
 public class MessageReader {
 
-    public static String read(InputStream inputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder request = new StringBuilder();
+    public static byte[] read(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        byte[] header = readHeader(inputStream);
+        outputStream.write(header);
 
-        int contentLength = readHeader(reader, request);
-        request.append(CRLF);
-        if (contentLength > 0) readBody(reader, request, contentLength);
-
-        return request.toString();
-    }
-
-    private static int readHeader(BufferedReader reader, StringBuilder request) throws IOException {
-        String line;
-        int contentLength = 0;
-        while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            request.append(line).append(CRLF);
-            if (line.startsWith("Content-Length")) contentLength = Integer.parseInt(line.split(":")[1].trim());
+        int contentLength = getContentLength(new String(header));
+        if (contentLength > 0) {
+            byte[] body = readBody(inputStream, contentLength);
+            outputStream.write(body);
         }
-        return contentLength;
+
+        return outputStream.toByteArray();
     }
 
-    private static void readBody(BufferedReader reader, StringBuilder request, int contentLength) throws IOException {
-        char[] body = new char[contentLength];
-        reader.read(body, 0, contentLength);
-        request.append(body);
+    private static byte[] readHeader(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream headerStream = new ByteArrayOutputStream();
+        int b;
+        boolean eoh = false;
+        while (!eoh) {
+            b = inputStream.read();
+            if (b == -1) break;
+            headerStream.write(b);
+            if (b == '\n' && headerStream.size() >= 4) {
+                byte[] last4 = headerStream.toByteArray();
+                int len = last4.length;
+                if (last4[len-4] == '\r' && last4[len-3] == '\n' && last4[len-2] == '\r' && last4[len-1] == '\n') {
+                    eoh = true;
+                }
+            }
+        }
+        return headerStream.toByteArray();
+    }
+
+    private static int getContentLength(String header) {
+        for (String line : header.split("\r\n")) {
+            if (line.startsWith("Content-Length:")) {
+                return Integer.parseInt(line.split(":")[1].trim());
+            }
+        }
+        return 0;
+    }
+
+    private static byte[] readBody(InputStream inputStream, int contentLength) throws IOException {
+        byte[] body = new byte[contentLength];
+        int bytesRead = 0;
+        while (bytesRead < contentLength) {
+            int result = inputStream.read(body, bytesRead, contentLength - bytesRead);
+            if (result == -1) break;
+            bytesRead += result;
+        }
+        return body;
     }
 }

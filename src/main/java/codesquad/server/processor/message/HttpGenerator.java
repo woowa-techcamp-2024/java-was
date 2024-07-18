@@ -32,11 +32,24 @@ public class HttpGenerator {
 
     private static byte[] generateFileBody(ResponseBody body) throws IOException {
         if (body == null) return new byte[0];
-
+        for (String key : body.getBodyMap().keySet()) {
+            System.out.println(key + " : " + body.getBodyMap().get(key));
+        }
         byte[] result;
         URI uri = body.getUri();
-        try (InputStream fileInputStream = HttpGenerator.class.getResourceAsStream("/static" + uri.getPath());
-             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+
+        InputStream fileInputStream = null;
+        if (uri.getPath().startsWith("/upload")) {
+            String filePath = System.getProperty("user.dir") + uri.getPath();
+            File file = new File(filePath);
+            if (file.exists() && file.isFile()) {
+                fileInputStream = new FileInputStream(file);
+            } else {
+                throw new Http404Exception();
+            }
+        }
+        else fileInputStream = HttpGenerator.class.getResourceAsStream("/static" + uri.getPath());
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             if (fileInputStream == null) throw new Http404Exception();
 
             int bytesRead;

@@ -9,18 +9,17 @@
       function writePost() {
         const title = document.querySelector('textarea[placeholder="글의 제목을 입력하세요"]').value;
         const content = document.querySelector('textarea[placeholder="글의 내용을 입력하세요"]').value;
+        const image = document.querySelector('input[type="file"]').files[0];
         const url = '/post/create';
 
-        const data = new URLSearchParams();
-        data.append('title', title);
-        data.append('contents', content);
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('contents', content);
+        formData.append('image', image);
 
         fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: data.toString()
+          body: formData
         })
                 .then(response => window.location.href = response.url)
                 .then(data => {
@@ -69,6 +68,10 @@
               placeholder="글의 내용을 입력하세요"
               autocomplete="username"
             ></textarea>
+          </div>
+          <div class="textfield textfield_size_s" style="height: 50px">
+            <p class="title_textfield">이미지 업로드</p>
+            <input type="file" class="input_file" />
           </div>
           <button
             id="registration-btn"

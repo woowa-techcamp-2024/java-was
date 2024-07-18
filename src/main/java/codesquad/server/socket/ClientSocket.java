@@ -14,7 +14,7 @@ public class ClientSocket {
         this.clientSocket = clientSocket;
     }
 
-    public String read() throws IOException {
+    public byte[] read() throws IOException {
         return MessageReader.read(clientSocket.getInputStream());
     }
 

@@ -10,7 +10,7 @@ import codesquad.security.SessionFilter;
 import java.io.IOException;
 
 public class Processor {
-    public HttpRequest processRequest(String inputMessage) throws Exception {
+    public HttpRequest processRequest(byte[] inputMessage) throws Exception {
         HttpRequest httpRequest = HttpParser.parseHttpRequest(inputMessage);
         SessionFilter.filter(httpRequest);
         return httpRequest;

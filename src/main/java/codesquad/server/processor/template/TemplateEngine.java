@@ -20,6 +20,7 @@ public class TemplateEngine {
         if (responseString.matches("(?s).*\\{\\{userList}}.*")) responseString = convertUserList(responseString);
         if (responseString.matches("(?s).*\\{\\{title}}.*")) responseString = convertTitle(responseString, id);
         if (responseString.matches("(?s).*\\{\\{post}}.*")) responseString = convertPost(responseString, id);
+        if (responseString.matches("(?s).*\\{\\{image}}.*")) responseString = convertImage(responseString, id);
         if (responseString.matches("(?s).*\\{\\{commentList}}.*")) responseString = convertCommentList(responseString, id);
         if (responseString.matches("(?s).*\\{\\{account}}.*")) responseString = convertAccount(responseString, id);
         return responseString.getBytes();
@@ -93,5 +94,11 @@ public class TemplateEngine {
         Post post = postDatabase.getById(Integer.parseInt(id));
         if (post == null) return response.replace("{{post}}", "");
         return response.replace("{{post}}", post.contents());
+    }
+
+    private static String convertImage(String response, String id) {
+        Post post = postDatabase.getById(Integer.parseInt(id));
+        if (post == null) return response.replace("{{image}}", "<img class=\"post__img\" />");
+        return response.replace("{{image}}", "<img class=\"post__img\" src=\"/upload/" + post.image() + "\" />");
     }
 }

@@ -16,7 +16,7 @@ public class PostAPI implements ResourceHandler {
     public HttpResponse handle(HttpRequest request) {
         User user = sessionDatabase.getById(session.get());
         Map<String, String> contents = request.getBody().getBodyMap();
-        postDatabase.append(new Post(user.userid(), contents.get("title"), contents.get("contents")));
+        postDatabase.append(new Post(user.userid(), contents.get("title"), contents.get("contents"), contents.get("image")));
         return handleRedirect("/index.html?id=1");
     }
 }
