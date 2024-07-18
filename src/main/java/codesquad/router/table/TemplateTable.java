@@ -1,10 +1,11 @@
-package codesquad.router;
+package codesquad.router.table;
 
 import codesquad.config.RouterConfig;
 import codesquad.context.SessionContextManager;
 import codesquad.http.ContentType;
+import codesquad.router.RouteTableRow;
+import codesquad.router.handler.TemplateResourceHandler;
 import codesquad.template.HtmlManager;
-import codesquad.util.scan.Solo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ import java.util.Objects;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-@Solo
+//@Solo
 public class TemplateTable {
 
     private final Logger logger = LoggerFactory.getLogger(TemplateTable.class);

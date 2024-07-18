@@ -2,8 +2,8 @@ package codesquad.config;
 
 import codesquad.http.HttpRequest;
 import codesquad.http.Method;
-import codesquad.router.HttpHandler;
 import codesquad.router.RouteTableRow;
+import codesquad.router.handler.HttpHandler;
 import codesquad.util.collections.Tries;
 import codesquad.util.scan.Solo;
 
@@ -32,6 +32,12 @@ public class RouterConfig {
     public Optional<HttpHandler> findHandler(HttpRequest request) {
         return methodTries.getOrDefault(request.method, new Tries<>())
                 .search(request.path)
+                .map(RouteTableRow::getHandler);
+    }
+
+    public Optional<HttpHandler> findHandler(Method method, String path) {
+        return methodTries.getOrDefault(method, new Tries<>())
+                .search(path)
                 .map(RouteTableRow::getHandler);
     }
 }
