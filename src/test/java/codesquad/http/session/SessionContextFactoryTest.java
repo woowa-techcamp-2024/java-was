@@ -28,7 +28,8 @@ class SessionContextFactoryTest {
 
             sessionContextFactory.createSessionContext(httpRequest);
 
-            assertThat(SessionContextHolder.getSessionId()).isEqualTo("test");
+            SessionContext context = SessionContextHolder.getContext();
+            assertThat(context.sessionId()).isEqualTo("test");
         }
     }
 }

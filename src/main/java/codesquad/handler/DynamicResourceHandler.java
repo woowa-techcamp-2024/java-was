@@ -1,26 +1,31 @@
 package codesquad.handler;
 
+import codesquad.database.ArticleRepository;
+import codesquad.database.H2Config;
+import codesquad.database.UserRepository;
 import codesquad.error.HttpStatusException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
 import codesquad.http.StatusCode;
+import codesquad.http.session.SessionContext;
 import codesquad.http.session.SessionContextHolder;
-import codesquad.http.session.SessionManager;
+import codesquad.model.Article;
 import codesquad.model.User;
-import codesquad.model.UserDataBase;
 import codesquad.resource.DirectoryIndexResolver;
 import codesquad.resource.Resource;
+import codesquad.resource.transform.HtmlTransformer;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.Objects;
 
 public class DynamicResourceHandler extends RequestHandler {
 
     private static DynamicResourceHandler instance;
 
     private final DirectoryIndexResolver directoryIndexResolver = DirectoryIndexResolver.getInstance();
-    private final SessionManager sessionManager = SessionManager.getInstance();
-    private final UserDataBase userDataBase = UserDataBase.getInstance();
+    private final ArticleRepository articleRepository = ArticleRepository.getInstance();
+    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
 
     private DynamicResourceHandler() {
     }
@@ -35,27 +40,25 @@ public class DynamicResourceHandler extends RequestHandler {
     @Override
     protected HttpResponse handleGet(HttpRequest httpRequest) {
         String uri = httpRequest.uri();
-        Optional<Resource> resolvedResource = directoryIndexResolver.resolve(uri);
-        if (resolvedResource.isEmpty()) {
-            throw new HttpStatusException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다.");
-        }
-
-        Resource resource = resolvedResource.get();
+        Resource resource = directoryIndexResolver.resolve(uri)
+                .orElseThrow(() -> new HttpStatusException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다."));
         if (!resource.getExtension().equals("html")) {
             return responseGenerator.sendOK(resource.getContent(), MediaType.find(resource.getExtension()), httpRequest);
         }
 
-        String sessionId = SessionContextHolder.getSessionId();
-        String foundUserId = sessionManager.findUserId(sessionId)
-                .orElse("");
-        Optional<User> foundUser = userDataBase.findUser(foundUserId);
         String content = new String(resource.getContent());
-        if (foundUser.isEmpty()) {
-            return responseGenerator.sendOK(content.getBytes(), MediaType.TEXT_HTML, httpRequest);
-        }
-
-        User user = foundUser.get();
-        String replacedHtml = HtmlTransformer.replaceUserHeader(content, user);
+        SessionContext sessionContext = SessionContextHolder.getContext();
+        String replacedHtml = HtmlTransformer.replaceUserHeader(content, sessionContext.user());
+        // FIXME: refactoring 하기
+        List<Article> articles = articleRepository.findAll();
+        List<User> users = userRepository.findAll();
+        List<User> writers = articles.stream()
+                .map(article -> users.stream()
+                        .filter(user -> Objects.equals(user.getId(), article.getUserId()))
+                        .findAny()
+                        .orElse(null))
+                .toList();
+        replacedHtml = HtmlTransformer.appendArticles(replacedHtml, articles, writers);
         return responseGenerator.sendOK(replacedHtml.getBytes(), MediaType.TEXT_HTML, httpRequest);
     }
 }

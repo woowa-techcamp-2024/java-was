@@ -35,14 +35,14 @@
 }
 
 .post__img {
-  width: 664px;
-  height: 664px;
+  width: 512px;
+  height: 512px;
   border-radius: 8px;
   background: #d9d9d9;
 }
 
 .post__article {
-  width: 664px;
+  width: 512px;
   font-weight: 400;
   font-size: 16px;
   line-height: 25.6px;

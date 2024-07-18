@@ -1,19 +1,20 @@
 package codesquad.handler;
 
+import codesquad.database.H2Config;
+import codesquad.database.UserRepository;
 import codesquad.error.HttpStatusException;
 import codesquad.handler.dto.RegistrationRequest;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.StatusCode;
 import codesquad.model.User;
-import codesquad.model.UserDataBase;
 
 public final class UserRegistrationHandler extends RequestHandler {
 
     private static UserRegistrationHandler instance;
 
     private final ObjectMapper objectMapper = ObjectMapper.getInstance();
-    private final UserDataBase userDataBase = UserDataBase.getInstance();
+    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
 
     private UserRegistrationHandler() {
     }
@@ -34,10 +35,10 @@ public final class UserRegistrationHandler extends RequestHandler {
         RegistrationRequest registrationRequest = objectMapper.readQueryString(body, RegistrationRequest.class);
 
         User user = new User(registrationRequest.userId(), registrationRequest.nickname(), registrationRequest.password());
-        boolean success = userDataBase.addUser(user);
-        if (success) {
-            return responseGenerator.sendRedirect(httpRequest, "/");
+        if (userRepository.findByUserId(user.getUserId()).isPresent()) {
+            throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] 이미 사용중인 아이디입니다.");
         }
-        throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] 이미 사용중인 아이디입니다.");
+        userRepository.save(user);
+        return responseGenerator.sendRedirect(httpRequest, "/");
     }
 }

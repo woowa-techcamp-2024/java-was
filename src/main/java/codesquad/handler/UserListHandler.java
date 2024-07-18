@@ -1,26 +1,26 @@
 package codesquad.handler;
 
+import codesquad.database.H2Config;
+import codesquad.database.UserRepository;
 import codesquad.error.HttpStatusException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
 import codesquad.http.StatusCode;
+import codesquad.http.session.SessionContext;
 import codesquad.http.session.SessionContextHolder;
-import codesquad.http.session.SessionManager;
 import codesquad.model.User;
-import codesquad.model.UserDataBase;
 import codesquad.resource.DirectoryIndexResolver;
 import codesquad.resource.Resource;
+import codesquad.resource.transform.HtmlTransformer;
 
 import java.util.List;
-import java.util.Optional;
 
-public class UserListHandler extends RequestHandler {
+public class UserListHandler extends AuthenticatedHandler {
 
     private static UserListHandler instance;
 
-    private final UserDataBase userDataBase = UserDataBase.getInstance();
-    private final SessionManager sessionManager = SessionManager.getInstance();
+    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
     private final DirectoryIndexResolver directoryIndexResolver = DirectoryIndexResolver.getInstance();
 
     private UserListHandler() {
@@ -35,21 +35,14 @@ public class UserListHandler extends RequestHandler {
 
     @Override
     protected HttpResponse handleGet(HttpRequest httpRequest) {
-        String sessionId = SessionContextHolder.getSessionId();
-        String foundUserId = sessionManager.findUserId(sessionId)
-                .orElse("");
-        Optional<User> foundUser = userDataBase.findUser(foundUserId);
-        if (foundUser.isEmpty()) {
-            return responseGenerator.sendRedirect(httpRequest, "/login");
-        }
-
-        Resource resource = directoryIndexResolver.resolve("/user")
+        Resource resource = directoryIndexResolver.resolve("/user/index.html")
                 .orElseThrow(() -> new HttpStatusException(StatusCode.NOT_FOUND));
         String content = new String(resource.getContent());
-        List<User> users = userDataBase.findAll();
+        List<User> users = userRepository.findAll();
 
-        String replacedContent = HtmlTransformer.appendUserList(content, users);
-        replacedContent = HtmlTransformer.replaceUserHeader(replacedContent, foundUser.get());
+        SessionContext sessionContext = SessionContextHolder.getContext();
+        String replacedContent = HtmlTransformer.replaceUserHeader(content, sessionContext.user());
+        replacedContent = HtmlTransformer.appendUserList(replacedContent, users);
         return responseGenerator.sendOK(replacedContent.getBytes(), MediaType.TEXT_HTML, httpRequest);
     }
 }

@@ -11,6 +11,7 @@ public class HandlersMapper {
             "/user/logout", UserLogoutHandler.getInstance(),
             "/user/create", UserRegistrationHandler.getInstance(),
             "/user/list", UserListHandler.getInstance(),
+            "/article", ArticleHandler.getInstance(),
             "/", DynamicResourceHandler.getInstance()
     );
 

@@ -1,10 +1,15 @@
 package codesquad.http.session;
 
+import codesquad.database.H2Config;
+import codesquad.database.UserRepository;
 import codesquad.http.HttpRequest;
 
 public class SessionContextFactory {
 
     private static SessionContextFactory instance;
+
+    private final SessionManager sessionManager = SessionManager.getInstance();
+    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
 
     private SessionContextFactory() {
     }
@@ -18,6 +23,10 @@ public class SessionContextFactory {
 
     public void createSessionContext(HttpRequest httpRequest) {
         String sessionId = httpRequest.getCookie("sid");
-        SessionContextHolder.setSessionId(sessionId);
+        String foundUserId = sessionManager.findUserId(sessionId)
+                .orElse("");
+        userRepository.findByUserId(foundUserId)
+                .ifPresentOrElse(user -> SessionContextHolder.setContext(sessionId, user),
+                        () -> SessionContextHolder.setContext(sessionId, null));
     }
 }

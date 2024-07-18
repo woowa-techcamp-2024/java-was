@@ -20,7 +20,7 @@ public final class ResourcesReader {
         path = checkPath(path);
         String fullPath = RESOURCES_PATH + path;
         if (!path.contains(".")) {
-            return Optional.of(Resource.directory(extractFileName(path)));
+            return Optional.of(Resource.directory(path));
         }
 
         try (InputStream inputStream = ResourcesReader.class.getResourceAsStream(fullPath)) {
