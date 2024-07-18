@@ -9,8 +9,6 @@ import server.http.model.startline.RequestLine;
 import server.http.model.startline.Target;
 import server.http.model.startline.Version;
 
-import java.nio.charset.StandardCharsets;
-
 public class HttpRequestParserImpl implements HttpRequestParser {
     @Override
     public HttpRequest parseRequestLine(String requestLine) throws BadGrammarException {
@@ -32,7 +30,7 @@ public class HttpRequestParserImpl implements HttpRequestParser {
     }
 
     @Override
-    public HttpRequest parseBody(HttpRequest httpRequest, String body) throws BadGrammarException {
-        return new HttpRequest(httpRequest.getRequestLine(), httpRequest.getHeader(), new Body(body.getBytes(StandardCharsets.UTF_8)));
+    public HttpRequest parseBody(HttpRequest httpRequest, byte[] body) throws BadGrammarException {
+        return new HttpRequest(httpRequest.getRequestLine(), httpRequest.getHeader(), new Body(body));
     }
 }

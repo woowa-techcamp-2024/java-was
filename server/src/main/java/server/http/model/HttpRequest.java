@@ -1,10 +1,13 @@
 package server.http.model;
 
 import server.http.model.body.Body;
+import server.http.model.header.ContentType;
 import server.http.model.header.Header;
 import server.http.model.header.Headers;
 import server.http.model.startline.Method;
 import server.http.model.startline.RequestLine;
+import server.http.model.startline.Target;
+import server.http.model.startline.Version;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +19,7 @@ public class HttpRequest {
     private final Body body;
 
     public HttpRequest(RequestLine requestLine) {
-        this(requestLine, null);
+        this(requestLine, new Headers());
     }
 
     public HttpRequest(RequestLine requestLine, Headers headers) {
@@ -67,5 +70,13 @@ public class HttpRequest {
             result.put(query.split("=")[0], query.split("=")[1]);
         }
         return result;
+    }
+
+    public ContentType getContentType() {
+        return ContentType.of(headers.get(Header.CONTENT_TYPE.getFieldName()));
+    }
+
+    public HttpRequest forward(Method method, Target target) {
+        return new HttpRequest(new RequestLine(Version.HTTP_1_1, method, target), headers, body);
     }
 }

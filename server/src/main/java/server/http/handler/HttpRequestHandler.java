@@ -5,13 +5,12 @@ import org.slf4j.LoggerFactory;
 import server.connection.ConnectionManager;
 import server.connection.OneTimeConnectionManager;
 import server.exception.BadGrammarException;
+import server.exception.ResponseException;
 import server.http.model.HttpRequest;
 import server.http.model.HttpResponse;
 import server.http.model.body.Body;
 import server.http.model.header.Headers;
-import server.http.model.startline.StatusCode;
-import server.http.model.startline.StatusLine;
-import server.http.model.startline.Version;
+import server.http.model.startline.*;
 import server.http.parser.HttpRequestParser;
 import server.http.parser.HttpRequestParserImpl;
 import server.processor.HttpRequestProcessor;
@@ -20,7 +19,6 @@ import server.processor.HttpRequestProcessors;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 public class HttpRequestHandler implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(HttpRequestHandler.class);
@@ -40,8 +38,9 @@ public class HttpRequestHandler implements Runnable {
         logger.debug("Client connected");
 
         while (connectionManager.isAlive()) {
+            HttpRequest httpRequest = null;
             try {
-                HttpRequest httpRequest = getHttpRequest();
+                httpRequest = getHttpRequest();
                 logger.debug("message received = {}", httpRequest);
                 HttpResponse response = processor.process(httpRequest);
                 logger.debug("processed = {}", response);
@@ -49,8 +48,13 @@ public class HttpRequestHandler implements Runnable {
             } catch (BadGrammarException e) {
                 logger.info("exception", e);
                 responseHttp(new HttpResponse(new StatusLine(Version.HTTP_1_1, StatusCode.BAD_REQUEST)));
-            } catch (Exception exception) {
-                logger.info("exception", exception);
+            } catch (ResponseException e) {
+                logger.info("exception", e);
+                httpRequest = httpRequest.forward(Method.GET, new Target("/error?" + "code=" + e.getStatusCode().getCode() + "&message=" + e.getMessage()));
+                HttpResponse response = processor.process(httpRequest);
+                responseHttp(response);
+            } catch (Exception e) {
+                logger.info("exception", e);
                 responseHttp(new HttpResponse(new StatusLine(Version.HTTP_1_1, StatusCode.INTERNAL_SERVER_ERROR)));
             } finally {
                 connectionManager.incrementRequestCounter();
@@ -84,12 +88,12 @@ public class HttpRequestHandler implements Runnable {
     }
 
     private HttpRequest getHttpRequest() throws BadGrammarException {
-        HttpRequest httpRequest = httpRequestParser.parseRequestLine(connectionManager.readStartLine());
-        httpRequest = httpRequestParser.parseHeader(httpRequest, connectionManager.readHeaders());
+        HttpRequest httpRequest = httpRequestParser.parseRequestLine(connectionManager.readLine());
+        httpRequest = httpRequestParser.parseHeader(httpRequest, connectionManager.readUntilCrlf());
         if (httpRequest.hasBody()) {
             logger.debug("reading body {} bytes", httpRequest.getContentLength());
             byte[] read = connectionManager.readNBytes(httpRequest.getContentLength());
-            httpRequest = httpRequestParser.parseBody(httpRequest, new String(read, StandardCharsets.UTF_8));
+            httpRequest = httpRequestParser.parseBody(httpRequest, read);
         }
         return httpRequest;
     }

@@ -2,6 +2,7 @@ package server.processor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import server.exception.ResponseException;
 import server.http.model.HttpRequest;
 import server.http.model.HttpResponse;
 import server.http.model.body.Body;
@@ -21,10 +22,13 @@ public class GetStaticResourceProcessor implements HttpRequestProcessor {
 
     @Override
     public HttpResponse process(HttpRequest request) {
+        if (request.getMethod() != Method.GET) {
+            return null;
+        }
         String requestPath = request.getRequestPath();
         URL resourceUrl = getResourceUrl(requestPath);
         if (resourceUrl == null) {
-            return notFoundResponse();
+            throw new ResponseException("Resource not found", StatusCode.NOT_FOUND);
         }
         try (InputStream resourceStream = resourceUrl.openStream()) {
             byte[] content = resourceStream.readAllBytes();
@@ -32,13 +36,15 @@ public class GetStaticResourceProcessor implements HttpRequestProcessor {
             return createResponse(content, contentType);
         } catch (IOException e) {
             logger.error("Failed to read resource: {}", requestPath, e);
-            return serverErrorResponse();
+            throw new ResponseException("Failed to read resource", StatusCode.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
-    public boolean supports(HttpRequest request) {
-        return request.getMethod() == Method.GET;
+    public boolean matches(HttpRequest request) {
+        String requestPath = request.getRequestPath();
+        URL resourceUrl = getResourceUrl(requestPath);
+        return resourceUrl != null;
     }
 
     private URL getResourceUrl(String requestPath) {
@@ -62,13 +68,5 @@ public class GetStaticResourceProcessor implements HttpRequestProcessor {
         Headers headers = new Headers();
         headers.addHeader("Content-Type", contentType);
         return new HttpResponse(new StatusLine(Version.HTTP_1_1, StatusCode.OK), headers, new Body(content));
-    }
-
-    private HttpResponse notFoundResponse() {
-        return new HttpResponse(new StatusLine(Version.HTTP_1_1, StatusCode.NOT_FOUND));
-    }
-
-    private HttpResponse serverErrorResponse() {
-        return new HttpResponse(new StatusLine(Version.HTTP_1_1, StatusCode.INTERNAL_SERVER_ERROR));
     }
 }
