@@ -128,4 +128,22 @@ public void bind(SocketAddress endpoint, int backlog) throws IOException {
 - File 로드 오류
   - 
 
+# multipart form data
 
+```
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=---------------------------123456789012345
+Content-Length: [전체 데이터의 길이]
+
+---------------------------123456789012345
+Content-Disposition: form-data; name="username"
+
+JohnDoe
+---------------------------123456789012345
+Content-Disposition: form-data; name="file"; filename="image.jpg"
+Content-Type: image/jpeg
+
+[이미지 파일의 바이너리 데이터]
+---------------------------123456789012345--
+```

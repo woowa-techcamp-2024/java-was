@@ -11,7 +11,12 @@ import codesquad.webserver.annotation.Specify;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.util.FileWriter;
 import codesquad.webserver.util.JsonStringConverter;
+
+import java.io.File;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,15 +34,22 @@ public class ArticleHandler {
 
     @RequestMapping(method = HttpMethod.POST, path = "/write")
     public HttpResponse write(HttpRequest request) {
-        String title = (String) request.getHttpBody().get("title");
-        String content = (String) request.getHttpBody().get("content");
+        Map<String, Object> body = request.getHttpBody();
+        String title = (String) body.get("title");
+        String content = (String) body.get("content");
         log.debug("[write] " + "title:" + title + ", content:" + content);
 
         String sid = CookieExtractor.getSid(request);
         User sessionUser = SessionManager.getInstance().getUser(sid);
 
-        Article article = new Article(title, content, sessionUser.getNickname());
-        log.debug("[write] "+article.toString());
+        String fileName = "";
+        if(body.containsKey("filename")){
+            byte[] fileBytes = (byte[]) body.get("image");
+            fileName = (String) body.get("filename");
+            FileWriter.saveFile(fileBytes, fileName);
+        }
+        Article article = new Article(title, content, sessionUser.getNickname(), "./upload/" + fileName);
+        log.debug("[write] " + article.toString());
         articleDb.insert(article);
         return HttpResponse.redirect("/index");
     }
@@ -45,7 +57,7 @@ public class ArticleHandler {
     @RequestMapping(method = HttpMethod.GET, path = "/api/articles")
     public HttpResponse getAll(HttpRequest request) {
         List<Article> articles = articleDb.getAll();
-        log.debug("[/api/articles] "+articles);
+        log.debug("[/api/articles] " + articles);
         return HttpResponse.ok(JsonStringConverter.collectionToJsonString(articles));
     }
 }

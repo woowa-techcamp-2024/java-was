@@ -17,7 +17,7 @@ public class ArticleDataHandlerInMemory implements ArticleDataHandler {
     @Override
     public void insert(Article article) {
         String key = UUID.randomUUID().toString();
-        Article insertArticle = new Article(key, article.getTitle(), article.getContent(), article.getAuthor(), LocalDateTime.now());
+        Article insertArticle = new Article(key, article.getTitle(), article.getContent(), article.getAuthor(), article.getImagePath(), LocalDateTime.now());
         store.put(key, insertArticle);
     }
 

@@ -1,13 +1,15 @@
 package codesquad.webserver.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class FileReader {
     private FileReader() {
     }
-
 
     public static boolean hasFile(String path) {
         return FileReader.class.getResource("/static" + path) != null;
@@ -19,6 +21,22 @@ public class FileReader {
             throw new IOException("File Not Found: " + path);
         }
         return inputStreamToString(inputStream);
+    }
+
+    public static boolean hasUploadFile(String path){
+        File file = new File(path);
+        return file.exists();
+    }
+
+    public static byte[] readFilToByte(String path){
+        File file = new File(path);
+        byte[] fileContent = new byte[(int) file.length()];
+        try(FileInputStream fis = new FileInputStream(file)){
+            fis.read(fileContent);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return fileContent;
     }
 
     public static byte[] stringToByteArray(String input) throws IOException {

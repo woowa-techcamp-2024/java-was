@@ -6,6 +6,7 @@ import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.util.FileReader;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -19,7 +20,12 @@ public class StaticResourceHandler implements ApiHandler {
     }
 
     public static HttpResponse handle(String path){
-        log.info("StaticResourceHandler handle");
+        log.info("[StaticResourceHandler] handle: "+ path);
+        if(FileReader.hasUploadFile("." + path)){
+            byte[] bytes = FileReader.readFilToByte("." + path);
+            String extension = path.substring(path.lastIndexOf(".")+1);
+            return HttpResponse.ok(extension, bytes);
+        }
         if (!FileReader.hasFile(path)) {
             return HttpResponse.notFound();
         }

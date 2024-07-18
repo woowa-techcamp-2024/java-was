@@ -27,6 +27,7 @@ public class ArticleDataHandlerJdbc implements ArticleDataHandler{
                     "TITLE VARCHAR(255) NOT NULL," +
                     "CONTENT VARCHAR(255) NOT NULL," +
                     "AUTHOR VARCHAR(255) NOT NULL," +
+                    "IMAGE_PATH VARCHAR(400) NOT NULL,"+
                     "CREATED_DT TIMESTAMP NOT NULL" +
                     ")";
             stmt.execute(query);
@@ -45,14 +46,15 @@ public class ArticleDataHandlerJdbc implements ArticleDataHandler{
     public void insert(Article article) {
         String key = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        Article insertArticle = new Article(key, article.getTitle(), article.getContent(), article.getAuthor(), now);
-        String sql = "INSERT INTO articles (id, title, content, author, created_dt) VALUES (?, ?, ?, ?, ?)";
+        Article insertArticle = new Article(key, article.getTitle(), article.getContent(), article.getAuthor(), article.getImagePath(), now);
+        String sql = "INSERT INTO articles (id, title, content, author, image_path, created_dt) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection con = DatabaseConnectionManager.getConnection(); PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setString(1, insertArticle.getId());
             pstmt.setString(2, insertArticle.getTitle());
             pstmt.setString(3, insertArticle.getContent());
             pstmt.setString(4, insertArticle.getAuthor());
-            pstmt.setTimestamp(5, Timestamp.valueOf(insertArticle.getCreatedDt()));
+            pstmt.setString(5, insertArticle.getImagePath());
+            pstmt.setTimestamp(6, Timestamp.valueOf(insertArticle.getCreatedDt()));
             int affectedRows = pstmt.executeUpdate();
             log.info("Inserted article: " + insertArticle.toString() + ", Affected rows: " + affectedRows);
         } catch (SQLException e) {
@@ -72,8 +74,9 @@ public class ArticleDataHandlerJdbc implements ArticleDataHandler{
                 String title = rs.getString("TITLE");
                 String content = rs.getString("CONTENT");
                 String author = rs.getString("AUTHOR");
+                String imagePath = rs.getString("IMAGE_PATH");
                 LocalDateTime createdDt = rs.getTimestamp("CREATED_DT").toLocalDateTime();
-                articles.add(new Article(id, title, content, author, createdDt));
+                articles.add(new Article(id, title, content, author, imagePath, createdDt));
             }
         } catch (SQLException e) {
             log.error(e.getMessage(), e);

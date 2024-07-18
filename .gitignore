@@ -1,6 +1,8 @@
 db.mv.db
 db.trace.db
 
+upload/
+
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar

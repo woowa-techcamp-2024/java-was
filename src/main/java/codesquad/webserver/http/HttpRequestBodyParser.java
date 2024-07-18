@@ -31,9 +31,8 @@ public class HttpRequestBodyParser {
 
     private static String decodeUrlComponent(String component) {
         try {
-            return URLDecoder.decode(component, StandardCharsets.UTF_8.name());
+            return URLDecoder.decode(component, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            // UTF-8은 모든 Java 구현에서 지원되므로 이 예외는 발생하지 않아야 합니다.
             throw new RuntimeException("UTF-8 is not supported", e);
         }
     }

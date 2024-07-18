@@ -35,11 +35,10 @@
         <template id="articleTemplate">
             <div class="post">
                 <div class="post__account">
-                    <img class="post__account__img"/>
                     <p class="post__account__nickname"></p>
                 </div>
                 <p class="post__title"></p>
-                <img class="post__img"/>
+                <img class="post__img" src=""/>
                 <div class="post__menu">
                     <ul class="post__menu__personal">
                         <li>
@@ -241,9 +240,9 @@
             const content = articleElement.querySelector('.post__article');
             content.textContent = article.content;
 
-            // 필요한 경우 이미지 src 설정
-            // const img = articleElement.querySelector('.post__img');
-            // img.src = article.imageUrl || '';
+
+            const img = articleElement.querySelector('.post__img');
+            img.src = `${article.imagePath}` || '';
             return articleElement.firstElementChild;
         }
 

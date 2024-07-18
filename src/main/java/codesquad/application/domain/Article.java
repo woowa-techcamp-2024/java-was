@@ -7,21 +7,24 @@ public class Article {
     private final String title;
     private final String content;
     private final String author;
+    private final String imagePath;
     private final LocalDateTime createdDt;
 
-    public Article(String id, String title, String content, String author, LocalDateTime createdDt) {
+    public Article(String id, String title, String content, String author, String imagePath, LocalDateTime createdDt) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.author = author;
+        this.imagePath = imagePath;
         this.createdDt = createdDt;
     }
 
-    public Article(String title, String content, String author) {
+    public Article(String title, String content, String author, String imagePath) {
         this.id = null;
         this.title = title;
         this.content = content;
         this.author = author;
+        this.imagePath = imagePath;
         this.createdDt = null;
     }
 
@@ -45,6 +48,10 @@ public class Article {
         return createdDt;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+
     @Override
     public String toString() {
         return "Article{" +
@@ -52,6 +59,7 @@ public class Article {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", author='" + author + '\'' +
+                ", imagePath='" + imagePath + '\'' +
                 ", createdDt=" + createdDt +
                 '}';
     }
