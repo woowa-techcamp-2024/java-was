@@ -8,10 +8,11 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.startline.RequestLine;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.UserRepository;
+import repository.UserRepositoryMemory;
 import service.UserService;
 import session.SessionManager;
 
@@ -22,12 +23,12 @@ class LoginHandlerTest {
     private HttpResponse httpResponse;
     private UserService userService;
     private SessionManager sessionManager;
-    private UserRepository userRepository;
+    private UserRepositoryMemory userRepositoryMemory;
 
     @BeforeEach
-    void setUp(){
-        userRepository = UserRepository.getInstance();
-        userService = new UserService(userRepository);
+    void setUp() throws SQLException {
+        userRepositoryMemory = UserRepositoryMemory.getInstance();
+        userService = new UserService(userRepositoryMemory);
         sessionManager = SessionManager.getInstance();
         loginHandler = new LoginHandler();
         // Simplified HttpRequest and HttpResponse setup for testing
@@ -39,8 +40,8 @@ class LoginHandlerTest {
     }
 
     @Test
-    void successfulLogin() {
-        userRepository.addUser(new User("userId", "password", "name", "email"));
+    void successfulLogin() throws SQLException {
+        userRepositoryMemory.addUser(new User("userId", "password", "name", "email"));
         loginHandler.doPost(httpRequest, httpResponse);
 
         // Check for redirection by examining the "Location" header

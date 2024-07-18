@@ -8,11 +8,13 @@ import http.HttpResponse;
 import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 import model.Article;
 import model.User;
 import org.slf4j.Logger;
 import repository.ArticleRepository;
+import repository.ArticleRepositoryDB;
 import session.Session;
 import util.FileReader;
 import util.LoggerUtil;
@@ -25,7 +27,7 @@ public class StaticHandler extends MyHandler {
 
 
     @Override
-    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, SQLException {
         RequestLine requestLine = (RequestLine) httpRequest.getStartLine();
         Header responseHeader = httpResponse.getHeader();
 
@@ -54,7 +56,8 @@ public class StaticHandler extends MyHandler {
         ResponseValueSetter.success(httpResponse, fileContent);
     }
 
-    private void callIndexPage(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    private void callIndexPage(HttpRequest httpRequest, HttpResponse httpResponse)
+        throws IOException, SQLException {
         // 1. index.html 불러오기
         byte[] fileContent = FileReader.readFileFromUrlPath(RequestContext.current().getUrlPath());
         String fileString = new String(fileContent);
@@ -77,11 +80,11 @@ public class StaticHandler extends MyHandler {
         ResponseValueSetter.success(httpResponse, combinedString.getBytes());
     }
 
-    private String articleToAdd() {
-        ArticleRepository articleRepository = ArticleRepository.getInstance();
+    private String articleToAdd() throws SQLException {
+        ArticleRepository articleRepository = ArticleRepositoryDB.getInstance();
 
         // Retrieve all articles and format them into an HTML structure
-        return articleRepository.getAllArticles().entrySet().stream()
+        return ((ArticleRepositoryDB) articleRepository).getAllArticles().entrySet().stream()
             .map(entry -> formatArticleAsHtml(entry.getValue()))
             .reduce("", (a, b) -> a + b);
     }

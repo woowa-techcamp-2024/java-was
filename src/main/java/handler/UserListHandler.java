@@ -4,9 +4,10 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.ResponseValueSetter;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.Optional;
 import model.User;
-import repository.UserRepository;
+import repository.UserRepositoryDB;
 import session.Session;
 import util.RequestContext;
 import util.StaticPage;
@@ -14,7 +15,7 @@ import util.StaticPage;
 public class UserListHandler extends MyHandler {
 
     @Override
-    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) {
+    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws SQLException {
         Optional<User> user = RequestContext.current().getSession()
             .flatMap(session -> Optional.ofNullable(
                 (User) session.getAttribute(Session.USER)
@@ -25,7 +26,7 @@ public class UserListHandler extends MyHandler {
             return;
         }
 
-        String userListHtml = generateUserListHtml(UserRepository.getInstance().findAll());
+        String userListHtml = generateUserListHtml(UserRepositoryDB.getInstance().findAll());
 
         ResponseValueSetter.success(httpResponse,
             userListHtml.getBytes(StandardCharsets.UTF_8));

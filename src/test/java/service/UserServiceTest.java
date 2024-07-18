@@ -5,27 +5,28 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import dto.UserDto;
+import java.sql.SQLException;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.UserRepository;
+import repository.UserRepositoryMemory;
 
 class UserServiceTest {
     private UserService userService;
-    private UserRepository userRepository;
+    private UserRepositoryMemory userRepositoryMemory;
     private UserDto userDto = new UserDto("userId", "password", "name", "email");
 
     @BeforeEach
     void setUp() {
-        userRepository = UserRepository.getInstance();
-        userService = new UserService(userRepository);
+        userRepositoryMemory = UserRepositoryMemory.getInstance();
+        userService = new UserService(userRepositoryMemory);
     }
 
     @Test
-    void createUser() {
+    void createUser() throws SQLException {
         userService.createUser(userDto);
 
-        User savedUser = userRepository.getUserById("userId");
+        User savedUser = userRepositoryMemory.getUserById("userId");
 
         assertAll(
             () -> assertEquals(userDto.userId(), savedUser.getUserId()),
@@ -38,7 +39,7 @@ class UserServiceTest {
     }
 
     @Test
-    void findUserById() {
+    void findUserById() throws SQLException {
         userService.createUser(userDto);
 
         User foundUser = userService.findUserById("userId");
@@ -52,11 +53,11 @@ class UserServiceTest {
     }
 
     @Test
-    void createUserWithExistingId() {
+    void createUserWithExistingId() throws SQLException {
         userService.createUser(userDto);
         userService.createUser(userDto);
 
-        User savedUser = userRepository.getUserById("userId");
+        User savedUser = userRepositoryMemory.getUserById("userId");
 
         assertAll(
             () -> assertEquals(userDto.userId(), savedUser.getUserId()),
@@ -67,7 +68,7 @@ class UserServiceTest {
     }
 
     @Test
-    void findUserByIdWithNonExistingId() {
+    void findUserByIdWithNonExistingId() throws SQLException {
         User foundUser = userService.findUserById("nonExistingId");
 
         assertNull(foundUser);

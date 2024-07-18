@@ -8,10 +8,11 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.startline.RequestLine;
 import http.startline.ResponseLine;
+import java.sql.SQLException;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.UserRepository;
+import repository.UserRepositoryMemory;
 import session.Session;
 import session.SessionManager;
 import util.RequestContext;
@@ -37,9 +38,9 @@ class UserListHandlerTest {
     }
 
     @Test
-    void testUserListRetrievalSuccess() {
+    void testUserListRetrievalSuccess() throws SQLException {
         // header sid=1
-        UserRepository.getInstance().addUser(user);
+        UserRepositoryMemory.getInstance().addUser(user);
         SessionManager.getInstance().getSession(session.getSessionId());
 
         session.setAttribute(Session.USER, user);
@@ -57,7 +58,7 @@ class UserListHandlerTest {
     }
 
     @Test
-    void testUserListRetrievalWithNoUsers() {
+    void testUserListRetrievalWithNoUsers() throws SQLException {
         Session session = SessionManager.getInstance().getSession(2);
         RequestContext.of(((RequestLine)httpRequest.getStartLine()).getUrlPath(), session);
 

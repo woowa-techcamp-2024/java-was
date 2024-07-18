@@ -1,21 +1,24 @@
 package handler;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
-import repository.UserRepository;
+import repository.UserRepositoryDB;
 import service.UserService;
 import util.FileReader;
 import util.LoggerUtil;
 
 public class MyHandlerMapper {
     private static final Logger logger = LoggerUtil.getLogger();
-    private static final MyHandlerMapper instance = new MyHandlerMapper();
+    private static MyHandlerMapper instance;
+    
+
     // TODO: 나중에 handler에서 어노테이션을 붙이면 여기에 추가하는 방식이 나오면 좋겠다.
     private final Map<String, MyHandler> handlerMap = new HashMap<>();
 
-    private MyHandlerMapper() {
-        addHandler("/create", new UserCreateHandler(new UserService(UserRepository.getInstance())));
+    private MyHandlerMapper() throws SQLException {
+        addHandler("/create", new UserCreateHandler(new UserService(UserRepositoryDB.getInstance())));
         addHandler("/writePage", new ArticleWritePageHandler());
         addHandler("/article", new ArticleHandler());
         addHandler("/registration", new RegistrationHandler());
@@ -25,7 +28,7 @@ public class MyHandlerMapper {
         addHandler("/user/list", new UserListHandler());
     }
 
-    public static MyHandlerMapper getInstance() {
+    public static MyHandlerMapper getInstance() throws SQLException {
         if (instance == null) {
             return new MyHandlerMapper();
         }
@@ -43,6 +46,7 @@ public class MyHandlerMapper {
         }
         // 그냥 handler
         if (handlerMap.containsKey(urlPath)) {
+            logger.info("found handler: {}", urlPath);
             return handlerMap.get(urlPath);
         }
 

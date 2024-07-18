@@ -34,7 +34,7 @@ public class RequestLine extends StartLine {
 
     @Override
     public String toString() {
-        return method + " " + urlPath + " " + getVersion();
+        return method + " " + urlPath.getPath() + " " + getVersion();
     }
 
 }

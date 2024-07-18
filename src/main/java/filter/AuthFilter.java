@@ -6,6 +6,7 @@ import http.HttpResponse;
 import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Set;
 import org.slf4j.Logger;
 import util.LoggerUtil;
@@ -16,7 +17,7 @@ public class AuthFilter implements Filter {
 
     private static final Logger logger = LoggerUtil.getLogger();
     private static final Set<String> authCheckUrl = Set.of(
-        "/user/list", "/create", "/writePage", StaticPage.articleWritePage
+        "/user/list", "/writePage", StaticPage.articleWritePage
     );
 
     @Override
@@ -26,7 +27,7 @@ public class AuthFilter implements Filter {
 
     @Override
     public void doFilter(HttpRequest httpRequest, HttpResponse httpResponse,
-        FilterChain filterChain) throws IOException {
+        FilterChain filterChain) throws IOException, SQLException {
 
         // 해당하는 url인지 확인
         RequestLine startLine = (RequestLine) httpRequest.getStartLine();
@@ -43,7 +44,7 @@ public class AuthFilter implements Filter {
                 } else {
                     try {
                         filterChain.doFilter(httpRequest, httpResponse);
-                    } catch (IOException e) {
+                    } catch (IOException | SQLException e) {
                         ResponseValueSetter.failRedirect(httpResponse, new InternalServerError());
                         logger.error("Error: {}", e.getMessage());
                     }

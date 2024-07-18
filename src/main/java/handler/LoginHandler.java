@@ -4,10 +4,11 @@ import http.Cookie;
 import http.HttpRequest;
 import http.HttpResponse;
 import http.ResponseValueSetter;
+import java.sql.SQLException;
 import java.util.Map;
 import model.User;
 import org.slf4j.Logger;
-import repository.UserRepository;
+import repository.UserRepositoryDB;
 import service.UserService;
 import session.Session;
 import session.SessionManager;
@@ -16,10 +17,13 @@ import util.StaticPage;
 
 public class LoginHandler extends MyHandler{
     private static final Logger logger = LoggerUtil.getLogger();
-    private final UserService userService = new UserService(UserRepository.getInstance());
+    private final UserService userService = new UserService(UserRepositoryDB.getInstance());
+
+    public LoginHandler() throws SQLException {
+    }
 
     @Override
-    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
+    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) throws SQLException {
         logger.info("LoginHandler doPost");
         Map<String, String> bodyParams = httpRequest.bodyParamsString();
         String userId = bodyParams.get("username");

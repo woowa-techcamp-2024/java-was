@@ -9,10 +9,11 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.ResponseValueSetter;
 import http.startline.RequestLine;
+import java.sql.SQLException;
 import java.util.Map;
 import model.Article;
 import org.slf4j.Logger;
-import repository.ArticleRepository;
+import repository.ArticleRepositoryDB;
 import session.Session;
 import util.LoggerUtil;
 import util.PhotoReader;
@@ -32,7 +33,14 @@ public class ArticleHandler extends MyHandler {
 
         requestLine.getUrlPath().getQueryParameter("articleId").ifPresentOrElse(
             articleId -> {
-                Article article = ArticleRepository.getInstance().findById(Long.parseLong(articleId)).orElse(null);
+                Article article = null;
+                try {
+                    article = ArticleRepositoryDB.getInstance().findById(Long.parseLong(articleId)).orElse(null);
+                } catch (SQLException e) {
+                    logger.error("DB에서 글을 찾는 중 오류가 발생했습니다. {}", e.getMessage());
+                    ResponseValueSetter.failRedirect(httpResponse, new NotFoundException());
+                    return;
+                }
                 if (article == null) {
                     ResponseValueSetter.failRedirect(httpResponse, new NotFoundException());
                     return;
@@ -75,7 +83,7 @@ public class ArticleHandler extends MyHandler {
 
 
     @Override
-    public void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
+    public void doPost(HttpRequest httpRequest, HttpResponse httpResponse) throws SQLException {
         // login
         // 글 작성
         // body를 통해 글 정보를 가져온다.
@@ -124,7 +132,7 @@ public class ArticleHandler extends MyHandler {
         // 글 작성 로직
 
         Article article = writeRequestDto.toEntity(session.getUser());
-        ArticleRepository.getInstance().save(article);
+        ArticleRepositoryDB.getInstance().save(article);
 
         ResponseValueSetter.redirect(httpRequest, httpResponse, StaticPage.indexPage);
     }

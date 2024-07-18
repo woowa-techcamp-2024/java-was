@@ -8,22 +8,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class UserRepositoryTest {
+class UserRepositoryMemoryTest {
 
-    private UserRepository userRepository = UserRepository.getInstance();
+    private UserRepositoryMemory userRepositoryMemory = UserRepositoryMemory.getInstance();
 
     @BeforeEach
     void setUp() {
-        userRepository = UserRepository.getInstance();
+        userRepositoryMemory = UserRepositoryMemory.getInstance();
     }
 
     @Test
     @DisplayName("유저 추가 테스트")
     void addUser() {
         User user = new User("testId", "testPassword", "testName", "testEmail");
-        userRepository.addUser(user);
+        userRepositoryMemory.addUser(user);
 
-        User savedUser = userRepository.getUserById("testId");
+        User savedUser = userRepositoryMemory.getUserById("testId");
 
         assertAll(
             () -> assertEquals("testId", savedUser.getUserId()),

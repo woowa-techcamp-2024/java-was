@@ -7,7 +7,7 @@ import http.startline.UrlPath;
 import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.UserRepository;
+import repository.UserRepositoryMemory;
 import session.Session;
 import util.RequestContext;
 
@@ -18,12 +18,12 @@ class ArticleHandlerTest {
     private Session session;
     private User user;
     RequestLine requestLine;
-    private UserRepository userRepository = UserRepository.getInstance();
+    private UserRepositoryMemory userRepositoryMemory = UserRepositoryMemory.getInstance();
 
     @BeforeEach
     void setUp() {
         user = new User("userId", "password", "name", "email");
-        userRepository.addUser(user);
+        userRepositoryMemory.addUser(user);
 
         articleHandler = new ArticleHandler();
         requestLine = RequestLine.fromString("POST /user/create HTTP/1.1");

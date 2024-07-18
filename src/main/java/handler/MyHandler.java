@@ -7,13 +7,15 @@ import http.HttpResponse;
 import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
+import java.sql.SQLException;
 import org.slf4j.Logger;
 import util.LoggerUtil;
 
 public abstract class MyHandler {
     private static final Logger logger = LoggerUtil.getLogger();
 
-    public void handle(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    public void handle(HttpRequest httpRequest, HttpResponse httpResponse)
+        throws IOException, SQLException{
         RequestLine requestLine = (RequestLine) httpRequest.getStartLine();
         HttpMethod httpMethod = requestLine.getMethod();
         logger.info("Request: {}", httpRequest);
@@ -26,10 +28,10 @@ public abstract class MyHandler {
         }
     }
 
-    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException{
+    void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException, SQLException {
         ResponseValueSetter.failRedirect(httpResponse, new MethodNotAllowed());
     }
-    void doPost(HttpRequest httpRequest, HttpResponse httpResponse){
+    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) throws SQLException {
         ResponseValueSetter.failRedirect(httpResponse, new MethodNotAllowed());
     }
 }

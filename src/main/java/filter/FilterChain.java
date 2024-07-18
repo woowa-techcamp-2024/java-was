@@ -8,6 +8,7 @@ import http.HttpResponse;
 import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import util.LoggerUtil;
@@ -28,7 +29,7 @@ public class FilterChain {
     // count
     private int count = 0;
 
-    public FilterChain() {
+    public FilterChain() throws SQLException {
         this.filters = List.of(
             new LoginFilter(),
             new AuthFilter()
@@ -37,7 +38,8 @@ public class FilterChain {
     }
 
 
-    public void doFilter(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException {
+    public void doFilter(HttpRequest httpRequest, HttpResponse httpResponse)
+        throws IOException, SQLException {
         // filter 순서대로 실행
         if (count < filters.size()) {
             Filter filter = filters.get(count);
@@ -58,6 +60,7 @@ public class FilterChain {
 
         // handler 실행
         if (chosenHandler == null) {
+            logger.error("handler not found");
             ResponseValueSetter.failRedirect(httpResponse, new NotFoundException());
             return;
         }

@@ -6,9 +6,10 @@ import http.HttpRequest;
 import http.HttpResponse;
 import http.startline.RequestLine;
 import http.startline.ResponseLine;
+import java.sql.SQLException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import repository.UserRepository;
+import repository.UserRepositoryMemory;
 import service.UserService;
 
 class UserCreateHandlerTest {
@@ -19,7 +20,7 @@ class UserCreateHandlerTest {
 
     @BeforeEach
     void setUp() {
-        UserService userService = new UserService(UserRepository.getInstance());
+        UserService userService = new UserService(UserRepositoryMemory.getInstance());
         userCreateHandler = new UserCreateHandler(userService);
         RequestLine requestLine = RequestLine.fromString("POST /user/create HTTP/1.1");
         httpRequest = new HttpRequest(requestLine, null, null);
@@ -27,7 +28,7 @@ class UserCreateHandlerTest {
     }
 
     @Test
-    void testUserCreationSuccess() {
+    void testUserCreationSuccess() throws SQLException {
         // Simulate setting request body with valid user details
         httpRequest.setBody("userId=testUser&password=testPass&name=testUser&email=".getBytes());
 
@@ -39,7 +40,7 @@ class UserCreateHandlerTest {
     }
 
     @Test
-    void testUserCreationFailure() {
+    void testUserCreationFailure() throws SQLException {
         // Simulate setting request body with invalid user details
         httpRequest.setBody("username=testUser".getBytes()); // Missing password
 

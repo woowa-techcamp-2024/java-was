@@ -6,6 +6,7 @@ import dto.UserDto;
 import http.HttpRequest;
 import http.HttpResponse;
 import http.ResponseValueSetter;
+import java.sql.SQLException;
 import java.util.Map;
 import org.slf4j.Logger;
 import service.UserService;
@@ -24,7 +25,7 @@ public class UserCreateHandler extends MyHandler {
     }
 
     @Override
-    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
+    void doPost(HttpRequest httpRequest, HttpResponse httpResponse) throws SQLException {
         logger.info("UserCreateHandler doPost");
         Map<String, String> bodyParams = httpRequest.bodyParamsString();
         UserDto userDto = new UserDto(

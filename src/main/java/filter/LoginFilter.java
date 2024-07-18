@@ -5,6 +5,7 @@ import http.HttpResponse;
 import http.startline.RequestLine;
 import http.startline.UrlPath;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class LoginFilter implements Filter {
 
     @Override
     public void doFilter(HttpRequest httpRequest, HttpResponse httpResponse,
-        FilterChain filterChain) throws IOException {
+        FilterChain filterChain) throws IOException, SQLException {
         // 여기서 쿠키를 확인한다.
         RequestLine startLine = (RequestLine) httpRequest.getStartLine();
 
