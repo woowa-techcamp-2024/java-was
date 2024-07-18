@@ -5,7 +5,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import model.User;
 import org.slf4j.Logger;
+import repository.UserRepository;
 import util.LoggerUtil;
 
 
@@ -17,7 +19,8 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-        // HandlerMapper 초기화
+        // 유저 추가
+        UserRepository.getInstance().addUser( new User("a", "a", "a", "a"));
 
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             logger.info("Server started on port " + PORT);

@@ -69,6 +69,6 @@ class UserListHandlerTest {
         // Assuming the appropriate handling is indicated by a specific status code or message
         ResponseLine responseLine = (ResponseLine) httpResponse.getStartLine();
         assertEquals(302, responseLine.getStatusCode());
-        assertEquals("/index.html", httpResponse.getHeader().getValue("Location"));
+        assertEquals("/login/index.html", httpResponse.getHeader().getValue("Location"));
     }
 }

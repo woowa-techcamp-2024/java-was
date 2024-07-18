@@ -1,10 +1,10 @@
 package http;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class HeaderTest {
     @MethodSource("normalHeader")
     void 정상적인_헤더_생성(String normalHeaderString, String key, String value) throws IOException {
         // given
-        Header header = Header.from(new BufferedReader(new StringReader(normalHeaderString)));
+        Header header = Header.from( new ByteArrayInputStream(normalHeaderString.getBytes()));
 
         // when
         String result = header.getValue(key);
@@ -31,7 +31,7 @@ class HeaderTest {
     @DisplayName("헤더 키가 없는 경우 빈 문자열을 반환한다.")
     void 헤더_키가_없는_경우() throws IOException {
         // given
-        Header header = Header.from(new BufferedReader(new StringReader("Host: localhost:8080\r\n")));
+        Header header = Header.from(new ByteArrayInputStream("Host: localhost:8080\r\n".getBytes()));
 
         // when
         String result = header.getValue("No-Exist");
@@ -48,7 +48,7 @@ class HeaderTest {
         // then
         assertThrows(IllegalArgumentException.class, () -> {
             // when
-            Header.from(new BufferedReader(new StringReader(invalidHeaderString)));
+            Header.from( new ByteArrayInputStream(invalidHeaderString.getBytes()));
         });
     }
 

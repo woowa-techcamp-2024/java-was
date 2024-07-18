@@ -12,6 +12,7 @@ import service.UserService;
 import session.Session;
 import session.SessionManager;
 import util.LoggerUtil;
+import util.StaticPage;
 
 public class LoginHandler extends MyHandler{
     private static final Logger logger = LoggerUtil.getLogger();
@@ -20,7 +21,7 @@ public class LoginHandler extends MyHandler{
     @Override
     void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
         logger.info("LoginHandler doPost");
-        Map<String, String> bodyParams = httpRequest.getBodyParams();
+        Map<String, String> bodyParams = httpRequest.bodyParamsString();
         String userId = bodyParams.get("username");
         String password = bodyParams.get("password");
         logger.info("userId: {}, password: {}", userId, password);
@@ -32,12 +33,12 @@ public class LoginHandler extends MyHandler{
         }
         logger.info("Login success");
         Session newSession = SessionManager.getInstance().createSession();
-        newSession.setAttribute(Session.USER, user);
+        newSession.setUser(user);
 
         int sessionId = newSession.getSessionId();
         Cookie sessionCookie = new Cookie("sid", String.valueOf(sessionId), 0, null,"/", true);
         httpResponse.getHeader().addCookie(sessionCookie);
 
-        ResponseValueSetter.redirect(httpRequest, httpResponse, "/index.html");
+        ResponseValueSetter.redirect(httpRequest, httpResponse, StaticPage.indexPage);
     }
 }

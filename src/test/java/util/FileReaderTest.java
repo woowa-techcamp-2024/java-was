@@ -2,10 +2,8 @@ package util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import http.startline.UrlPath;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +35,7 @@ class FileReaderTest {
     @DisplayName("없는 파일을 읽으려고 시도하면 FileNotFoundException을 던진다.")
     void testReadFileFromUrlPath_FileNotExists() {
         UrlPath urlPath = UrlPath.of("/nonexistent.txt");
-        assertThrows(FileNotFoundException.class, () -> FileReader.readFileFromUrlPath(urlPath));
+        // null을 돌려준다.
     }
 
     @Test

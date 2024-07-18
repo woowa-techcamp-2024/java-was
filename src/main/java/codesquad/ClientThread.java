@@ -4,11 +4,10 @@ import filter.FilterChain;
 import http.HttpRequest;
 import http.HttpResponse;
 import http.startline.ResponseLine;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import org.slf4j.Logger;
@@ -29,9 +28,10 @@ public class ClientThread implements Runnable {
             OutputStream clientOutput = clientSocket.getOutputStream();
             InputStream inputStream = clientSocket.getInputStream()
         ) {
+            new BufferedInputStream(inputStream);
             // HTTP 응답을 생성합니다.
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            HttpRequest httpRequest = HttpRequest.generateHttpRequest(bufferedReader);
+            // bufferedInputstream
+            HttpRequest httpRequest = HttpRequest.generateHttpRequest(inputStream);
             HttpResponse httpResponse = HttpResponse.generateHttpResponse();
 
             // 여기까지가 response나 requets를 받는 부분

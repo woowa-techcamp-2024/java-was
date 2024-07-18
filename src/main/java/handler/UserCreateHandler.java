@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import service.UserService;
 import util.LoggerUtil;
+import util.StaticPage;
 
 public class UserCreateHandler extends MyHandler {
     private static final Logger logger = LoggerUtil.getLogger();
@@ -25,7 +26,7 @@ public class UserCreateHandler extends MyHandler {
     @Override
     void doPost(HttpRequest httpRequest, HttpResponse httpResponse) {
         logger.info("UserCreateHandler doPost");
-        Map<String, String> bodyParams = httpRequest.getBodyParams();
+        Map<String, String> bodyParams = httpRequest.bodyParamsString();
         UserDto userDto = new UserDto(
             bodyParams.get("userId"),
             bodyParams.get("password"),
@@ -34,7 +35,7 @@ public class UserCreateHandler extends MyHandler {
         );
         userService.createUser(userDto);
         httpResponse.getHeader().addKey(CONTENT_TYPE, "text/html");
-        logger.info("redirect to /index.html");
-        ResponseValueSetter.redirect(httpRequest, httpResponse, "/index.html");
+        logger.info("redirect to {}", StaticPage.indexPage);
+        ResponseValueSetter.redirect(httpRequest, httpResponse, StaticPage.indexPage);
     }
 }

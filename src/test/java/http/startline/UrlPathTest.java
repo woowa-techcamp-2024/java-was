@@ -76,9 +76,9 @@ public class UrlPathTest {
     @DisplayName("존재하지 않는 쿼리 파라미터를 가져오려고 할 때 테스트")
     public void testGetQueryParameter() {
         UrlPath urlPath = UrlPath.of("/path/to/resource?param1=value1&param2=value2");
-        assertEquals("value1", urlPath.getQueryParameter("param1"));
-        assertEquals("value2", urlPath.getQueryParameter("param2"));
-        assertNull(urlPath.getQueryParameter("param3"));
+        assertEquals("value1", urlPath.getQueryParameter("param1").get());
+        assertEquals("value2", urlPath.getQueryParameter("param2").get());
+        assertNull(urlPath.getQueryParameter("param3").orElse(null));
     }
 
     @Test

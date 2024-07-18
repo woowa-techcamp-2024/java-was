@@ -1,7 +1,9 @@
 package http;
 
-import java.io.BufferedReader;
+import static util.InputStreamUtil.readLineFromInputStream;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,10 +25,10 @@ public class Header {
         return new Header();
     }
 
-    public static Header from(BufferedReader bufferedReader) throws IOException {
+    public static Header from(InputStream inputStream) throws IOException {
         StringBuilder headerString = new StringBuilder();
         do {
-            String line = bufferedReader.readLine();
+            String line = readLineFromInputStream(inputStream);
             if (line == null || line.isEmpty()) {
                 break;
             }
@@ -36,7 +38,7 @@ public class Header {
         return new Header(headerString.toString());
     }
 
-    private Map<String, String> headerMapper(String headerString) {
+    public static Map<String, String> headerMapper(String headerString) {
         if (headerString == null) {
             throw new IllegalArgumentException("헤더 문자열은 null일 수 없습니다.");
         }
@@ -50,11 +52,11 @@ public class Header {
         return headerMap;
     }
 
-    private String[] splitHeaderLine(String headerString) {
+    private static String[] splitHeaderLine(String headerString) {
         return headerString.split("\r\n");
     }
 
-    private void processOneHeaderLine(Map<String, String> headerMap, String headerLine) {
+    private static void processOneHeaderLine(Map<String, String> headerMap, String headerLine) {
         if (!headerLine.trim().isEmpty()) {
             String[] splitHeaderLine = splitOneHeaderLine(headerLine);
             String key = splitHeaderLine[0];
@@ -68,7 +70,7 @@ public class Header {
         }
     }
 
-    private String[] splitOneHeaderLine(String headerString) {
+    private static String[] splitOneHeaderLine(String headerString) {
         if (headerString == null) {
             throw new IllegalArgumentException("null 값은 들어올 수 없습니다.");
         }

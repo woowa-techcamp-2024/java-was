@@ -5,9 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import http.startline.RequestLine;
 import http.startline.StartLine;
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -40,7 +39,7 @@ public class HttpTest {
 
     private static Stream<Arguments> provideInvalidHttpRequests() {
         return Stream.of(
-            Arguments.of(" ", "Request Line 형식이 잘못되었습니다."),
+            Arguments.of("G/index.html HTTP/1.1\r\n", "Request Line 형식이 잘못되었습니다."),
             Arguments.of("", "HTTP 메시지가 비어 있습니다."),
             Arguments.of("\r\nHost: www.example.com\r\nConnection: keep-alive\r\n\r\nbody content",
                 "Request Line 형식이 잘못되었습니다.")
@@ -53,7 +52,7 @@ public class HttpTest {
     public void testGenerateHttpRequest(String httpRequestString, String expectedMethod, String expectedPath,
         String expectedVersion, String expectedHeaders, String expectedBody) throws IOException {
 
-        HttpRequest httpRequest = HttpRequest.generateHttpRequest(new BufferedReader(new StringReader(httpRequestString)));
+        HttpRequest httpRequest = HttpRequest.generateHttpRequest(new ByteArrayInputStream(httpRequestString.getBytes()));
 
         StartLine startLine = httpRequest.getStartLine();
         Header header = httpRequest.getHeader();
@@ -75,7 +74,7 @@ public class HttpTest {
     @DisplayName("유효하지 않은 HTTP 요청 테스트")
     public void testGenerateHttpRequest(String httpRequest, String expectedErrorMessage) {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            HttpRequest.generateHttpRequest(new BufferedReader(new StringReader(httpRequest)));
+            HttpRequest.generateHttpRequest(new ByteArrayInputStream(httpRequest.getBytes()));
         });
         assertEquals(expectedErrorMessage, exception.getMessage());
     }

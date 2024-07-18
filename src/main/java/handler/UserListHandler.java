@@ -9,6 +9,7 @@ import model.User;
 import repository.UserRepository;
 import session.Session;
 import util.RequestContext;
+import util.StaticPage;
 
 public class UserListHandler extends MyHandler {
 
@@ -20,7 +21,7 @@ public class UserListHandler extends MyHandler {
             ));
 
         if (user.isEmpty()) {
-            ResponseValueSetter.redirect(httpRequest, httpResponse, "/login/index.html");
+            ResponseValueSetter.redirect(httpRequest, httpResponse, StaticPage.loginPage);
             return;
         }
 

@@ -42,6 +42,9 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+#file under photo
+/src/main/resources/static/photo/**
+
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml

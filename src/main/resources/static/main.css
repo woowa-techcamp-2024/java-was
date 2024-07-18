@@ -1,10 +1,12 @@
 .wrapper {
   display: flex;
-  flex-direction: column;
+  flex-direction: column; /* Flex direction changed to row for horizontal alignment */
   justify-content: space-between;
   align-items: center;
   padding: 40px 113px;
   gap: 32px;
+  width: 100%; /* Make the wrapper take the full width of the container */
+  box-sizing: border-box; /* Ensure padding and border are included in the element's total width */
 }
 
 .post {

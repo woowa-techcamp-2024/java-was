@@ -2,6 +2,7 @@ package session;
 
 import java.util.HashMap;
 import java.util.Map;
+import model.User;
 
 public class Session {
 
@@ -30,21 +31,11 @@ public class Session {
         attributes.remove(key);
     }
 
-    public String getUserId() {
-        return (String) getAttribute(USER);
+    public User getUser() {
+        return (User) getAttribute(USER);
     }
 
-    public void setUserId(String userId) {
-        if (isValidUserId(userId) && getUserId() == null) {
-            setAttribute(USER, userId);
-        } else {
-            throw new IllegalArgumentException(
-                "Invalid userId: userId must be non-null, non-empty and current userId must be null."
-            );
-        }
-    }
-
-    private boolean isValidUserId(String userId) {
-        return userId != null && !userId.isEmpty();
+    public void setUser(User user) {
+        setAttribute(USER, user);
     }
 }

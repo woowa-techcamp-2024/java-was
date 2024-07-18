@@ -1,9 +1,11 @@
 package filter;
 
+import exception.NotFoundException;
 import handler.MyHandler;
 import handler.MyHandlerMapper;
 import http.HttpRequest;
 import http.HttpResponse;
+import http.ResponseValueSetter;
 import http.startline.RequestLine;
 import java.io.IOException;
 import java.util.List;
@@ -28,7 +30,8 @@ public class FilterChain {
 
     public FilterChain() {
         this.filters = List.of(
-            new LoginFilter()
+            new LoginFilter(),
+            new AuthFilter()
         );
         this.handlerMapper = MyHandlerMapper.getInstance();
     }
@@ -49,13 +52,15 @@ public class FilterChain {
             () -> logger.info("session is null")
         );
 
-
-
         MyHandlerMapper handlerMapper = MyHandlerMapper.getInstance();
         RequestLine requestLine = (RequestLine) httpRequest.getStartLine();
         MyHandler chosenHandler = handlerMapper.findHandler(requestLine.getUrlPath().getPath());
 
         // handler 실행
+        if (chosenHandler == null) {
+            ResponseValueSetter.failRedirect(httpResponse, new NotFoundException());
+            return;
+        }
         chosenHandler.handle(httpRequest, httpResponse);
     }
 

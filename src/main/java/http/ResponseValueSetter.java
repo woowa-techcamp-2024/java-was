@@ -68,6 +68,20 @@ public class ResponseValueSetter {
         httpResponse.setBody(new byte[0]);
     }
 
+    public static void failRedirect(HttpResponse httpResponse, GeneralException e) {
+        ResponseLine responseLine = (ResponseLine) httpResponse.getStartLine();
+        String redirectLoc = "/error/" + e.getStatusCode() + ".html";
+        Header responseHeader = httpResponse.getHeader();
+
+        logger.error("HTTP REQUEST ERROR: {}", e.getMessage());
+        logger.info("Redirecting to: {}", redirectLoc);
+        responseLineSet(responseLine, HTTP_VERSION, 302, e.getMessage());
+        responseHeader.addKey(CONTENT_LENGTH, "0");
+        // Use the constructed redirect URL
+        responseHeader.addKey(LOCATION, redirectLoc);
+        httpResponse.setBody(new byte[0]);
+    }
+
     private static void responseLineSet(
         ResponseLine responseLine,
         String httpVersion,

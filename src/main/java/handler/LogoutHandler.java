@@ -6,6 +6,7 @@ import http.HttpResponse;
 import http.ResponseValueSetter;
 import session.SessionManager;
 import util.RequestContext;
+import util.StaticPage;
 
 public class LogoutHandler extends MyHandler {
 
@@ -17,6 +18,6 @@ public class LogoutHandler extends MyHandler {
 
         Cookie setCookie = new Cookie("sid", "", null, 0,"/", true);
         httpResponse.getHeader().addCookie(setCookie);
-        ResponseValueSetter.redirect(httpRequest, httpResponse, "/index.html");
+        ResponseValueSetter.redirect(httpRequest, httpResponse, StaticPage.indexPage);
     }
 }

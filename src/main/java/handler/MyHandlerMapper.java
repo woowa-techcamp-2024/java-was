@@ -5,6 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import repository.UserRepository;
 import service.UserService;
+import util.FileReader;
 import util.LoggerUtil;
 
 public class MyHandlerMapper {
@@ -15,6 +16,8 @@ public class MyHandlerMapper {
 
     private MyHandlerMapper() {
         addHandler("/create", new UserCreateHandler(new UserService(UserRepository.getInstance())));
+        addHandler("/writePage", new ArticleWritePageHandler());
+        addHandler("/article", new ArticleHandler());
         addHandler("/registration", new RegistrationHandler());
         addHandler("/loginPage", new LoginPageHandler());
         addHandler("/login", new LoginHandler());
@@ -38,12 +41,16 @@ public class MyHandlerMapper {
             logger.error("urlPath is null");
             return null;
         }
-        if (isStaticHandler(urlPath)){
-            logger.info("StaticHandler");
-            return new StaticHandler();
+        // 그냥 handler
+        if (handlerMap.containsKey(urlPath)) {
+            return handlerMap.get(urlPath);
         }
 
-        return handlerMap.get(urlPath);
+        if(FileReader.isFileExists(urlPath)) {
+            return new StaticHandler();
+        }
+        // static Handler
+        return null;
     }
 
     private boolean isStaticHandler(String urlPath) {

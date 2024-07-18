@@ -3,9 +3,8 @@ package session;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,19 +32,9 @@ class SessionTest {
     }
 
     @Test
-    void testSetAndGetUserId() {
-        String userId = "user123";
-        session.setUserId(userId);
-        assertEquals(userId, session.getUserId(), "User ID should match the set value");
-    }
-
-    @Test
-    void testSetUserIdWithInvalidValue() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            session.setUserId("");
-        });
-        String expectedMessage = "Invalid userId: userId must be non-null, non-empty and current userId must be null.";
-        String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage), "Exception message should contain the expected text");
+    void testSetAndGetUser() {
+        User user = new User("user", "password", "name", "email");
+        session.setUser(user);
+        assertEquals(user, session.getUser(), "User ID should match the set value");
     }
 }

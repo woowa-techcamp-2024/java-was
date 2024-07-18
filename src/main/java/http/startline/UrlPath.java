@@ -2,6 +2,7 @@ package http.startline;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import util.QueryParserUtil;
 
 public class UrlPath {
@@ -41,7 +42,7 @@ public class UrlPath {
         return queryParameters;
     }
 
-    public String getQueryParameter(String key) {
-        return queryParameters.get(key);
+    public Optional<String> getQueryParameter(String key) {
+        return Optional.ofNullable(queryParameters.get(key));
     }
 }

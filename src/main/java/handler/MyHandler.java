@@ -27,9 +27,9 @@ public abstract class MyHandler {
     }
 
     void doGet(HttpRequest httpRequest, HttpResponse httpResponse) throws IOException{
-        ResponseValueSetter.fail(httpResponse, new MethodNotAllowed());
+        ResponseValueSetter.failRedirect(httpResponse, new MethodNotAllowed());
     }
     void doPost(HttpRequest httpRequest, HttpResponse httpResponse){
-        ResponseValueSetter.fail(httpResponse, new MethodNotAllowed());
+        ResponseValueSetter.failRedirect(httpResponse, new MethodNotAllowed());
     }
 }
