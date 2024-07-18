@@ -2,16 +2,23 @@ package codesquad.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import codesquad.data.UploadFile;
+import codesquad.domain.ContentType;
+import codesquad.domain.HttpStatus;
+import codesquad.error.BaseException;
 
 public class TemplateEngine {
 
@@ -55,7 +62,7 @@ public class TemplateEngine {
 	private static String readFile(String filePath) throws IOException {
 		URL resource = TemplateEngine.class.getClassLoader().getResource(filePath);
 		if (resource == null) {
-			throw new IOException("Resource not found: " + filePath);
+			throw new BaseException(HttpStatus.NOT_FOUND, "resource not found");
 		}
 		try (InputStream inputStream = resource.openStream()) {
 			return new String(inputStream.readAllBytes());
@@ -67,7 +74,21 @@ public class TemplateEngine {
 		StringBuilder sb = new StringBuilder();
 		while (matcher.find()) {
 			String variableName = matcher.group(1);
-			Object value = URLDecoder.decode(String.valueOf(context.get(variableName)), StandardCharsets.UTF_8);
+			Object value = context.get(variableName);
+			if (value != null) {
+				if (value instanceof UploadFile file) {
+					value =
+						"data:" + ContentType.from(file.getExtension()).getMimeType() + ";base64," + Base64.getEncoder()
+							.encodeToString(file.data());
+				} else {
+					try {
+						value = URLDecoder.decode(value.toString(), "UTF-8");
+					} catch (IllegalArgumentException | UnsupportedEncodingException e) {
+						log.error(e.getMessage());
+						throw BaseException.serverException(e);
+					}
+				}
+			}
 			matcher.appendReplacement(sb, value != null ? Matcher.quoteReplacement(value.toString()) : "");
 		}
 		matcher.appendTail(sb);
@@ -85,9 +106,23 @@ public class TemplateEngine {
 				try {
 					Field field = object.getClass().getDeclaredField(propertyName);
 					field.setAccessible(true);
-					Object value = URLDecoder.decode(String.valueOf(field.get(object)), StandardCharsets.UTF_8);
+					Object value = field.get(object);
+					if (value != null) {
+						if (value instanceof UploadFile file) {
+							value = "data:" + ContentType.from(file.getExtension()).getMimeType() + ";base64,"
+									+ Base64.getEncoder().encodeToString(file.data());
+						} else {
+							try {
+								value = URLDecoder.decode(value.toString(), "UTF-8");
+							} catch (IllegalArgumentException | UnsupportedEncodingException e) {
+								log.error("URL decoding failed for value: {}", value, e);
+
+							}
+						}
+					}
 					matcher.appendReplacement(sb, value != null ? Matcher.quoteReplacement(value.toString()) : "");
 				} catch (NoSuchFieldException | IllegalAccessException e) {
+					log.error(e.getMessage(), e);
 					matcher.appendReplacement(sb, "");
 				}
 			} else {

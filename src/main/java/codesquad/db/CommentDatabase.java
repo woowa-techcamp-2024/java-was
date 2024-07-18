@@ -1,15 +1,10 @@
 package codesquad.db;
 
-import static codesquad.utils.Pair.of;
-import static java.sql.JDBCType.BIGINT;
-import static java.sql.JDBCType.TIMESTAMP;
-import static java.sql.JDBCType.VARCHAR;
+import java.sql.Timestamp;
+import java.util.List;
 
 import codesquad.data.Comment;
 import codesquad.utils.JdbcTemplate;
-import codesquad.utils.Pair;
-import java.sql.SQLType;
-import java.util.List;
 
 public class CommentDatabase implements Database<Long, Comment> {
 
@@ -23,14 +18,17 @@ public class CommentDatabase implements Database<Long, Comment> {
 	}
 
 	@Override
-	public void insert(Long id, Comment t) {
+	public Long insert(Long id, Comment t) {
 		String insert = """
 			INSERT INTO comment (detail, createdAt, parentId, userId)
 			VALUES (?, ?, ?, ?);
 			""";
-		List<Pair<SQLType, Object>> list = List.of(of(VARCHAR, t.getDetail()), of(TIMESTAMP, t.getCreatedAt()),
-			of(BIGINT, t.getParentId()), of(VARCHAR, t.getUserId()));
-		JdbcTemplate.update(insert, list);
+		return JdbcTemplate.update(insert, ps -> {
+			ps.setString(1, t.detail());
+			ps.setTimestamp(2, Timestamp.valueOf(t.createdAt()));
+			ps.setLong(3, t.parentId());
+			ps.setString(4, t.userId());
+		});
 	}
 
 	@Override

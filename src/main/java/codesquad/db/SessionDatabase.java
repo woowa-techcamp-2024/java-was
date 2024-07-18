@@ -1,10 +1,11 @@
 package codesquad.db;
 
-import codesquad.domain.HttpStatus;
-import codesquad.error.BaseException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import codesquad.domain.HttpStatus;
+import codesquad.error.BaseException;
 
 public class SessionDatabase implements Database<String, String> {
 
@@ -19,11 +20,12 @@ public class SessionDatabase implements Database<String, String> {
 	}
 
 	@Override
-	public void insert(String sessionId, String id) {
+	public Long insert(String sessionId, String id) {
 		if (sessions.containsValue(sessionId)) {
 			sessions.remove(sessionId);
 		}
 		sessions.put(sessionId, id);
+		return null;
 	}
 
 	@Override
