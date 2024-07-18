@@ -70,8 +70,6 @@ public class HomeRequestHandler extends AbstractRequestHandler {
             List<Article> articles = articleDatabase.findAllArticle(page, ARTICLE_PER_PAGE);
             int totalArticles = articleDatabase.getTotalArticleCount();
 
-            logger.error("page : {}, articles : {}, totalArticles: {}", page, articles, totalArticles);
-
             mv.addAttribute(ModelKey.ARTICLES, articles);
             mv.addAttribute(ModelKey.CURRENT_PAGE, page);
             mv.addAttribute(ModelKey.HAS_PREVIOUS_PAGE, page > 1);

@@ -1,9 +1,11 @@
 package codesquad.webserver.parser;
 
 import codesquad.webserver.httprequest.HttpRequest;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,26 +13,52 @@ public abstract class BodyParser {
 
     private static final Logger logger = LoggerFactory.getLogger(BodyParser.class);
 
-    public static void parse(BufferedReader in, HttpRequest request) throws IOException {
-        List<String> contentTypes = request.getHeaders().get("Content-Type");
-        if (contentTypes != null && !contentTypes.isEmpty() && contentTypes.get(0).startsWith("multipart/form-data")) {
-             MultipartParser.parse(in, request);
-        } else {
-            StringBuilder body = new StringBuilder();
-            List<String> contentLengths = request.getHeaders().get("Content-Length");
-            if (contentLengths != null && !contentLengths.isEmpty()) {
-                try {
-                    int contentLength = Integer.parseInt(contentLengths.get(0));
-                    char[] buffer = new char[contentLength];
-                    int read = in.read(buffer, 0, contentLength);
-                    body.append(buffer, 0, read);
-                    logger.debug("Body : {}", body);
-                } catch (NumberFormatException e) {
-                    logger.error("Invalid Content-Length value: {}", contentLengths.get(0));
-                    throw new IOException("Invalid Content-Length value: " + contentLengths.get(0), e);
-                }
+    public static void parse(BufferedInputStream in, HttpRequest request) throws IOException {
+        List<String> contentTypeHeaders = request.getHeaders().get("Content-Type");
+        if (contentTypeHeaders != null && !contentTypeHeaders.isEmpty()) {
+            String contentType = contentTypeHeaders.get(0);
+            if (contentType.startsWith("multipart/form-data")) {
+                MultipartParser.parse(in, request);
+            } else if (contentType.equals("application/x-www-form-urlencoded")) {
+                parseFormUrlEncoded(in, request);
+            } else {
+                parseRegularBody(in, request);
             }
-            request.setBody(body.toString());
         }
+    }
+
+    private static void parseRegularBody(BufferedInputStream in, HttpRequest request) throws IOException {
+        List<String> contentLengthHeaders = request.getHeaders().get("Content-Length");
+        if (contentLengthHeaders != null && !contentLengthHeaders.isEmpty()) {
+            int contentLength = Integer.parseInt(contentLengthHeaders.get(0));
+            byte[] bodyBytes = new byte[contentLength];
+            int bytesRead = in.read(bodyBytes);
+            if (bytesRead != contentLength) {
+                throw new IOException("Unexpected end of body");
+            }
+            String body = new String(bodyBytes, StandardCharsets.UTF_8);
+            request.setBody(body);
+        }
+    }
+
+    private static void parseFormUrlEncoded(BufferedInputStream in, HttpRequest request) throws IOException {
+        String body = parseRegularBodyAsString(in, request);
+        Map<String, String> params = QueryStringParser.parse(body);
+        request.setParams(params);
+        logger.debug("Parsed form data parameters: {}", params);
+    }
+
+    private static String parseRegularBodyAsString(BufferedInputStream in, HttpRequest request) throws IOException {
+        List<String> contentLengthHeaders = request.getHeaders().get("Content-Length");
+        if (contentLengthHeaders != null && !contentLengthHeaders.isEmpty()) {
+            int contentLength = Integer.parseInt(contentLengthHeaders.get(0));
+            byte[] bodyBytes = new byte[contentLength];
+            int bytesRead = in.read(bodyBytes);
+            if (bytesRead != contentLength) {
+                throw new IOException("Unexpected end of body");
+            }
+            return new String(bodyBytes, StandardCharsets.UTF_8);
+        }
+        return "";
     }
 }

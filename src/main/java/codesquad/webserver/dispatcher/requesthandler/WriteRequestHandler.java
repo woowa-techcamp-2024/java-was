@@ -19,7 +19,7 @@ import codesquad.webserver.session.SessionManager;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -44,13 +44,23 @@ public class WriteRequestHandler extends AbstractRequestHandler {
         super(fileReader);
         this.articleDatabase = articleDatabase;
         this.sessionManager = sessionManager;
-        this.uploadDir = getProjectUploadPath();
+        this.uploadDir = initializeUploadDirectory();
         logger.info("Upload directory set to: {}", this.uploadDir);
     }
 
-    private String getProjectUploadPath() {
-        String projectDir = System.getProperty("user.dir");
-        return Paths.get(projectDir, UPLOAD_DIR_NAME).toString();
+    private String initializeUploadDirectory() {
+        String baseDir = System.getProperty("user.dir");
+        String uploadPath = baseDir + File.separator + UPLOAD_DIR_NAME;
+        File uploadDir = new File(uploadPath);
+
+        if (!uploadDir.exists()) {
+            if (!uploadDir.mkdir()) {
+                logger.error("Failed to create upload directory: {}", uploadPath);
+                throw new RuntimeException("Failed to create upload directory: " + uploadPath);
+            }
+        }
+
+        return uploadPath;
     }
 
     @Override
@@ -101,17 +111,16 @@ public class WriteRequestHandler extends AbstractRequestHandler {
 
         String title = multipartFields.get("title").get(0);
         String content = multipartFields.get("content").get(0);
-        List<FileItem> imageFiles = multipartFiles.get("images");
+        List<FileItem> imageFiles = multipartFiles.get("image");
 
         try {
             Article article = new Article(title, content, currentUser);
 
             if (imageFiles != null && !imageFiles.isEmpty()) {
-                for (FileItem imageFile : imageFiles) {
-                    String imagePath = saveImageToLocal(imageFile);
-                    Image image = new Image(imagePath, imageFile.getFilename(), null);
-                    article.addImage(image);
-                }
+                FileItem imageFile = imageFiles.get(0);
+                String imagePath = saveImageToLocal(imageFile);
+                Image image = new Image(imagePath, imageFile.getFilename(), null);
+                article = article.setImage(image);
             }
 
             articleDatabase.save(article);
@@ -140,24 +149,15 @@ public class WriteRequestHandler extends AbstractRequestHandler {
 
     private String saveImageToLocal(FileItem imageFile) throws IOException {
         String fileName = UUID.randomUUID() + "_" + imageFile.getFilename();
-        File uploadDirFile = new File(uploadDir);
+        File file = new File(uploadDir, fileName);
 
-        if (!uploadDirFile.exists()) {
-            if (!uploadDirFile.mkdirs()) {
-                logger.error("Failed to create upload directory: {}", uploadDir);
-                throw new IOException("Failed to create upload directory: " + uploadDir);
-            }
-        }
-
-        File file = new File(uploadDirFile, fileName);
-
-        try (FileOutputStream fos = new FileOutputStream(file)) {
+        try (OutputStream fos = new FileOutputStream(file)) {
             fos.write(imageFile.getContent());
         } catch (IOException e) {
             logger.error("Error writing file: {}", e.getMessage(), e);
             throw e;
         }
 
-        return file.getAbsolutePath();
+        return UPLOAD_DIR_NAME + File.separator + fileName;
     }
 }

@@ -32,4 +32,14 @@ public class Image {
     public Long getArticleId() {
         return articleId;
     }
+
+    @Override
+    public String toString() {
+        return "Image{" +
+                "id=" + id +
+                ", path='" + path + '\'' +
+                ", filename='" + filename + '\'' +
+                ", articleId=" + articleId +
+                '}';
+    }
 }

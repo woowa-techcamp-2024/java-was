@@ -90,8 +90,8 @@
             <textarea name="content" placeholder="내용을 입력하세요..." required></textarea>
             <div class="image-upload">
                 <div id="drop-area" class="image-upload-area">
-                    <p>이미지를 여기에 드래그하거나 클릭하여 업로드하세요 (최대 5개)</p>
-                    <input type="file" id="image-upload" name="images" accept="image/*" multiple/>
+                    <p>이미지를 여기에 드래그하거나 클릭하여 업로드하세요 (1개만 가능)</p>
+                    <input type="file" id="image-upload" name="image" accept="image/*"/>
                 </div>
                 <div class="image-preview" id="image-preview"></div>
             </div>
@@ -145,26 +145,26 @@
     });
 
     function handleFiles(files) {
-        preview.innerHTML = '';  // Clear existing previews
-        ([...files]).forEach((file, index) => {
-            if (index >= 5) return;  // Limit to 5 images
-            if (!file.type.startsWith('image/')) return;  // Only process images
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.title = file.name;
-                preview.appendChild(img);
+        preview.innerHTML = '';  // Clear existing preview
+        if (files.length > 0) {
+            const file = files[0];  // Only process the first file
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.title = file.name;
+                    preview.appendChild(img);
+                }
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        });
+        }
     }
 
     function validateForm() {
         const files = fileInput.files;
         if (files.length === 0) {
-            alert("최소 1개의 이미지를 첨부해주세요.");
+            alert("이미지를 첨부해주세요.");
             return false;
         }
         return true;

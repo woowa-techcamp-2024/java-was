@@ -18,6 +18,7 @@ public final class ModelKey {
     public static final String PREVIOUS_PAGE = "previousPage";
     public static final String HAS_NEXT_PAGE = "hasNextPage";
     public static final String NEXT_PAGE = "nextPage";
+    public static final String IMAGE = "image";
 
     private ModelKey() {};
 }

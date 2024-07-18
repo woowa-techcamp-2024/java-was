@@ -10,8 +10,6 @@ public interface ArticleDatabase {
 
     Optional<Article> findByArticleId(long id) throws SQLException;
 
-    List<Article> findAllArticle() throws SQLException;
-
     List<Article> findAllArticle(int page, int pageSize) throws SQLException;
 
     int getTotalArticleCount() throws SQLException;

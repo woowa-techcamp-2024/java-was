@@ -1,30 +1,32 @@
 package codesquad.webserver.db.article;
 
 import codesquad.webserver.db.user.User;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Article {
     private Long id;
     private String title;
     private String content;
     private User author;
-    private List<Image> images = new ArrayList<>();
+    private Image image;
 
     public Article(String title, String content) {
         this(null, title, content);
     }
 
     public Article(String title, String content, User author) {
-        this(null, title, content, author, new ArrayList<>());
+        this(null, title, content, author, null);
     }
 
-    public Article(Long id, String title, String content, User author, List<Image> images) {
+    public Article(String title, String content, User author, Image image) {
+        this(null, title, content, author, image);
+    }
+
+    public Article(Long id, String title, String content, User author, Image image) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.author = author;
-        this.images = images;
+        this.image = image;
     }
 
     public Article(Long id, String title, String content) {
@@ -49,16 +51,12 @@ public class Article {
         return content;
     }
 
-    public List<Image> getImages() {
-        return images;
+    public Image getImage() {
+        return image;
     }
 
-    public void setImages(List<Image> images) {
-        this.images = images;
-    }
-
-    public void addImage(Image image) {
-        images.add(image);
+    public Article setImage(Image image) {
+        return new Article(this.id, this.title, this.content, this.author, image);
     }
 
     @Override
@@ -68,7 +66,7 @@ public class Article {
                 ", title='" + title + '\'' +
                 ", content='" + content + '\'' +
                 ", author=" + author +
-                ", images=" + images +
+                ", image=" + image +
                 '}';
     }
 }

@@ -9,9 +9,8 @@ import codesquad.webserver.httpresponse.HttpResponse;
 import codesquad.webserver.parser.HttpParser;
 import codesquad.webserver.staticresouce.StaticResourceHandler;
 import codesquad.webserver.staticresouce.StaticResourceResolver;
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -58,14 +57,14 @@ public class WebServer {
     }
 
     private void handleConnection(Socket client) {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+        try (BufferedInputStream in = new BufferedInputStream(client.getInputStream());
              OutputStream outputStream = client.getOutputStream()) {
 
             HttpRequest request = createHttpRequest(in);
             HttpResponse response = filterChain.doFilter(request);
 
             if (response.getStatusCode() != 200) {
-                
+
             } else if (staticResourceResolver.isStaticResource(request.getRequestLine().getPath())) {
                 logger.debug("정적 경로 처리 중 : {}", request.getRequestLine().getPath());
                 response = staticResourceHandler.handleRequest(request);
@@ -84,7 +83,7 @@ public class WebServer {
         }
     }
 
-    private HttpRequest createHttpRequest(BufferedReader in) throws IOException {
+    private HttpRequest createHttpRequest(BufferedInputStream in) throws IOException {
         return HttpParser.parse(in);
     }
 

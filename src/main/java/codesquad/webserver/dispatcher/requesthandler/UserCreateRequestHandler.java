@@ -29,7 +29,8 @@ public class UserCreateRequestHandler extends AbstractRequestHandler {
 
     @Override
     protected ModelAndView handlePost(HttpRequest request) {
-        Map<String, String> params = QueryStringParser.parse(request.getBody());
+        QueryStringParser.parse(request.getBody());
+        Map<String, String> params = request.getParams();
         User user = User.of(params);
 
         ModelAndView mv = new ModelAndView(ViewName.REDIRECT_VIEW);

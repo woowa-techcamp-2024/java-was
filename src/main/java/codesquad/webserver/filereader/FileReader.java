@@ -2,6 +2,8 @@ package codesquad.webserver.filereader;
 
 import codesquad.webserver.annotation.Component;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +34,15 @@ public class FileReader {
         }
 
         if (inputStream == null) {
+            fullPath = getUploadsPath(fileName);
+            logger.info("fullPath: " + fullPath);
+            File file = new File(fullPath);
+            if (file.exists() && file.isFile()) {
+                inputStream = new FileInputStream(file);
+            }
+        }
+
+        if (inputStream == null) {
             logger.error("File not found: " + fileName);
             throw new FileNotFoundException("File not found: " + fileName);
         }
@@ -52,6 +63,11 @@ public class FileReader {
     private String getFileNameFromPath(String path) {
         String[] parts = path.split("/");
         return parts[parts.length - 1];
+    }
+
+    private String getUploadsPath(String fileName) {
+        String projectDir = System.getProperty("user.dir");
+        return projectDir + File.separator + fileName;
     }
 
     public static class FileResource {
@@ -76,5 +92,6 @@ public class FileReader {
                 return reader.lines().collect(Collectors.joining("\n"));
             }
         }
+
     }
 }

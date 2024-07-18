@@ -1,74 +1,140 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>codesquad</title>
     <link href="./reset.css" rel="stylesheet" />
     <link href="./global.css" rel="stylesheet" />
     <link href="./main.css" rel="stylesheet" />
     <style>
-        .post__images {
-            position: relative;
+        body {
+            background-color: #fafafa;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            background-color: #fff;
+            border-bottom: 1px solid #dbdbdb;
+        }
+        .wrapper {
+            width: 70%;
+            display: flex;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        .post {
+            width: 100%;
+            height: 600px;
+            display: flex;
+            border: 1px solid #dbdbdb;
+            background-color: #fff;
+        }
+        .post__image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
             overflow: hidden;
         }
         .post__image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .post__content-wrapper {
             width: 100%;
-            display: none;
-        }
-        .post__image.active {
-            display: block;
-        }
-        .image-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(0,0,0,0.5);
-            color: white;
-            padding: 10px;
-            text-decoration: none;
-        }
-        .image-nav.prev { left: 10px; }
-        .image-nav.next { right: 10px; }
-        .pagination {
+            height: 100%;
             display: flex;
-            justify-content: center;
-            margin-top: 20px;
+            flex-direction: column;
         }
-        .post {
-            margin: 20px auto;
-            max-width: 600px;
-        }
-        .post__account {
+        .post__header {
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #efefef;
         }
         .post__account__img {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             margin-right: 10px;
         }
         .post__account__nickname {
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
         }
-        .post__article {
-            margin-top: 10px;
+        .post__content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow: hidden;
+        }
+        .post__title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .post__text {
+            font-size: 14px;
+            line-height: 1.5;
         }
         .post__menu {
             display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
-        .post__menu__personal {
-            display: flex;
-            list-style: none;
-            padding: 0;
+            padding: 10px 20px;
+            border-top: 1px solid #efefef;
         }
         .post__menu__btn {
             background: none;
             border: none;
             cursor: pointer;
+            margin-right: 16px;
+        }
+        .post__menu__btn img {
+            width: 24px;
+            height: 24px;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .pagination a {
+            margin: 0 10px;
+            padding: 5px 10px;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            text-decoration: none;
+            color: #262626;
+        }
+        .pagination a:hover {
+            background-color: #f0f0f0;
+        }
+        @media (max-width: 768px) {
+            .post {
+                flex-direction: column;
+                height: auto;
+            }
+            .post__image-container,
+            .post__content-wrapper {
+                width: 100%;
+            }
+            .post__image-container {
+                height: 300px;
+            }
+            .post__content {
+                max-height: 200px;
+                overflow-y: auto;
+            }
         }
     </style>
 </head>
@@ -99,59 +165,38 @@
             {{/if}}
         </ul>
     </header>
-    <div class="wrapper">
+    <main class="wrapper">
         {{#for article in articles}}
-        <div class="post">
-            <div class="post__account">
-                <img class="post__account__img" src="./img/default-profile.png" alt="{{article.author.name}}" />
-                <p class="post__account__nickname">{{article.author.name}}</p>
+        <article class="post">
+            <div class="post__image-container">
+                <img class="post__image" src="{{article.image.path}}" alt="게시물 이미지" />
             </div>
-            <div>
-                <p>{{article.title}}</p>
+            <div class="post__content-wrapper">
+                <header class="post__header">
+                    <img class="post__account__img" src="./img/default-profile.png" alt="{{article.author.name}}" />
+                    <p class="post__account__nickname">{{article.author.name}}</p>
+                </header>
+                <div class="post__content">
+                    <h2 class="post__title">{{article.title}}</h2>
+                    <p class="post__text">{{article.content}}</p>
+                </div>
+                <div class="post__menu">
+                    <button class="post__menu__btn"><img src="./img/like.svg" alt="좋아요" /></button>
+                    <button class="post__menu__btn"><img src="./img/sendLink.svg" alt="공유하기" /></button>
+                    <button class="post__menu__btn"><img src="./img/bookMark.svg" alt="북마크" /></button>
+                </div>
             </div>
-            <div>
-                <p class="post__article">{{article.content}}</p>
-            </div>
-            <div class="post__menu">
-                <ul class="post__menu__personal">
-                    <li>
-                        <button class="post__menu__btn">
-                            <img src="./img/like.svg" />
-                        </button>
-                    </li>
-                    <li>
-                        <button class="post__menu__btn">
-                            <img src="./img/sendLink.svg" />
-                        </button>
-                    </li>
-                </ul>
-                <button class="post__menu__btn">
-                    <img src="./img/bookMark.svg" />
-                </button>
-            </div>
-        </div>
+        </article>
         {{/for}}
-        <div class="pagination">
-            {{#if hasPreviousPage}}
-            <a href="?page={{previousPage}}" class="btn btn_ghost btn_size_m">다음</a>
-            {{/if}}
-            {{#if hasNextPage}}
-            <a href="?page={{nextPage}}" class="btn btn_ghost btn_size_m">이전</a>
-            {{/if}}
-        </div>
+    </main>
+    <div class="pagination">
+        {{#if hasPreviousPage}}
+        <a href="?page={{previousPage}}" class="btn btn_ghost btn_size_m">이전</a>
+        {{/if}}
+        {{#if hasNextPage}}
+        <a href="?page={{nextPage}}" class="btn btn_ghost btn_size_m">다음</a>
+        {{/if}}
     </div>
 </div>
-<script>
-    function changeImage(element, direction) {
-        var postImages = element.closest('.post__images');
-        var images = postImages.querySelectorAll('.post__image');
-        var activeImage = postImages.querySelector('.post__image.active');
-        var currentIndex = Array.from(images).indexOf(activeImage);
-        var newIndex = (currentIndex + direction + images.length) % images.length;
-
-        activeImage.classList.remove('active');
-        images[newIndex].classList.add('active');
-    }
-</script>
 </body>
 </html>

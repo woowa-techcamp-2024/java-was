@@ -21,14 +21,14 @@ public abstract class QueryStringParser {
 
         String[] pairs = queryString.split("&");
         for (String pair : pairs) {
-            String[] keyValue = pair.split("=", 2);
-            if (keyValue.length == 2) {
+            int idx = pair.indexOf("=");
+            if (idx > 0) {
                 try {
-                    String key = URLDecoder.decode(keyValue[0].trim(), CHARSET);
-                    String value = URLDecoder.decode(keyValue[1].trim(), CHARSET);
+                    String key = URLDecoder.decode(pair.substring(0, idx).trim(), CHARSET);
+                    String value = URLDecoder.decode(pair.substring(idx + 1).trim(), CHARSET);
                     params.put(key, value);
                 } catch (UnsupportedEncodingException e) {
-                    logger.error("Error decoding query string: {}", e.getMessage());
+                    logger.error("Error decoding query string parameter: {}", pair, e);
                 }
             }
         }
@@ -36,12 +36,17 @@ public abstract class QueryStringParser {
     }
 
     public static void parseQueryString(HttpRequest request) {
-        String url = request.getRequestLine().getFullPath();
-        String[] urlParts = url.split("\\?");
-        if (urlParts.length == 2) {
-            request.setParams(parse(urlParts[1]));
-            return;
+        String fullPath = request.getRequestLine().getFullPath();
+        int queryStringStart = fullPath.indexOf('?');
+
+        if (queryStringStart != -1) {
+            String queryString = fullPath.substring(queryStringStart + 1);
+            Map<String, String> params = parse(queryString);
+            request.setParams(params);
+            logger.debug("Parsed query string parameters: {}", params);
+        } else {
+            request.setParams(new HashMap<>());
+            logger.debug("No query string parameters found");
         }
-        request.setParams(new HashMap<>());
     }
 }

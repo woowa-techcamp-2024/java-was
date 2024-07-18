@@ -1,38 +1,42 @@
 package codesquad.webserver.dispatcher.requesthandler;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import codesquad.webserver.db.article.Article;
+import codesquad.webserver.db.article.ArticleDatabase;
+import codesquad.webserver.db.user.User;
 import codesquad.webserver.dispatcher.view.ModelAndView;
 import codesquad.webserver.dispatcher.view.ModelKey;
 import codesquad.webserver.dispatcher.view.ViewName;
 import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
-import codesquad.webserver.db.user.User;
 import codesquad.webserver.parser.RequestLine;
 import codesquad.webserver.parser.enums.HttpMethod;
 import codesquad.webserver.session.InMemorySession;
 import codesquad.webserver.session.Session;
 import codesquad.webserver.session.SessionManager;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class HomeRequestHandlerTest {
 
     private HomeRequestHandler homeRequestHandler;
     private FileReader mockFileReader;
     private SessionManager mockSessionManager;
+    private ArticleDatabase mockArticleDatabase;
 
     @BeforeEach
     void setUp() {
         mockFileReader = new MockFileReader();
         mockSessionManager = new MockSessionManager();
-        homeRequestHandler = new HomeRequestHandler(mockFileReader, mockSessionManager);
+        mockArticleDatabase = new MockArticleDatabase();
+        homeRequestHandler = new HomeRequestHandler(mockFileReader, mockSessionManager, mockArticleDatabase);
     }
 
     @Test
@@ -72,7 +76,7 @@ class HomeRequestHandlerTest {
     void handleGetWithFileReadError() {
         // Given
         mockFileReader = new MockFileReaderWithError();
-        homeRequestHandler = new HomeRequestHandler(mockFileReader, mockSessionManager);
+        homeRequestHandler = new HomeRequestHandler(mockFileReader, mockSessionManager, mockArticleDatabase);
         HttpRequest request = createTestHttpRequest("/", null);
 
         // When
@@ -116,6 +120,34 @@ class HomeRequestHandlerTest {
         @Override
         public FileResource read(String path) throws IOException {
             throw new IOException("File not found");
+        }
+    }
+
+    private static class MockArticleDatabase implements ArticleDatabase {
+
+        @Override
+        public Article save(Article article) {
+            return null;
+        }
+
+        @Override
+        public Optional<Article> findByArticleId(long id) {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<Article> findAllArticle(int page, int pageSize) {
+            return List.of();
+        }
+
+        @Override
+        public int getTotalArticleCount() {
+            return 0;
+        }
+
+        @Override
+        public void clear() {
+
         }
     }
 

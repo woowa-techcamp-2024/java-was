@@ -9,9 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -64,7 +62,6 @@ public class ArticleRepository implements ArticleDatabase {
 
             Long articleId;
             try (PreparedStatement pstmt = conn.prepareStatement(insertArticleSql, Statement.RETURN_GENERATED_KEYS)) {
-
                 pstmt.setString(1, article.getTitle());
                 pstmt.setString(2, article.getContent());
                 pstmt.setString(3, article.getAuthor().getUserId());
@@ -79,26 +76,25 @@ public class ArticleRepository implements ArticleDatabase {
                 }
             }
 
-            List<Image> savedImages = new ArrayList<>();
-            if (!article.getImages().isEmpty()) {
+            Image savedImage = null;
+            if (article.getImage() != null) {
                 try (PreparedStatement pstmt = conn.prepareStatement(insertImageSql, Statement.RETURN_GENERATED_KEYS)) {
-                    for (Image image : article.getImages()) {
-                        pstmt.setString(1, image.getPath());
-                        pstmt.setString(2, image.getFilename());
-                        pstmt.setLong(3, articleId);
-                        pstmt.executeUpdate();
+                    pstmt.setString(1, article.getImage().getPath());
+                    pstmt.setString(2, article.getImage().getFilename());
+                    pstmt.setLong(3, articleId);
+                    pstmt.executeUpdate();
 
-                        try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                            if (generatedKeys.next()) {
-                                savedImages.add(new Image(generatedKeys.getLong(1), image.getPath(), image.getFilename(), articleId));
-                            }
+                    try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                        if (generatedKeys.next()) {
+                            savedImage = new Image(generatedKeys.getLong(1), article.getImage().getPath(),
+                                    article.getImage().getFilename(), articleId);
                         }
                     }
                 }
             }
 
             conn.commit();
-            return new Article(articleId, article.getTitle(), article.getContent(), article.getAuthor(), savedImages);
+            return new Article(articleId, article.getTitle(), article.getContent(), article.getAuthor(), savedImage);
         } catch (SQLException e) {
             logger.error("Failed to save article", e);
             throw new RuntimeException("Failed to save article", e);
@@ -122,18 +118,16 @@ public class ArticleRepository implements ArticleDatabase {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
-                    User author = new User(rs.getString("user_id"), rs.getString("user_password"), rs.getString("user_name"));
-                    Article article = new Article(rs.getLong("article_id"), rs.getString("title"), rs.getString("content"), author, new ArrayList<>());
-
-                    do {
-                        long imageId = rs.getLong("image_id");
-                        if (!rs.wasNull()) {
-                            Image image = new Image(imageId, rs.getString("path"), rs.getString("filename"), id);
-                            article.addImage(image);
-                        }
-                    } while (rs.next());
-
-                    return Optional.of(article);
+                    User author = new User(rs.getString("user_id"), rs.getString("user_password"),
+                            rs.getString("user_name"));
+                    Image image = null;
+                    long imageId = rs.getLong("image_id");
+                    if (!rs.wasNull()) {
+                        image = new Image(imageId, rs.getString("path"), rs.getString("filename"), id);
+                    }
+                    return Optional.of(
+                            new Article(rs.getLong("article_id"), rs.getString("title"), rs.getString("content"),
+                                    author, image));
                 }
             }
         } catch (SQLException e) {
@@ -141,11 +135,6 @@ public class ArticleRepository implements ArticleDatabase {
             throw new RuntimeException("Failed to find article", e);
         }
         return Optional.empty();
-    }
-
-    @Override
-    public List<Article> findAllArticle() throws SQLException {
-        return List.of();
     }
 
     @Override
@@ -159,7 +148,7 @@ public class ArticleRepository implements ArticleDatabase {
                 "ORDER BY a.id DESC " +
                 "LIMIT ? OFFSET ?";
 
-        Map<Long, Article> articleMap = new LinkedHashMap<>();
+        List<Article> articles = new ArrayList<>();
 
         try (Connection conn = dataSource.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -169,20 +158,17 @@ public class ArticleRepository implements ArticleDatabase {
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    Long articleId = rs.getLong("article_id");
-                    Article article = articleMap.get(articleId);
-
-                    if (article == null) {
-                        User author = new User(rs.getString("user_id"), rs.getString("user_password"), rs.getString("user_name"));
-                        article = new Article(articleId, rs.getString("title"), rs.getString("content"), author, new ArrayList<>());
-                        articleMap.put(articleId, article);
-                    }
-
-                    Long imageId = rs.getLong("image_id");
+                    User author = new User(rs.getString("user_id"), rs.getString("user_password"),
+                            rs.getString("user_name"));
+                    Image image = null;
+                    long imageId = rs.getLong("image_id");
                     if (!rs.wasNull()) {
-                        Image image = new Image(imageId, rs.getString("path"), rs.getString("filename"), articleId);
-                        article.addImage(image);
+                        image = new Image(imageId, rs.getString("path"), rs.getString("filename"),
+                                rs.getLong("article_id"));
                     }
+                    Article article = new Article(rs.getLong("article_id"), rs.getString("title"),
+                            rs.getString("content"), author, image);
+                    articles.add(article);
                 }
             }
         } catch (SQLException e) {
@@ -190,7 +176,7 @@ public class ArticleRepository implements ArticleDatabase {
             throw new RuntimeException("Error finding articles with pagination", e);
         }
 
-        return new ArrayList<>(articleMap.values());
+        return articles;
     }
 
     @Override
