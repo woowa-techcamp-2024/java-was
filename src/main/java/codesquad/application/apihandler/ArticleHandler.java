@@ -43,11 +43,10 @@ public class ArticleHandler {
         User sessionUser = SessionManager.getInstance().getUser(sid);
 
         String fileName = "";
-        if(body.containsKey("filename")){
-            byte[] fileBytes = (byte[]) body.get("image");
-            fileName = (String) body.get("filename");
-            FileWriter.saveFile(fileBytes, fileName);
-        }
+        byte[] fileBytes = (byte[]) body.get("image");
+        fileName = (String) body.get("filename");
+        FileWriter.saveFile(fileBytes, fileName);
+
         Article article = new Article(title, content, sessionUser.getNickname(), "./upload/" + fileName);
         log.debug("[write] " + article.toString());
         articleDb.insert(article);
