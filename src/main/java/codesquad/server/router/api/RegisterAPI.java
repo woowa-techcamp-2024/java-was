@@ -17,7 +17,7 @@ public class RegisterAPI implements ResourceHandler {
         if (request.getRequestStartLine().method() != HttpMethod.POST) throw new Http405Exception();
 
         Map<String, String> info = request.getBody().getBodyMap();
-        userDatabase.append(new User(info.get("userId"), info.get("nickname"), info.get("password")));
+        userDatabase.insert(new User(info.get("userId"), info.get("nickname"), info.get("password")));
         return handleRedirect("/index.html?id=1");
     }
 }

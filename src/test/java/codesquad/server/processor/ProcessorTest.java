@@ -24,7 +24,7 @@ class ProcessorTest {
     @DisplayName("메세지에 맞는 http 요청을 반환해야 합니다")
     void processRequestTest() throws Exception {
         String httpMessage = "GET /test HTTP/1.1\r\nHost: localhost\r\n\r\n";
-        HttpRequest httpRequest = processor.processRequest(httpMessage);
+        HttpRequest httpRequest = processor.processRequest(httpMessage.getBytes());
 
         assertEquals(HttpMethod.GET, httpRequest.getRequestStartLine().method());
         assertEquals(new URI("/test"), httpRequest.getRequestStartLine().uri());

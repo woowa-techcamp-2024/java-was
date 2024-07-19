@@ -12,10 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SessionDatabaseTest {
     @Test
     @DisplayName("session 정보를 입력하면 이에 해당하는 session 객체가 생성됩니다")
-    void appendUser() {
+    void insertUser() {
         User user = new User("user1", "nickname1", "password1");
-        Session session = sessionDatabase.append(user);
-        assertEquals(user, sessionDatabase.getById(session));
+        Session session = sessionDatabase.insert(user);
+        assertEquals(user, sessionDatabase.selectById(session));
     }
 
     @Test
@@ -23,7 +23,7 @@ public class SessionDatabaseTest {
     void existSession() {
         User user = new User("userId1", "nickName1", "password1");
 
-        Session session1 = sessionDatabase.append(user);
+        Session session1 = sessionDatabase.insert(user);
         Session session2 = SessionManager.createSession();
 
         assertTrue(SessionManager.isExist(session1));

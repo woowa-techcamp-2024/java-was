@@ -14,9 +14,9 @@ import static codesquad.server.thread.ThreadManager.session;
 public class CommentAPI implements ResourceHandler {
     @Override
     public HttpResponse handle(HttpRequest request) {
-        User user = sessionDatabase.getById(session.get());
+        User user = sessionDatabase.selectById(session.get());
         Map<String, String> contents = request.getBody().getBodyMap();
-        commentDatabase.append(new Comment(user.userid(), contents.get("id"), contents.get("contents")));
+        commentDatabase.insert(new Comment(user.userid(), contents.get("id"), contents.get("contents")));
         return handleRedirect("/main/index.html?id=" + contents.get("id"));
     }
 }

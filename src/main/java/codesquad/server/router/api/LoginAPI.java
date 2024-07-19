@@ -26,10 +26,10 @@ public class LoginAPI implements ResourceHandler {
         if (request.getRequestStartLine().method() != HttpMethod.POST) throw new Http405Exception();
 
         Map<String, String> userInfo = request.getBody().getBodyMap();
-        User user = userDatabase.getById(userInfo.get("userId"));
+        User user = userDatabase.selectByUserId(userInfo.get("userId"));
         if (!verifyUserInfo(user, userInfo)) return handleRedirect("/login/login_failed.html");
 
-        Session session = sessionDatabase.append(user);
+        Session session = sessionDatabase.insert(user);
         return handleRedirect("/main/index.html?id=1", session.sid());
     }
 

@@ -27,7 +27,7 @@ public class TemplateEngine {
     }
 
     private static String convertIfPost(String response, String id) {
-        Post post = postDatabase.getById(Integer.parseInt(id));
+        Post post = postDatabase.selectById(Integer.parseInt(id));
         if (post == null) {
             String pattern = "\\{\\{if post}}.*?\\{\\{endif}}";
             Pattern regex = Pattern.compile(pattern, Pattern.DOTALL);
@@ -40,20 +40,20 @@ public class TemplateEngine {
     }
 
     private static String convertAccount(String response, String id) {
-        Post post = postDatabase.getById(Integer.parseInt(id));
+        Post post = postDatabase.selectById(Integer.parseInt(id));
         if (post == null) return response.replace("{{account}}", "");
-        User user = userDatabase.getById(post.userid());
+        User user = userDatabase.selectByUserId(post.userid());
         return response.replace("{{account}}", user.nickname());
     }
 
     private static String convertCommentList(String response, String id) {
         StringBuilder commentList = new StringBuilder();
-        Map<Integer, Comment> commentMap = commentDatabase.getAll();
+        Map<Integer, Comment> commentMap = commentDatabase.selectAll();
         if (commentMap == null) return response.replace("{{commentList}}", "");
 
         for (var comment : commentMap.values()) {
             if (Objects.equals(comment.postid(), id)) {
-                User user = userDatabase.getById(comment.userid());
+                User user = userDatabase.selectByUserId(comment.userid());
                 commentList.append("<li class=\"comment-item hidden\">\n")
                         .append("<div class=\"comment__item__user\">\n")
                         .append("<img class=\"comment__item__user__img\" />")
@@ -67,12 +67,12 @@ public class TemplateEngine {
     }
 
     private static String convertNickName(String response) {
-        return response.replace("{{nickname}}", sessionDatabase.getById(session.get()).nickname());
+        return response.replace("{{nickname}}", sessionDatabase.selectById(session.get()).nickname());
     }
 
     private static String convertUserList(String response) {
         StringBuilder userList = new StringBuilder();
-        Map<String, User> userMap = userDatabase.getAll();
+        Map<Integer, User> userMap = userDatabase.selectAll();
         if (userMap == null) return response.replace("{{userList}}", "");
 
         for (User user : userMap.values()) {
@@ -85,19 +85,19 @@ public class TemplateEngine {
     }
 
     private static String convertTitle(String response, String id) {
-        Post post = postDatabase.getById(Integer.parseInt(id));
+        Post post = postDatabase.selectById(Integer.parseInt(id));
         if (post == null) return response.replace("{{title}}", "작성한 글이 없습니다!");
         return response.replace("{{title}}", post.title());
     }
 
     private static String convertPost(String response, String id) {
-        Post post = postDatabase.getById(Integer.parseInt(id));
+        Post post = postDatabase.selectById(Integer.parseInt(id));
         if (post == null) return response.replace("{{post}}", "");
         return response.replace("{{post}}", post.contents());
     }
 
     private static String convertImage(String response, String id) {
-        Post post = postDatabase.getById(Integer.parseInt(id));
+        Post post = postDatabase.selectById(Integer.parseInt(id));
         if (post == null) return response.replace("{{image}}", "<img class=\"post__img\" />");
         return response.replace("{{image}}", "<img class=\"post__img\" src=\"/upload/" + post.image() + "\" />");
     }

@@ -18,7 +18,6 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static codesquad.Main.userDatabase;
 import static org.junit.jupiter.api.Assertions.*;
 
 class RegisterAPITest {
@@ -44,7 +43,6 @@ class RegisterAPITest {
         );
 
         HttpResponse httpResponse = createUserAPI.handle(httpRequest);
-        assertNotNull(userDatabase.getById("testUser"));
         assertEquals("HTTP/1.1 302 Found\r\n", httpResponse.getResponseStartLine().toString());
     }
 

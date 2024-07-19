@@ -14,9 +14,9 @@ import static codesquad.server.thread.ThreadManager.session;
 public class PostAPI implements ResourceHandler {
     @Override
     public HttpResponse handle(HttpRequest request) {
-        User user = sessionDatabase.getById(session.get());
+        User user = sessionDatabase.selectById(session.get());
         Map<String, String> contents = request.getBody().getBodyMap();
-        postDatabase.append(new Post(user.userid(), contents.get("title"), contents.get("contents"), contents.get("image")));
+        postDatabase.insert(new Post(user.userid(), contents.get("title"), contents.get("contents"), contents.get("image")));
         return handleRedirect("/index.html?id=1");
     }
 }
