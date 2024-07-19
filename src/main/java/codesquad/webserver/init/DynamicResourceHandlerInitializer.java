@@ -1,8 +1,6 @@
 package codesquad.webserver.init;
 
-import codesquad.application.datahandler.UserDataHandler;
 import codesquad.webserver.annotation.ApiHandler;
-import codesquad.webserver.annotation.DataHandler;
 import codesquad.webserver.annotation.RequestMapping;
 import codesquad.webserver.annotation.Specify;
 import codesquad.webserver.handler.DynamicResourceHandler;

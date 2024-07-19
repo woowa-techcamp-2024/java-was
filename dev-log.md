@@ -133,17 +133,40 @@ public void bind(SocketAddress endpoint, int backlog) throws IOException {
 ```
 POST /upload HTTP/1.1
 Host: example.com
-Content-Type: multipart/form-data; boundary=---------------------------123456789012345
+Content-Type: multipart/form-data; boundary=---123456789012345
 Content-Length: [전체 데이터의 길이]
 
----------------------------123456789012345
+-----123456789012345
 Content-Disposition: form-data; name="username"
 
 JohnDoe
----------------------------123456789012345
+-----123456789012345
 Content-Disposition: form-data; name="file"; filename="image.jpg"
 Content-Type: image/jpeg
 
 [이미지 파일의 바이너리 데이터]
----------------------------123456789012345--
+-----123456789012345--
 ```
+
+
+# 정규 표현식
+```
+. : 줄바꿈을 제외한 모든 문자
++ : 앞 문자가 하나 이상 반복
+* : 앞 문자가 0 이상 반복
+(): 캡쳐 그룹, 매칭 시 group(index) 로 찾을 수 있다
+[] : 문자 집합, 해당 위치에 올 수 있는 문자들을 정의
+^ : 뒤의 문자를 제외한 문자들
+
+\\s : 공백
+\\w : 문자(알파벳, 숫자, 밑줄, 등)
+\\( : 열린 괄호
+\\) : 닫힌 괄호
+\\n : 줄바꿈
+```
+
+# 패턴 컴파일
+- Pattern.CASE_INSENSITIVE
+  - 대소문자 구분 없이 동일 취급
+- Pattern.DOTALL
+  - 정규표현식 . 이 줄바꿈 까지 포함 시킨다

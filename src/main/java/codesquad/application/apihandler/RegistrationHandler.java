@@ -19,7 +19,7 @@ public class RegistrationHandler {
     private final UserDataHandler userDb;
 
     public RegistrationHandler(
-            @Specify("UserDataHandlerJdbc") UserDataHandler userDb) {
+            @Specify("UserDataHandlerCsv") UserDataHandler userDb) {
         this.userDb = userDb;
     }
 

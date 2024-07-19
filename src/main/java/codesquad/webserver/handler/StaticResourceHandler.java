@@ -6,7 +6,6 @@ import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.util.FileReader;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;

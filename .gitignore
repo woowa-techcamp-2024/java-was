@@ -2,6 +2,7 @@ db.mv.db
 db.trace.db
 
 upload/
+mycsv/
 
 .gradle
 build/

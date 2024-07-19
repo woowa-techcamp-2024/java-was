@@ -22,7 +22,7 @@ public class AuthHandler {
     private final UserDataHandler userDb;
 
     public AuthHandler(
-            @Specify("UserDataHandlerJdbc") UserDataHandler userDb) {
+            @Specify("UserDataHandlerCsv") UserDataHandler userDb) {
         this.userDb = userDb;
     }
 

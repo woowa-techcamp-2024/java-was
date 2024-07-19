@@ -24,7 +24,7 @@ public class UserHandler {
     private final UserDataHandler userDb;
 
     public UserHandler(
-            @Specify("UserDataHandlerJdbc") UserDataHandler userDb) {
+            @Specify("UserDataHandlerCsv") UserDataHandler userDb) {
         this.userDb = userDb;
     }
 

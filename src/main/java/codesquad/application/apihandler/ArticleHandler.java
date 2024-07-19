@@ -28,7 +28,7 @@ public class ArticleHandler {
     private final ArticleDataHandler articleDb;
 
     public ArticleHandler(
-            @Specify("ArticleDataHandlerJdbc") ArticleDataHandler articleDb) {
+            @Specify("ArticleDataHandlerCsv") ArticleDataHandler articleDb) {
         this.articleDb = articleDb;
     }
 
@@ -42,9 +42,8 @@ public class ArticleHandler {
         String sid = CookieExtractor.getSid(request);
         User sessionUser = SessionManager.getInstance().getUser(sid);
 
-        String fileName = "";
         byte[] fileBytes = (byte[]) body.get("image");
-        fileName = (String) body.get("filename");
+        String fileName = (String) body.get("filename");
         FileWriter.saveFile(fileBytes, fileName);
 
         Article article = new Article(title, content, sessionUser.getNickname(), "./upload/" + fileName);
