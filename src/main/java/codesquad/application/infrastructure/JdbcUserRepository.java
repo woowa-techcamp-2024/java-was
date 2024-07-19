@@ -10,8 +10,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcUserRepository implements UserRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(JdbcUserRepository.class);
 
     public void save(User user) {
         String insertSQL = "INSERT INTO MEMBER (userId, password, name, email) VALUES (?, ?, ?, ?)";
@@ -28,7 +32,7 @@ public class JdbcUserRepository implements UserRepository {
                 throw new SQLException("Inserting user failed");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Failed to insert user", e);
         }
     }
 
@@ -50,7 +54,7 @@ public class JdbcUserRepository implements UserRepository {
                 ));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Failed to find user", e);
         }
 
         return Optional.empty();
@@ -74,26 +78,10 @@ public class JdbcUserRepository implements UserRepository {
             }
             return result;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Failed to find user", e);
         }
 
         return List.of();
-    }
-
-    public void delete(String userId) {
-        String deleteSQL = "DELETE FROM MEMBER WHERE userId = ?";
-
-        try (Connection connection = DatabaseConnectionUtils.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL);) {
-            preparedStatement.setString(1, userId);
-
-            int rowsAffected = preparedStatement.executeUpdate();
-            if (rowsAffected == 0) {
-                throw new SQLException("Deleting user failed");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public void deleteAll() {
@@ -103,7 +91,7 @@ public class JdbcUserRepository implements UserRepository {
              PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL);) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Failed to delete user", e);
         }
     }
 }

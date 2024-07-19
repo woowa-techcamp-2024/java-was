@@ -2,17 +2,9 @@ package codesquad.application.persistence;
 
 import codesquad.application.model.Comment;
 import java.util.List;
-import java.util.Optional;
 
-public interface CommentRepository {
+public interface CommentRepository extends Repository<Comment, String> {
 
-    void save(Comment comment);
+    List<Comment> findAllByArticleId(String articleId);
 
-    Optional<Comment> findById(int commentId);
-
-    List<Comment> findAllByArticleId(int articleId);
-
-    void delete(int commentId);
-
-    void deleteAll();
 }

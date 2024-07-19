@@ -1,34 +1,43 @@
 package codesquad.application.model;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class Article {
 
-    private int articleId;
+    private String articleId;
     private String title;
     private String content;
     private String imagePath;
     private String userId;
     private LocalDateTime createdAt;
 
-    public Article(String title, String content, String imagePath, String userId) {
+    public Article(String title,
+                   String content,
+                   String imagePath,
+                   String userId) {
+        this.articleId = UUID.randomUUID().toString();
         this.title = title;
         this.content = content;
         this.imagePath = imagePath;
         this.userId = userId;
     }
 
-    public Article(int articleId, String title, String content, String imagePath, String userId,
-                   LocalDateTime createdAt) {
+    public Article(String articleId,
+                   String title,
+                   String content,
+                   String imagePath,
+                   LocalDateTime createdAt,
+                   String userId) {
         this.articleId = articleId;
         this.title = title;
         this.content = content;
         this.imagePath = imagePath;
-        this.userId = userId;
         this.createdAt = createdAt;
+        this.userId = userId;
     }
 
-    public int getArticleId() {
+    public String getArticleId() {
         return articleId;
     }
 
