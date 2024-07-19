@@ -13,7 +13,7 @@ public class HttpRequest {
     private RequestLine requestLine;
     private Map<String, List<String>> headers;
     private Map<String, String> params;
-    private String body;
+    private String body = "";
     private Map<String, List<String>> multipartFields = new HashMap<>();
     ;
     private Map<String, List<FileItem>> multipartFiles = new HashMap<>();

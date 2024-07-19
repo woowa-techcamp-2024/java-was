@@ -16,6 +16,7 @@ import codesquad.webserver.session.SessionManager;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class HomeRequestHandler extends AbstractRequestHandler {
 
     private static final String FILE_PATH = "/index.html";
     private static final Logger logger = LoggerFactory.getLogger(HomeRequestHandler.class);
-    private static final int ARTICLE_PER_PAGE = 1;
+    private static final int ARTICLE_PER_PAGE = 2;
 
     private final SessionManager sessionManager;
     private final ArticleDatabase articleDatabase;
@@ -69,8 +70,12 @@ public class HomeRequestHandler extends AbstractRequestHandler {
             int page = getPageFromRequest(request);
             List<Article> articles = articleDatabase.findAllArticle(page, ARTICLE_PER_PAGE);
             int totalArticles = articleDatabase.getTotalArticleCount();
-
-            mv.addAttribute(ModelKey.ARTICLES, articles);
+            List<Article> paginatedArticles = articles.stream()
+                    .skip((page - 1) * ARTICLE_PER_PAGE)
+                    .limit(ARTICLE_PER_PAGE)
+                    .collect(Collectors.toList());
+            logger.error("articles: {}", articles);
+            mv.addAttribute(ModelKey.ARTICLES,paginatedArticles);
             mv.addAttribute(ModelKey.CURRENT_PAGE, page);
             mv.addAttribute(ModelKey.HAS_PREVIOUS_PAGE, page > 1);
             mv.addAttribute(ModelKey.HAS_NEXT_PAGE, page * ARTICLE_PER_PAGE < totalArticles);

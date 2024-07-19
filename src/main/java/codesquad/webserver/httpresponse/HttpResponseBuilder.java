@@ -100,7 +100,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildNotFoundFromFile() {
         try {
-            return buildFromFile(new FileReader().read("error/404.html"), 404, "NotFound");
+            return buildFromFile(new FileReader().read("/error/404.html"), 404, "NotFound");
         } catch (IOException e) {
             return notFound()
                     .body("NotFound".getBytes())
@@ -117,7 +117,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildForbiddenFromFile() {
         try {
-            return buildFromFile(new FileReader().read("error/403.html"), 403, "Forbidden");
+            return buildFromFile(new FileReader().read("/error/403.html"), 403, "Forbidden");
         } catch (IOException e) {
             return forbidden()
                     .body("Forbidden".getBytes())
@@ -138,7 +138,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildMethodNotAllowedFromFile() {
         try {
-            return buildFromFile(new FileReader().read("error/405.html"), 405, "Method Not Allowed");
+            return buildFromFile(new FileReader().read("/error/405.html"), 405, "Method Not Allowed");
         } catch (IOException e) {
             return methodNotAllowed()
                     .body("Method Not Allowed".getBytes())
@@ -152,7 +152,7 @@ public class HttpResponseBuilder {
 
     public static HttpResponse buildServerErrorFromFile() {
         try {
-            return buildFromFile(new FileReader().read("error/500.html"), 500, "Internal Server Error");
+            return buildFromFile(new FileReader().read("/error/500.html"), 500, "Internal Server Error");
         } catch (IOException e) {
             return serverError()
                     .body("ServerError".getBytes())

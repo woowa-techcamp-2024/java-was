@@ -15,7 +15,6 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
 public class ArticleRepository implements ArticleDatabase {
 
     private static final Logger logger = LoggerFactory.getLogger(ArticleRepository.class);

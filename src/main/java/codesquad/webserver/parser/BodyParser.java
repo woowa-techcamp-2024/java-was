@@ -3,7 +3,6 @@ package codesquad.webserver.parser;
 import codesquad.webserver.httprequest.HttpRequest;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -12,6 +11,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BodyParser {
 
     private static final Logger logger = LoggerFactory.getLogger(BodyParser.class);
+    private static final String UTF_8 = "UTF-8";
 
     public static void parse(BufferedInputStream in, HttpRequest request) throws IOException {
         List<String> contentTypeHeaders = request.getHeaders().get("Content-Type");
@@ -36,9 +36,11 @@ public abstract class BodyParser {
             if (bytesRead != contentLength) {
                 throw new IOException("Unexpected end of body");
             }
-            String body = new String(bodyBytes, StandardCharsets.UTF_8);
+            String body = new String(bodyBytes, UTF_8);
             request.setBody(body);
+            return;
         }
+        request.setBody("");
     }
 
     private static void parseFormUrlEncoded(BufferedInputStream in, HttpRequest request) throws IOException {
@@ -57,7 +59,7 @@ public abstract class BodyParser {
             if (bytesRead != contentLength) {
                 throw new IOException("Unexpected end of body");
             }
-            return new String(bodyBytes, StandardCharsets.UTF_8);
+            return new String(bodyBytes, UTF_8);
         }
         return "";
     }

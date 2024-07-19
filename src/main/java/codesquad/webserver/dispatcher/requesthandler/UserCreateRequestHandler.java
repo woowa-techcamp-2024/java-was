@@ -11,6 +11,7 @@ import codesquad.webserver.filereader.FileReader;
 import codesquad.webserver.httprequest.HttpRequest;
 import codesquad.webserver.db.user.User;
 import codesquad.webserver.parser.QueryStringParser;
+import java.sql.SQLException;
 import java.util.Map;
 
 @Controller
@@ -37,7 +38,7 @@ public class UserCreateRequestHandler extends AbstractRequestHandler {
         try {
             userDatabase.save(user);
             mv.addAttribute(ModelKey.REDIRECT_URL, HOME_PATH);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | SQLException e) {
             //TODO: 회원가입 실패 패이지로 전달. handler도 추가
             mv.addAttribute(ModelKey.REDIRECT_URL, HOME_PATH);
         }

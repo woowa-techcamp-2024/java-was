@@ -14,13 +14,11 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
 public class UserRepository implements UserDatabase {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRepository.class);
     private final DataSource dataSource;
 
-    @Autowired
     public UserRepository(DataSource dataSource) {
         this.dataSource = dataSource;
         initializeDatabase();
