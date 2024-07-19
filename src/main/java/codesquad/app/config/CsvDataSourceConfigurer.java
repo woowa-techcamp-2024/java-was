@@ -4,20 +4,22 @@ import codesquad.container.Component;
 import codesquad.db.DDLOption;
 import codesquad.db.DataSourceConfigurer;
 
-public class H2DataSourceConfigurer implements DataSourceConfigurer {
+@Component
+public class CsvDataSourceConfigurer implements DataSourceConfigurer {
+
     @Override
     public String getURL() {
-        return "jdbc:h2:tcp://localhost:9092/~/java-was/db/was";
+        return System.getProperty("user.home") + "/java-was/csv";
     }
 
     @Override
     public String getUsername() {
-        return "sa";
+        return "";
     }
 
     @Override
     public String getPassword() {
-        return "1234";
+        return "";
     }
 
     @Override
