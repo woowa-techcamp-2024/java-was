@@ -5,11 +5,15 @@ import codesquad.servlet.execption.GlobalExceptionHandler;
 import codesquad.servlet.execption.MethodNotAllowedException;
 import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpRequest;
-import codesquad.webserver.http.HttpRequestBody;
 import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.HttpStatus;
-import java.io.BufferedReader;
+import codesquad.webserver.http.MultiPartFormData;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,17 +29,42 @@ public class HttpRequestMapper {
         this.globalExceptionHandler = globalExceptionHandler;
     }
 
-    public HttpRequest mapFrom(BufferedReader bufferedReader, HttpResponse httpResponse) {
+    public HttpRequest mapFrom(InputStream inputStream, HttpResponse httpResponse) {
         try {
-            HttpRequestLine httpRequestLine = httpRequestParser.parseHttpRequestFirstLine(bufferedReader);
-            HttpHeaders httpHeaders = httpRequestParser.parseHeaders(bufferedReader);
-            HttpRequestBody httpRequestBody = httpRequestParser.parseBody(bufferedReader,
-                    httpHeaders.getContentLength());
+            logger.debug("HttpRequestMapper start");
+            HttpRequestLine httpRequestLine = httpRequestParser.parseHttpRequestFirstLine(inputStream);
+            HttpHeaders httpHeaders = httpRequestParser.parseHeaders(inputStream);
+            byte[] body = httpRequestParser.readBody(inputStream, httpHeaders.getContentLength());
 
-            logger.debug("http request line: {}", httpRequestLine);
-            logger.debug("http request headers: {}", httpHeaders);
-            logger.debug("http request body: {}", httpRequestBody);
-            return new HttpRequest(httpRequestLine, httpHeaders, httpRequestBody);
+            HttpRequest httpRequest = new HttpRequest(httpRequestLine, httpHeaders, body);
+
+            String contentType = httpHeaders.getHeader("Content-Type");
+            if (contentType != null && contentType.contains("multipart/form-data")) {
+                String boundaryInfo = contentType.split("; ")[1];
+                String boundary = boundaryInfo.split("=")[1];
+                inputStream = new ByteArrayInputStream(body);
+                Map<String, MultiPartFormData> multiPartFormData = MultiPartFormParser.parse(inputStream, boundary);
+                httpRequest.setMultiPartFormData(multiPartFormData);
+
+                Map<String, String> params = new HashMap<>();
+                for (String name : multiPartFormData.keySet()) {
+                    if (name.equals("image")) {
+                        continue;
+                    }
+                    String value = new String(multiPartFormData.get(name).getContent(), StandardCharsets.UTF_8);
+                    params.put(name, value);
+                }
+                httpRequest.setParams(params);
+            }
+
+            if (contentType != null && contentType.contains("application/x-www-form-urlencoded")) {
+                Map<String, String> params = httpRequestParser.parseBody(httpRequest.getBody(),
+                        httpHeaders.getContentLength());
+
+                httpRequest.setParams(params);
+            }
+
+            return httpRequest;
 
         } catch (MethodNotAllowedException e) {
             globalExceptionHandler.handle(e, httpResponse);

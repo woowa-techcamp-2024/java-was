@@ -27,7 +27,7 @@ public class ArticleDao implements ArticleStorage {
 
     @Override
     public Long insert(Article article) {
-        String sql = "INSERT INTO article (author_id, title, content) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO article (author_id, title, content, image_path) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = databaseConnector.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -35,6 +35,7 @@ public class ArticleDao implements ArticleStorage {
             preparedStatement.setLong(1, article.getAuthorId());
             preparedStatement.setString(2, article.getTitle());
             preparedStatement.setString(3, article.getContent());
+            preparedStatement.setString(4, article.getImagePath());
 
             int rowCounts = preparedStatement.executeUpdate();
             if (rowCounts == 0) {
@@ -110,7 +111,8 @@ public class ArticleDao implements ArticleStorage {
         Long authorId = resultSet.getLong("author_id");
         String title = resultSet.getString("title");
         String content = resultSet.getString("content");
-        Article article = new Article(authorId, title, content);
+        String imagePath = resultSet.getString("image_path");
+        Article article = new Article(authorId, title, content, imagePath);
         article.setPrimaryKey(resultSet.getLong("id"));
 
         return article;

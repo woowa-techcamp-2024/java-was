@@ -13,6 +13,25 @@
             box-sizing: border-box; /* 패딩과 테두리를 포함한 크기 설정 */
             padding: 8px 16px;
         }
+
+        #image-preview {
+            max-width: 100%;
+            margin-top: 10px;
+        }
+
+        #image-upload {
+            display: none;
+        }
+
+        .image-upload-label {
+            display: inline-block;
+            padding: 6px 12px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #d2dae0;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -32,8 +51,8 @@
     </header>
     <div class="page">
         <h2 class="page-title">게시글 작성</h2>
-        <form class="form" action="/article" method="post">
-
+        <form class="form" action="/article" method="post" enctype="multipart/form-data">
+            <input type="hidden" id="filename" name="filename" value="">
             <input
                     class="input_textfield title"
                     type="text"
@@ -50,6 +69,11 @@
                         autocomplete="username"
                 ></textarea>
             </div>
+            <div>
+                <label for="image-upload" class="image-upload-label">이미지 선택</label>
+                <input type="file" id="image-upload" name="image" accept="image/*"/>
+                <div id="image-preview"></div>
+            </div>
             <button
                     id="registration-btn"
                     class="btn btn_contained btn_size_m"
@@ -61,5 +85,30 @@
         </form>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const imageUpload = document.getElementById('image-upload');
+        const imagePreview = document.getElementById('image-preview');
+        const filenameInput = document.getElementById('filename');
+
+        imageUpload.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                // 파일 이름을 hidden 필드에 설정
+                filenameInput.value = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '100%';
+                    imagePreview.innerHTML = '';
+                    imagePreview.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+</script>
 </body>
 </html>

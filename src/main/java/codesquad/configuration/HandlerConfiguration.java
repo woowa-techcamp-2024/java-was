@@ -9,6 +9,7 @@ import codesquad.servlet.handler.api.AllUserInfoHandler;
 import codesquad.servlet.handler.api.ArticleCommentWriteHandler;
 import codesquad.servlet.handler.api.ArticleListHandler;
 import codesquad.servlet.handler.api.ArticleWriteHandler;
+import codesquad.servlet.handler.api.ImageHandler;
 import codesquad.servlet.handler.api.UserInfoHandler;
 import codesquad.servlet.handler.api.UserLoginHandler;
 import codesquad.servlet.handler.api.UserLogoutHandler;
@@ -39,7 +40,8 @@ public class HandlerConfiguration {
         ArticleCommentWriteHandler articleCommentWriteHandler = new ArticleCommentWriteHandler(articleStorage,
                 sessionStorage, commentStorage);
 
-        // TODO 생성자로 핸들러, 메서드, URL 정보를 클래스로 만들어서 그거에 대한 리스트(HttpMethod, Map<String, Handler>)를 생성자로 받음
+        ImageHandler imageHandler = new ImageHandler();
+
         HandlerMapper handlerMapper = HandlerMapper.getInstance();
         handlerMapper.addMapping(HttpMethod.POST, "/user/create", userRegistrationHandler);
         handlerMapper.addMapping(HttpMethod.POST, "/user/login", userLoginHandler);
@@ -49,6 +51,7 @@ public class HandlerConfiguration {
         handlerMapper.addMapping(HttpMethod.POST, "/article", articleWriteHandler);
         handlerMapper.addMapping(HttpMethod.GET, "/api/articles/list", articleListHandler);
         handlerMapper.addMapping(HttpMethod.POST, "/comment", articleCommentWriteHandler);
+        handlerMapper.addMapping(HttpMethod.GET, "/image", imageHandler);
     }
 
 }

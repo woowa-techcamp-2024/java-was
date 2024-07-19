@@ -10,7 +10,6 @@ import codesquad.servlet.fixture.UserFixture;
 import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
-import codesquad.webserver.http.HttpRequestBody;
 import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import java.util.HashMap;
@@ -64,8 +63,9 @@ class UserRegistrationHandlerTest {
         private HttpRequest createRegistrationRequest(Map<String, String> requestBodyParams) {
             HttpRequestLine httpRequestLine = new HttpRequestLine(POST, HttpPath.of("/user/create", Map.of()), HTTP1_1);
             HttpHeaders httpHeaders = HttpHeaders.empty();
-            HttpRequestBody httpRequestBody = new HttpRequestBody(requestBodyParams);
-            return new HttpRequest(httpRequestLine, httpHeaders, httpRequestBody);
+            HttpRequest httpRequest = new HttpRequest(httpRequestLine, httpHeaders, new byte[0]);
+            httpRequest.setParams(requestBodyParams);
+            return httpRequest;
         }
 
         private Map<String, String> createUserRegistrationRequestBodyParams(String userId, String password,

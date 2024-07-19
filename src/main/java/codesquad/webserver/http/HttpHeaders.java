@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public class HttpHeaders {
 
-    //TODO: Map<String, List<String>> 으로 변경 -> ex) Accept 헤더에 여러 value가 존재함
     private final Map<String, String> headers;
 
     private HttpHeaders(final Map<String, String> headers) {
@@ -39,6 +38,10 @@ public class HttpHeaders {
 
     public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
+    }
+
+    public String getHeader(final String name) {
+        return headers.get(name);
     }
 
     public Optional<String> getHeaderValue(final String name) {

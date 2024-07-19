@@ -2,7 +2,7 @@ package codesquad.servlet.database.property;
 
 public enum DataSource {
 
-    JDBC_URL("jdbc:h2:~/test"),
+    JDBC_URL("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"),
     USER_NAME("sa"),
     PASSWORD("");
 

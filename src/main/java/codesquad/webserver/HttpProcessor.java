@@ -10,10 +10,8 @@ import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.HttpStatus;
 import codesquad.webserver.parser.HttpRequestMapper;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
 import org.slf4j.Logger;
@@ -41,18 +39,16 @@ public class HttpProcessor {
         try (InputStream inputStream = connection.getInputStream();
              OutputStream outputStream = connection.getOutputStream()
         ) {
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             HttpRequest httpRequest;
             HttpResponse httpResponse = HttpResponse.ok();
             httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
 
             try {
-                httpRequest = httpRequestMapper.mapFrom(bufferedReader, httpResponse);
+                httpRequest = httpRequestMapper.mapFrom(inputStream, httpResponse);
             } catch (ClientException e) {
                 sendResponse(outputStream, httpResponse);
                 return;
             }
-
             sessionAuthFilter.doFilter(httpRequest, httpResponse);
             if (httpResponse.getHttpStatus() == HttpStatus.OK) {
                 httpRequestHandler.handle(httpRequest, httpResponse);

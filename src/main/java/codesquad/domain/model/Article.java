@@ -6,11 +6,13 @@ public class Article {
     private final Long authorId;
     private final String title;
     private final String content;
+    private final String imagePath;
 
-    public Article(Long authorId, String title, String content) {
+    public Article(Long authorId, String title, String content, String imagePath) {
         this.authorId = authorId;
         this.title = title;
         this.content = content;
+        this.imagePath = imagePath;
     }
 
     public Long getId() {
@@ -27,6 +29,10 @@ public class Article {
 
     public String getContent() {
         return content;
+    }
+
+    public String getImagePath() {
+        return imagePath;
     }
 
     /**
@@ -47,5 +53,5 @@ public class Article {
                 ", content='" + content + '\'' +
                 '}';
     }
-    
+
 }

@@ -9,7 +9,6 @@ import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
-import codesquad.webserver.http.HttpRequestBody;
 import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.HttpStatus;
@@ -118,9 +117,8 @@ class SessionAuthFilterTest {
         HttpPath httpPath = createHttpPath(requestUri, queryString);
         HttpRequestLine httpRequestLine = createHttpRequestLine(httpMethod, httpPath);
         HttpHeaders httpHeaders = HttpHeaders.of(headers);
-        HttpRequestBody httpRequestBody = HttpRequestBody.ofEmpty();
 
-        return new HttpRequest(httpRequestLine, httpHeaders, httpRequestBody);
+        return new HttpRequest(httpRequestLine, httpHeaders, new byte[0]);
     }
 
     private HttpPath createHttpPath(String requestUri, Map<String, String> queryString) {

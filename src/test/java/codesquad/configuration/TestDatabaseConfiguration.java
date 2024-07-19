@@ -23,7 +23,7 @@ public class TestDatabaseConfiguration {
         try (Connection connection = databaseConnector.getConnection();
              Statement statement = connection.createStatement();
              BufferedReader reader = new BufferedReader(new InputStreamReader(
-                     TestDatabaseConfiguration.class.getResourceAsStream("/ddl.sql")))) {
+                     TestDatabaseConfiguration.class.getResourceAsStream("/schema.sql")))) {
 
             StringBuilder sql = new StringBuilder();
             String line;

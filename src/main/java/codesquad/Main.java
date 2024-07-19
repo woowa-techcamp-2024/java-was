@@ -1,6 +1,7 @@
 package codesquad;
 
 import codesquad.configuration.Container;
+import codesquad.configuration.DDLGenerator;
 import codesquad.configuration.DatabaseConfiguration;
 import codesquad.configuration.HandlerConfiguration;
 import codesquad.domain.ArticleStorage;
@@ -17,6 +18,8 @@ public class Main {
     public static void main(String[] args) {
 
         DatabaseConnector databaseConnector = DatabaseConfiguration.connectorConfig();
+        DDLGenerator ddlGenerator = new DDLGenerator(databaseConnector);
+        ddlGenerator.initializeDatabase();
 
         UserStorage userStorage = new UserDao(databaseConnector);
         SessionStorage sessionStorage = SessionStorage.getInstance();

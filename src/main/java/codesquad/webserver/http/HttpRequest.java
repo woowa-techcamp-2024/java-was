@@ -1,6 +1,8 @@
 package codesquad.webserver.http;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -8,12 +10,15 @@ public class HttpRequest {
 
     private final HttpRequestLine httpRequestLine;
     private final HttpHeaders headers;
-    private HttpRequestBody httpRequestBody;
+    private final byte[] body;
 
-    public HttpRequest(HttpRequestLine httpRequestLine, HttpHeaders headers, HttpRequestBody httpRequestBody) {
+    private Map<String, String> params = new HashMap<>();
+    private Map<String, MultiPartFormData> multiPartFormData = new HashMap<>();
+
+    public HttpRequest(HttpRequestLine httpRequestLine, HttpHeaders headers, byte[] body) {
         this.httpRequestLine = httpRequestLine;
         this.headers = headers;
-        this.httpRequestBody = httpRequestBody;
+        this.body = body;
     }
 
     public HttpVersion getVersion() {
@@ -28,6 +33,14 @@ public class HttpRequest {
         return httpRequestLine.getPath();
     }
 
+    public byte[] getBody() {
+        return body;
+    }
+
+    public MultiPartFormData getMultiPartFormData(String name) {
+        return multiPartFormData.get(name);
+    }
+
     public Map<String, String> getQueryStrings() {
         return Collections.unmodifiableMap(getPath().getQueryString());
     }
@@ -38,7 +51,7 @@ public class HttpRequest {
     }
 
     public String getBodyParamValue(String paramName) {
-        return httpRequestBody.getParamValue(paramName);
+        return params.get(paramName);
     }
 
     public Cookie getCookie() {
@@ -53,8 +66,22 @@ public class HttpRequest {
         return new Cookie(nameAndValue[0], nameAndValue[1]);
     }
 
+    public void setMultiPartFormData(Map<String, MultiPartFormData> multiPartFormData) {
+        this.multiPartFormData = multiPartFormData;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
+
     @Override
     public String toString() {
-        return httpRequestLine + "\n" + headers + "\n" + httpRequestBody;
+        return "HttpRequest{" +
+                "httpRequestLine=" + httpRequestLine +
+                ", headers=" + headers +
+                ", body=" + Arrays.toString(body) +
+                ", params=" + params +
+                ", multiPartFormData=" + multiPartFormData +
+                '}';
     }
 }

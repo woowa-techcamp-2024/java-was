@@ -55,11 +55,14 @@
         // 게시물을 표시하는 함수
         function displayPost(post) {
             const postElement = document.querySelector('.post');
+            const imageSrc = post.imagePath ? `/image?path=${encodeURIComponent(post.imagePath)}` : '';
+
             postElement.innerHTML = `
             <div class="post__account">
                 <img class="post__account__img"/>
                 <p class="post__account__nickname">${post.author}</p>
             </div>
+            ${imageSrc ? `<img class="post__img" src="${imageSrc}" alt="게시글 이미지"/>` : ''}
             <div class="post__menu">
                 <ul class="post__menu__personal">
                     <li>
@@ -81,6 +84,14 @@
             <P class="post__article">${post.content}</P>
         `;
 
+            // 이미지 로드 에러 처리
+            const postImg = postElement.querySelector('.post__img');
+            if (postImg) {
+                postImg.onerror = function () {
+                    this.style.display = 'none';
+                    console.error('이미지를 로드할 수 없습니다:', post.imagePath);
+                };
+            }
             // 댓글 표시
             displayComments(post.comments);
 
