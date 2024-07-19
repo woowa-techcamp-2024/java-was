@@ -16,27 +16,29 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import codesquad.db.csv.driver.CsvResultSet;
 import codesquad.domain.HttpStatus;
 import codesquad.error.BaseException;
 
-public class JdbcTemplate {
+public class CsvJdbcTemplate {
 
-	public static final String DB_URL = "jdbc:h2:tcp://localhost/~/codestagram";
-	public static final String USER = "sa";
-	public static final String PASS = "";
-	private static final Logger log = LoggerFactory.getLogger(JdbcTemplate.class);
+	public static final String DB_URL = "jdbc:csv:./data";
+	private static final Logger log = LoggerFactory.getLogger(CsvJdbcTemplate.class);
 
-	private JdbcTemplate() {
+	private CsvJdbcTemplate() {
 	}
 
 	public static long update(String sql, QuerySetter qs) {
-		try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		try (Connection conn = DriverManager.getConnection(DB_URL);
 			 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 			if (qs != null) {
 				qs.setValues(ps);
 			}
 			ps.executeUpdate();
 			try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+				if (generatedKeys == null) {
+					return 0;
+				}
 				if (generatedKeys.next()) {
 					return generatedKeys.getLong(1);
 				}
@@ -50,7 +52,7 @@ public class JdbcTemplate {
 
 	public static <T> List<T> execute(String sql, Class<T> clazz, QuerySetter qs) {
 		List<T> result = new ArrayList<>();
-		try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		try (Connection conn = DriverManager.getConnection(DB_URL);
 			 PreparedStatement ps = getPreparedStatement(conn, sql, qs);
 			 ResultSet rs = ps.executeQuery()) {
 			while (rs.next()) {
@@ -64,7 +66,7 @@ public class JdbcTemplate {
 	}
 
 	public static <T> T executeOne(String sql, Class<T> clazz, QuerySetter qs) {
-		try (Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+		try (Connection conn = DriverManager.getConnection(DB_URL);
 			 PreparedStatement ps = getPreparedStatement(conn, sql, qs);
 			 ResultSet rs = ps.executeQuery()) {
 			if (rs.next()) {
@@ -77,8 +79,8 @@ public class JdbcTemplate {
 		return null;
 	}
 
-	private static PreparedStatement getPreparedStatement(Connection conn, String sql, QuerySetter qs) throws
-		SQLException {
+	private static PreparedStatement getPreparedStatement(Connection conn, String sql, QuerySetter qs)
+		throws SQLException {
 		PreparedStatement ps = conn.prepareStatement(sql);
 		if (qs != null) {
 			qs.setValues(ps);
@@ -86,13 +88,13 @@ public class JdbcTemplate {
 		return ps;
 	}
 
-	private static <T> T createInstanceFromResultSet(Class<T> clazz, ResultSet rs)  {
+	private static <T> T createInstanceFromResultSet(Class<T> clazz, ResultSet rs) {
 		Constructor<?> constructor = getConstructor(clazz);
 		Object[] parameters;
 		try {
 			parameters = getClassParameters(clazz, rs);
 			return (T)constructor.newInstance(parameters);
-		} catch (SQLException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+		} catch (SQLException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
 			log.error(e.getMessage());
 			throw BaseException.serverException(e);
 		}
@@ -101,16 +103,57 @@ public class JdbcTemplate {
 	private static <T> Object[] getClassParameters(Class<T> clazz, ResultSet rs) throws SQLException {
 		Field[] fields = clazz.getDeclaredFields();
 		Object[] parameters = new Object[fields.length];
+		Class<?>[] types = null;
+		if (rs instanceof CsvResultSet) {
+			types = ((CsvResultSet)rs).getTypes();
+		}
 		for (int i = 0; i < fields.length; i++) {
 			fields[i].setAccessible(true);
 			String fieldName = fields[i].getName();
-			Object value = rs.getObject(fieldName);
-			if (value instanceof Blob blob) {
-				parameters[i] = blob.getBytes(1L, (int)blob.length());
+			if (types == null) {
+				Object value = rs.getObject(fieldName);
+				if (value instanceof Blob blob) {
+					parameters[i] = blob.getBytes(1L, (int)blob.length());
+				} else {
+					parameters[i] = value;
+				}
 			} else {
-				parameters[i] = value;
+				if (types[i] == String.class) {
+					parameters[i] = rs.getString(fieldName);
+				} else if (types[i] == byte[].class) {
+					parameters[i] = rs.getBytes(fieldName);
+				} else if (types[i] == Long.class) {
+					parameters[i] = rs.getLong(fieldName);
+				}
 			}
 		}
+		return parameters;
+	}
+
+	public static Object[] extractParameters(ResultSet rs, Field[] fields) throws SQLException {
+		Object[] parameters = new Object[fields.length];
+
+		Class<?>[] types = null;
+		if (rs instanceof CsvResultSet) {
+			types = ((CsvResultSet)rs).getTypes();
+		}
+
+		for (int i = 0; i < fields.length; i++) {
+			fields[i].setAccessible(true);
+			String fieldName = fields[i].getName();
+			if (types[i] == Blob.class) {
+				parameters[i] = rs.getBytes(2);
+			} else if (fields[i].getType() == String.class) {
+				parameters[i] = rs.getString(fieldName);
+			} else if (fields[i].getType() == Long.class) {
+				parameters[i] = rs.getLong(fieldName);
+			} else if (fields[i].getType() == Integer.class) {
+				parameters[i] = rs.getInt(fieldName);
+			} else if (fields[i].getType() == byte[].class) {
+				parameters[i] = rs.getBytes(fieldName);
+			}
+		}
+
 		return parameters;
 	}
 
