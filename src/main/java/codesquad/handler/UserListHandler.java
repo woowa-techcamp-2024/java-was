@@ -1,6 +1,6 @@
 package codesquad.handler;
 
-import codesquad.database.UserDatabase;
+import codesquad.database.UserH2Database;
 import codesquad.file.FileReader;
 import codesquad.http.HttpStatus;
 import codesquad.http.request.HttpRequest;
@@ -11,28 +11,20 @@ import java.util.List;
 
 public class UserListHandler implements Handler {
 
-    private final UserDatabase userDatabase = new UserDatabase();
+    private final UserH2Database userH2Database = new UserH2Database();
 
     @Override
-    public HttpResponse handle(HttpRequest request) throws Exception {
+    public HttpResponse handle(HttpRequest request) throws RuntimeException {
         if(request.method().equals("GET")) {
             return doGet(request);
         }
         return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
     }
 
-    @Override
-    public HttpResponse doGet(HttpRequest request) throws Exception {
+    public HttpResponse doGet(HttpRequest request) throws RuntimeException {
         byte[] content = FileReader.getContent("/user/list.html");
-        List<User> users = userDatabase.getAllUser();
-
-
-        return new HttpResponse(HttpStatus.OK, "html", replace(new String(content, "UTF-8"), users).getBytes());
-    }
-
-    @Override
-    public HttpResponse doPost(HttpRequest request) {
-        return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
+        List<User> users = userH2Database.getAllUser();
+        return new HttpResponse(HttpStatus.OK, "html", replace(new String(content), users).getBytes());
     }
 
     private String replace(String html, List<User> users){

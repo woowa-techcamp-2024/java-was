@@ -1,6 +1,7 @@
 package codesquad.http.request;
 
 import java.util.Map;
+import java.util.Optional;
 
 public record HttpRequest(String method, String path, String version, Map<String, String> headers, byte[] body) {
 
@@ -14,4 +15,9 @@ public record HttpRequest(String method, String path, String version, Map<String
         sb.append("Body: ").append(new String(body)).append("\n");
         return sb.toString();
     }
+
+    public Optional<String> getCookie() {
+        return Optional.ofNullable(headers.get("Cookie"));
+    }
+
 }

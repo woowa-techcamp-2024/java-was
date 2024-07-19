@@ -9,25 +9,18 @@ import codesquad.util.DirectoryMapper;
 public class StaticResourceHandler implements Handler {
 
     @Override
-    public HttpResponse handle(HttpRequest request) throws Exception {
+    public HttpResponse handle(HttpRequest request) throws RuntimeException {
         if(request.method().equals("GET")) {
             return doGet(request);
         }
         return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
     }
 
-    @Override
-    public HttpResponse doGet(HttpRequest request) throws Exception {
-        System.out.println("StaticResourceHandler doGet");
+    public HttpResponse doGet(HttpRequest request) throws RuntimeException {
         String mappedPath = DirectoryMapper.getStaticResourcePath(request.path());
         if (mappedPath != null) {
             return new HttpResponse(HttpStatus.OK, mappedPath, FileReader.getContent(mappedPath));
         }
         return new HttpResponse(HttpStatus.OK, request.path(), FileReader.getContent(request.path()));
-    }
-
-    @Override
-    public HttpResponse doPost(HttpRequest request) {
-        return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
     }
 }

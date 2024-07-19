@@ -13,22 +13,27 @@ import java.util.Optional;
 public class Authenticator {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private final SessionDatabase sessionDatabase = new SessionDatabase();
-    private final static List<String> AUTH_REQUIRED_PATHS = List.of("/user/list", "/user/logout");
+    private final static SessionDatabase sessionDatabase = new SessionDatabase();
+    private final static List<String> AUTH_REQUIRED_PATHS = List.of("/user/list", "/user/list.html", "/user/logout", "/write", "/write-tmp.html");
 
-    public boolean auth(HttpRequest request) {
+    private Authenticator(){
+    }
 
+    public static boolean auth(HttpRequest request) {
+        if(AUTH_REQUIRED_PATHS.stream().noneMatch(path -> path.equals(request.path()))) return true;
+        return isLogin(request);
+    }
+
+    public static boolean isLogin(HttpRequest request) {
         String sid = getSid(request.headers());
         if(sid != null) {
-            Optional<User> user = sessionDatabase.findUserBySessionId(getSid(request.headers()));
-            if(AUTH_REQUIRED_PATHS.stream().noneMatch(path -> path.equals(request.path()))) return true;
+            Optional<User> user = sessionDatabase.findUserBySessionId(sid);
             return user.isPresent();
-//            user.ifPresent(value -> log.info("로그인한 사용자 {}", value));
         }
         return false;
     }
 
-    private String getSid(Map<String, String> headers) {
+    public static String getSid(Map<String, String> headers) {
         if(headers.get("Cookie") == null)
             return null;
         return headers.get("Cookie").split("=")[1];

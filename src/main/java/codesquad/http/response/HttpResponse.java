@@ -15,10 +15,10 @@ public class HttpResponse {
     private final String HTTP_VERSION = "HTTP/1.1";
     private HttpStatus httpStatus;
     private final Map<String, String> headers = new HashMap<>();
-    private byte[] body;
+    private byte[] body = new byte[0];
 
-    public HttpResponse(HttpStatus httpstatus, String filePath, byte[] body) {
-        setMessageHeader(httpstatus, filePath, body.length);
+    public HttpResponse(HttpStatus httpstatus, String contentType, byte[] body) {
+        setMessageHeader(httpstatus, contentType, body.length);
         setMessageBody(body);
     }
 
@@ -60,10 +60,10 @@ public class HttpResponse {
         headers.put(key, value);
     }
 
-    private void setMessageHeader(HttpStatus httpStatus, String filePath, int contentLength) {
+    private void setMessageHeader(HttpStatus httpStatus, String type, int contentLength) {
 
         this.httpStatus = httpStatus;
-        String contentType = ContentTypeMapper.getContentTypeFromPath(filePath);
+        String contentType = ContentTypeMapper.getContentTypeFromPath(type);
 
         headers.put("Content-Type", contentType);
         headers.put("Content-Length", String.valueOf(contentLength));
@@ -78,8 +78,8 @@ public class HttpResponse {
         this.headers.put("Location", url);
     }
 
-    public static HttpResponse internalServerError() {
-        return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, "text", new byte[0]);
+    public static HttpResponse notFound() {
+        return new HttpResponse(HttpStatus.NOT_FOUND, "text", new byte[0]);
     }
 
     @Override

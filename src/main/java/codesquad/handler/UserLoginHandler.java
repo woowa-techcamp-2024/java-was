@@ -1,11 +1,11 @@
 package codesquad.handler;
 
 import codesquad.database.SessionDatabase;
+import codesquad.database.UserH2Database;
 import codesquad.file.FileReader;
 import codesquad.http.HttpStatus;
 import codesquad.http.request.HttpRequest;
 import codesquad.http.response.HttpResponse;
-import codesquad.database.UserDatabase;
 import codesquad.util.DirectoryMapper;
 
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public class UserLoginHandler implements Handler {
 
-    private final UserDatabase userDatabase = new UserDatabase();
+    private final UserH2Database userH2Database = new UserH2Database();
     private final SessionDatabase sessionDatabase = new SessionDatabase();
     private final String LOGIN_FAILED_URL = "/user/login_failed.html";
 
@@ -22,7 +22,7 @@ public class UserLoginHandler implements Handler {
     }
 
     @Override
-    public HttpResponse handle(HttpRequest request) throws Exception {
+    public HttpResponse handle(HttpRequest request) throws RuntimeException {
         if (request.method().equals("POST")) {
             return doPost(request);
         } else if (request.method().equals("GET")) {
@@ -31,8 +31,7 @@ public class UserLoginHandler implements Handler {
         return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
     }
 
-    @Override
-    public HttpResponse doGet(HttpRequest request) throws Exception {
+    public HttpResponse doGet(HttpRequest request) throws RuntimeException {
         String mappedPath = DirectoryMapper.getStaticResourcePath(request.path());
         if (mappedPath != null) {
             return new HttpResponse(HttpStatus.OK, mappedPath, FileReader.getContent(mappedPath));
@@ -42,7 +41,6 @@ public class UserLoginHandler implements Handler {
         return new HttpResponse(HttpStatus.OK, request.path(), FileReader.getContent(request.path()));
     }
 
-    @Override
     public HttpResponse doPost(HttpRequest request) {
         Map<String, String> stringMap = parseUserInfo(new String(request.body()));
         String userId = stringMap.get("userId");
@@ -51,7 +49,7 @@ public class UserLoginHandler implements Handler {
         if(userId == null || password == null)
             return new HttpResponse(HttpStatus.BAD_REQUEST, "text", "".getBytes());
 
-        return userDatabase.findUserById(userId)
+        return userH2Database.findUserById(userId)
                 .filter(user -> user.getPassword().equals(password))
                 .map(user -> {
                     HttpResponse response = new HttpResponse("/");
@@ -78,7 +76,7 @@ public class UserLoginHandler implements Handler {
         return userInfo;
     }
 
-    public void setCookie(HttpResponse response, String uuid) {
+    private void setCookie(HttpResponse response, String uuid) {
         response.addHeader("Set-Cookie", "sid=" + uuid + "; Path=/");
     }
 

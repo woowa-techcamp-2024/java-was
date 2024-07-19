@@ -12,7 +12,7 @@ public class UserDatabase {
 
     public UserDatabase() {
         for(int i = 0; i < 5; i++) {
-            users.put("user" + i, new User("user" + i, "password" + i, "name" + i));
+            users.put("user" + i, new User(i, "user" + i, "password" + i, "name" + i));
         }
     }
 

@@ -5,8 +5,7 @@ import codesquad.http.response.HttpResponse;
 
 public interface Handler {
 
-    HttpResponse handle(HttpRequest request) throws Exception;
-    HttpResponse doGet(HttpRequest request) throws Exception;
-    HttpResponse doPost(HttpRequest request) throws Exception;
+
+    HttpResponse handle(HttpRequest request) throws RuntimeException;
 
 }

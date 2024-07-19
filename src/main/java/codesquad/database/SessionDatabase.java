@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionDatabase {
 
-    private final static ConcurrentHashMap<String, User> sessions = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, User> sessions = new ConcurrentHashMap<>();
 
     public void addSession(String sessionId, User user) {
         sessions.put(sessionId, user);

@@ -13,12 +13,19 @@
         <a href="/"><img src="./img/signiture.svg" /></a>
         <ul class="header__menu">
           <li class="header__menu__item">
-            <a class="btn btn_contained btn_size_s" href="/login">로그인</a>
+            <a class="btn btn_ghost btn_size_s" href="/user/list">유저 목록</a>
           </li>
           <li class="header__menu__item">
-            <a class="btn btn_ghost btn_size_s" href="/registration">
-              회원 가입
+            <a class="btn btn_ghost btn_size_s" href="/write">
+              글쓰기
             </a>
+          </li>
+          <li class="header__menu__item">
+            <a class="btn btn_ghost btn_size_s">{{username}}</a>
+
+          </li>
+          <li class="header__menu__item">
+            <a class="btn btn_contained btn_size_s" href="/user/logout">로그아웃</a>
           </li>
         </ul>
       </header>
@@ -26,7 +33,17 @@
         {{body}}
 
 <!--        <ul class="comment">-->
-<!-- -->
+<!--          <li class="comment__item">-->
+<!--            <div class="comment__item__user">-->
+<!--              <img class="comment__item__user__img" />-->
+<!--              <p class="comment__item__user__nickname">account</p>-->
+<!--            </div>-->
+<!--            <p class="comment__item__article">-->
+<!--              군인 또는 군무원이 아닌 국민은 대한민국의 영역안에서는 중대한-->
+<!--              군사상 기밀·초병·초소·유독음식물공급·포로·군용물에 관한 죄중-->
+<!--              법률이 정한 경우와 비상계엄이 선포된 경우를 제외하고는 군사법원의-->
+<!--              재판을 받지 아니한다.-->
+<!--            </p>-->
 <!--          </li>-->
 <!--          <li class="comment__item">-->
 <!--            <div class="comment__item__user">-->

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./reset.css" rel="stylesheet" />
+    <link href="./global.css" rel="stylesheet" />
+    <link href="./main.css" rel="stylesheet" />
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="./img/signiture.svg" /></a>
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/user/list">유저 목록</a>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s" href="/write">
+                    글쓰기
+                </a>
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_ghost btn_size_s">{{username}}</a>
+
+            </li>
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/user/logout">로그아웃</a>
+            </li>
+        </ul>
+    </header>
+    <form action="/write" method="post">
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea id="content" name="content" rows="10" required class="textfield textfield_size_m"></textarea>
+        </div>
+        <button type="submit" class="btn btn_contained btn_size_m">Submit</button>
+    </form>
+</div>
+</body>
+</html>

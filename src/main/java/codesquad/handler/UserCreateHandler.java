@@ -1,10 +1,10 @@
 package codesquad.handler;
 
+import codesquad.database.UserH2Database;
 import codesquad.http.HttpStatus;
 import codesquad.http.request.HttpRequest;
 import codesquad.http.response.HttpResponse;
 import codesquad.model.User;
-import codesquad.database.UserDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 public class UserCreateHandler implements Handler {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private final UserDatabase userDatabase = new UserDatabase();
+    private final UserH2Database h2Database = new UserH2Database();
 
     public UserCreateHandler() {
     }
@@ -28,12 +28,6 @@ public class UserCreateHandler implements Handler {
         return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
     }
 
-    @Override
-    public HttpResponse doGet(HttpRequest request) {
-        return new HttpResponse(HttpStatus.METHOD_NOT_ALLOWED, "text", new byte[0]);
-    }
-
-    @Override
     public HttpResponse doPost(HttpRequest request) {
         User user;
         try {
@@ -46,7 +40,7 @@ public class UserCreateHandler implements Handler {
             return new HttpResponse(HttpStatus.BAD_REQUEST, "text", "".getBytes());
         }
 
-        userDatabase.addUser(user);
+        h2Database.addUser(user);
         log.info(user.toString());
         return new HttpResponse("/");
     }
