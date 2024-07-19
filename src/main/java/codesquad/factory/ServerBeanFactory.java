@@ -2,11 +2,14 @@ package codesquad.factory;
 
 import codesquad.ServerConfiguration;
 import codesquad.board.BoardDao;
+import codesquad.board.CsvBoardDao;
 import codesquad.board.H2BoardDao;
 import codesquad.comment.CommentDao;
+import codesquad.comment.CsvCommentDao;
 import codesquad.comment.H2CommentDao;
 import codesquad.requesthandler.UploadImageHandler;
 import codesquad.router.*;
+import codesquad.user.CsvUserDao;
 import codesquad.user.H2UserDao;
 import codesquad.user.MemoryUserDao;
 import codesquad.user.UserDao;
@@ -15,6 +18,7 @@ import codesquad.filter.ThreadLocalContextManager;
 import codesquad.requesthandler.IndexPageHandler;
 import codesquad.requesthandler.StaticResourceHandler;
 import codesquad.template.TemplateLoader;
+import csv.CsvJdbcDriver;
 import org.h2.jdbcx.JdbcConnectionPool;
 import server.Server;
 import server.config.Configuration;
@@ -54,7 +58,11 @@ public class ServerBeanFactory {
     }
 
     public UserDao userDao() {
-        return getOrComputeBean(UserDao.class, () -> new H2UserDao(h2connectionPool()));
+        return getOrComputeBean(UserDao.class, () -> new CsvUserDao(csvJdbcDriver(), dir()));
+    }
+
+    public CsvJdbcDriver csvJdbcDriver() {
+        return getOrComputeBean(CsvJdbcDriver.class, CsvJdbcDriver::new);
     }
 
     private JdbcConnectionPool h2connectionPool() {
@@ -73,8 +81,12 @@ public class ServerBeanFactory {
         return getOrComputeBean(TemplateRouter.class, () -> (TemplateRouter) new TemplateRouter(templateLoader(), sessionManager(), userDao(), boardDao(), commentDao()).init());
     }
 
-    private CommentDao commentDao() {
-        return getOrComputeBean(CommentDao.class, () -> new H2CommentDao(h2connectionPool()));
+    public CommentDao commentDao() {
+        return getOrComputeBean(CommentDao.class, () -> new CsvCommentDao(csvJdbcDriver(), dir()));
+    }
+
+    protected String dir() {
+        return "/main";
     }
 
     public TemplateLoader templateLoader() {
@@ -94,7 +106,7 @@ public class ServerBeanFactory {
     }
 
     public BoardDao boardDao() {
-        return getOrComputeBean(BoardDao.class, () -> new H2BoardDao(h2connectionPool()));
+        return getOrComputeBean(BoardDao.class, () -> new CsvBoardDao(csvJdbcDriver(), dir()));
     }
 
     public CommentRouter commentRouter() {

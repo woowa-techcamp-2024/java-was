@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -71,7 +72,7 @@ abstract class UserDaoTest {
     @Test
     void findByUserId() {
         // given
-        String userId = "luizyToBeFound";
+        String userId = UUID.randomUUID().toString();
         User user = new User(userId, "luizy", "1234");
         User savedUser = userDao.save(user);
 
@@ -85,6 +86,7 @@ abstract class UserDaoTest {
     @Test
     void findAll() {
         // given
+        int size = userDao.findAll().size();
         User user1 = new User("luizy1", "luizy1", "1234");
         User user2 = new User("luizy2", "luizy2", "1234");
         User user3 = new User("luizy3", "luizy3", "1234");
@@ -95,7 +97,15 @@ abstract class UserDaoTest {
         // when
         List<User> users = userDao.findAll();
 
+        for (User user : users) {
+            System.out.println(user.getId());
+            System.out.println(user.getUserId());
+            System.out.println(user.getNickname());
+            System.out.println(user.getPassword());
+            System.out.println();
+        }
+
         // then
-        assertEquals(3, users.size());
+        assertEquals(size + 3, users.size());
     }
 }
