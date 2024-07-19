@@ -1,7 +1,8 @@
 package codesquad.http;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public final class HttpRequestReader {
 
@@ -17,24 +18,49 @@ public final class HttpRequestReader {
         return instance;
     }
 
-    public String read(BufferedReader reader) throws IOException {
-        StringBuilder request = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null && !line.isEmpty()) {
-            request.append(line)
-                    .append("\r\n");
+    public String readHeader(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream headerOutputStream = new ByteArrayOutputStream();
+
+        int consecutiveNewlines = 0;
+        int previousByte = -1;
+        int currentByte;
+
+        while ((currentByte = inputStream.read()) != -1) {
+            headerOutputStream.write(currentByte);
+
+            if (currentByte == '\n') {
+                if (previousByte == '\r') {
+                    consecutiveNewlines++;
+                    if (consecutiveNewlines == 2) {
+                        break;
+                    }
+                } else {
+                    consecutiveNewlines = 0;
+                }
+            } else if (currentByte != '\r') {
+                consecutiveNewlines = 0;
+            }
+            previousByte = currentByte;
         }
-        return request.toString();
+
+        if (consecutiveNewlines != 2) {
+            String string = headerOutputStream.toString();
+            System.out.println("string = " + string);
+            throw new IOException("Header not properly terminated");
+        }
+        return headerOutputStream.toString();
     }
 
-    public String readBody(BufferedReader reader, int contentLength) throws IOException {
-        StringBuilder requestBody = new StringBuilder();
-        if (contentLength > 0) {
-            char[] body = new char[contentLength];
-            reader.read(body);
-            requestBody.append(new String(body));
+    public byte[] readBody(InputStream inputStream, int contentLength) throws IOException {
+        byte[] body = new byte[contentLength];
+        int bytesRead = 0;
+        while (bytesRead < contentLength) {
+            int read = inputStream.read(body, bytesRead, contentLength - bytesRead);
+            if (read == -1) {
+                throw new IOException("Unexpected end of stream while reading body");
+            }
+            bytesRead += read;
         }
-        return requestBody.toString();
+        return body;
     }
-
 }

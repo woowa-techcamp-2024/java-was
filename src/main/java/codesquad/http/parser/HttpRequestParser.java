@@ -7,7 +7,7 @@ import codesquad.http.QueryParameters;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class HttpRequestParser implements Parser<HttpRequest> {
+public final class HttpRequestParser {
 
     private static HttpRequestParser instance;
 
@@ -26,7 +26,6 @@ public final class HttpRequestParser implements Parser<HttpRequest> {
         return instance;
     }
 
-    @Override
     public HttpRequest parse(String requestText) {
         // TODO 예외 처리 + optional whitespace 처리
         if (requestText == null || requestText.isEmpty()) {
@@ -52,5 +51,4 @@ public final class HttpRequestParser implements Parser<HttpRequest> {
         }
         return new HttpRequest(uri, method, httpVersion, queryParameters, httpHeaders, null);
     }
-
 }

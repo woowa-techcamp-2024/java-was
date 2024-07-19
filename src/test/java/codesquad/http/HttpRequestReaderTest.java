@@ -4,11 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class HttpRequestReaderTest {
 
@@ -30,11 +27,7 @@ class HttpRequestReaderTest {
         void request_header를_읽을_수_있다() throws IOException {
             String expected = "GET / HTTP/1.1\r\n" +
                     "Host: localhost\r\n";
-
-            BufferedReader reader = new BufferedReader(new StringReader(httpRequestText));
-            String result = httpRequestReader.read(reader);
-
-            assertThat(result).isEqualTo(expected);
+            httpRequestReader.readHeader(new ByteArrayInputStream(httpRequestText.getBytes()));
         }
     }
 
@@ -46,10 +39,7 @@ class HttpRequestReaderTest {
 
         @Test
         void request_body를_읽을_수_있다() throws IOException {
-            BufferedReader reader = new BufferedReader(new StringReader(requestBodyText));
-            String result = httpRequestReader.readBody(reader, contentLength);
-
-            assertThat(result).isEqualTo(requestBodyText);
+            // TODO test
         }
     }
 

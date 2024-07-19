@@ -8,8 +8,11 @@ import java.sql.Statement;
 public final class DatabaseInitializer {
 
     public static void initialize() {
-        H2Config h2Config = H2Config.standard();
-        try (Connection connection = DriverManager.getConnection(h2Config.jdbcUrl(), h2Config.username(), h2Config.password());
+        String url = H2Properties.getUrl();
+        String username = H2Properties.getUsername();
+        String password = H2Properties.getPassword();
+
+        try (Connection connection = DriverManager.getConnection(url, username, password);
              Statement statement = connection.createStatement()) {
             statement.executeUpdate(H2Constants.CREATE_USER_TABLE);
             statement.executeUpdate(H2Constants.CREATE_ARTICLE_TABLE);

@@ -1,6 +1,6 @@
 package codesquad.http;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 
 import java.util.Arrays;
 
@@ -13,12 +13,15 @@ public enum MediaType {
 
     IMAGE_SVG("image/svg+xml", "svg"),
     IMAGE_PNG("image/png", "png"),
-    IMAGE_JPEG("image/jpeg", "jpg"),
+    IMAGE_JPEG("image/jpeg", "jpg,jpeg"),
+    IMAGE_GIF("image/gif", "gif"),
     IMAGE_ICON("image/vnd.microsoft.icon", "ico"),
 
     APPLICATION_JSON("application/json", "json"),
     APPLICATION_XML("application/xml", "xml"),
-    APPLICATION_FORM_URLENCODED("application/x-www-form-urlencoded", "form");
+    APPLICATION_FORM_URLENCODED("application/x-www-form-urlencoded", "form"),
+
+    MULTIPART_FORM_DATA("multipart/form-data", "");
 
     private final String value;
     private final String fileExtension;
@@ -34,9 +37,8 @@ public enum MediaType {
 
     public static MediaType find(String extension) {
         return Arrays.stream(values())
-                .filter(type -> type.fileExtension.equals(extension))
+                .filter(type -> type.fileExtension.contains(extension))
                 .findFirst()
-                .orElseThrow(() -> new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] 지원하지 않는 파일 형식입니다."));
+                .orElseThrow(() -> new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] 지원하지 않는 파일 형식입니다."));
     }
-
 }

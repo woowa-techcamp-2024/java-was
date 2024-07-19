@@ -1,6 +1,7 @@
 package codesquad.http;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ public class HttpRequest {
     private final QueryParameters parameters;
     private final HttpHeaders headers;
     private String body;
+    private Map<String, Object> multipart;
 
     public HttpRequest(String uri, String method, String httpVersion, QueryParameters parameters, HttpHeaders headers, String body) {
         this.uri = uri;
@@ -43,7 +45,7 @@ public class HttpRequest {
     }
 
     public Optional<String> body() {
-        return this.body == null || this.body.isEmpty() ? Optional.empty() : Optional.of(this.body);
+        return Optional.ofNullable(this.body);
     }
 
     public Optional<String> firstParameterValue(String parameterName) {
@@ -60,6 +62,14 @@ public class HttpRequest {
 
     public String getCookie(String cookieName) {
         return headers.getCookie(cookieName);
+    }
+
+    public void setMultipart(Map<String, Object> parts) {
+        this.multipart = parts;
+    }
+
+    public Optional<Map<String, Object>> getMultipart() {
+        return Optional.ofNullable(multipart);
     }
 
     @Override

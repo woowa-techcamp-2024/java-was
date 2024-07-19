@@ -1,9 +1,8 @@
 package codesquad.handler;
 
 import codesquad.database.ArticleRepository;
-import codesquad.database.H2Config;
 import codesquad.database.UserRepository;
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
@@ -13,6 +12,7 @@ import codesquad.http.session.SessionContextHolder;
 import codesquad.model.Article;
 import codesquad.model.User;
 import codesquad.resource.DirectoryIndexResolver;
+import codesquad.resource.ImageReader;
 import codesquad.resource.Resource;
 import codesquad.resource.transform.HtmlTransformer;
 
@@ -25,7 +25,7 @@ public class DynamicResourceHandler extends RequestHandler {
 
     private final DirectoryIndexResolver directoryIndexResolver = DirectoryIndexResolver.getInstance();
     private final ArticleRepository articleRepository = ArticleRepository.getInstance();
-    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
+    private final UserRepository userRepository = UserRepository.getInstance();
 
     private DynamicResourceHandler() {
     }
@@ -41,7 +41,11 @@ public class DynamicResourceHandler extends RequestHandler {
     protected HttpResponse handleGet(HttpRequest httpRequest) {
         String uri = httpRequest.uri();
         Resource resource = directoryIndexResolver.resolve(uri)
-                .orElseThrow(() -> new HttpStatusException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다."));
+                .orElseGet(() -> ImageReader.read(uri));
+        if (Objects.isNull(resource)) {
+            throw new HttpRequestException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다.");
+        }
+
         if (!resource.getExtension().equals("html")) {
             return responseGenerator.sendOK(resource.getContent(), MediaType.find(resource.getExtension()), httpRequest);
         }

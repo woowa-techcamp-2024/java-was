@@ -14,6 +14,7 @@ public abstract class H2Constants {
             CREATE TABLE IF NOT EXISTS `article` (
             id BIGINT PRIMARY KEY AUTO_INCREMENT,
             content TEXT NOT NULL,
+            imageName VARCHAR(255) NOT NULL,
             userId BIGINT NOT NULL
             );
             """;

@@ -1,6 +1,6 @@
 package codesquad.http;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.parser.HttpHeadersParser;
 import codesquad.http.parser.ParsersFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +34,7 @@ class HttpHeadersParserTest {
             @Test
             void 예외가_발생한다() {
                 assertThatThrownBy(() -> headersParser.parse(emptyHeaders))
-                        .isInstanceOf(HttpStatusException.class)
+                        .isInstanceOf(HttpRequestException.class)
                         .hasMessageContaining("[ERROR] HTTP header의 내용이 없습니다.");
             }
         }
@@ -47,7 +47,7 @@ class HttpHeadersParserTest {
             @Test
             void 예외가_발생한다() {
                 assertThatThrownBy(() -> headersParser.parse(nullHeaders))
-                        .isInstanceOf(HttpStatusException.class)
+                        .isInstanceOf(HttpRequestException.class)
                         .hasMessageContaining("[ERROR] HTTP header의 내용이 없습니다.");
             }
         }

@@ -62,5 +62,4 @@ public class Resource {
                 ", type=" + type +
                 '}';
     }
-
 }

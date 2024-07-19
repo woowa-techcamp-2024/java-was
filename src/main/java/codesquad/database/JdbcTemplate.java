@@ -1,6 +1,8 @@
 package codesquad.database;
 
 import org.h2.jdbcx.JdbcConnectionPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,13 +19,16 @@ public final class JdbcTemplate {
 
     private final DataSource dataSource;
 
-    private JdbcTemplate(H2Config h2Config) {
-        dataSource = JdbcConnectionPool.create(h2Config.jdbcUrl(), h2Config.username(), h2Config.password());
+    private JdbcTemplate() {
+        String url = H2Properties.getUrl();
+        String username = H2Properties.getUsername();
+        String password = H2Properties.getPassword();
+        dataSource = JdbcConnectionPool.create(url, username, password);
     }
 
-    public static JdbcTemplate getInstance(H2Config h2Config) {
+    public static JdbcTemplate getInstance() {
         if (instance == null) {
-            instance = new JdbcTemplate(h2Config);
+            instance = new JdbcTemplate();
         }
         return instance;
     }

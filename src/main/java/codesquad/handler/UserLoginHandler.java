@@ -1,6 +1,5 @@
 package codesquad.handler;
 
-import codesquad.database.H2Config;
 import codesquad.database.UserRepository;
 import codesquad.handler.dto.LoginRequest;
 import codesquad.http.HttpCookies;
@@ -16,7 +15,7 @@ public final class UserLoginHandler extends RequestHandler {
     private static UserLoginHandler instance;
 
     private final ObjectMapper objectMapper = ObjectMapper.getInstance();
-    private final UserRepository userRepository = UserRepository.getInstance(H2Config.standard());
+    private final UserRepository userRepository = UserRepository.getInstance();
     private final SessionManager sessionManager = SessionManager.getInstance();
 
     private UserLoginHandler() {

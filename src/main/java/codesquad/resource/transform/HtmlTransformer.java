@@ -9,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Objects;
 
 public class HtmlTransformer {
 
@@ -69,7 +70,10 @@ public class HtmlTransformer {
         for (int i = 0; i < articles.size(); i++) {
             Article article = articles.get(i);
             User user = users.get(i);
-            String formatted = String.format(content, user.getNickname(), article.getId(), article.getContent());
+            if (Objects.isNull(user)) {
+                continue;
+            }
+            String formatted = String.format(content, user.getNickname(), article.getImageName(), article.getId(), article.getContent());
             articlesComponent.append(formatted);
         }
         return String.format(originHtml, articlesComponent);

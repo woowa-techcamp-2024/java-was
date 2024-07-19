@@ -1,6 +1,6 @@
 package codesquad.handler;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.QueryParameters;
 import codesquad.http.StatusCode;
 import codesquad.http.parser.ParsersFactory;
@@ -53,7 +53,7 @@ public final class ObjectMapper {
             log.error(e.getMessage(), e);
         }
 
-        throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] Query String을 읽는 중 오류가 발생했습니다.");
+        throw new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] Query String을 읽는 중 오류가 발생했습니다.");
     }
 
     private Object findArgument(RecordComponent recordComponent, QueryParameters parameters) {
@@ -61,7 +61,7 @@ public final class ObjectMapper {
         Class<?> componentType = recordComponent.getType();
 
         String value = parameters.getFirstValue(componentName)
-                .orElseThrow(() -> new HttpStatusException(StatusCode.BAD_REQUEST,
+                .orElseThrow(() -> new HttpRequestException(StatusCode.BAD_REQUEST,
                         String.format("[ERROR] %s 필드의 값이 없습니다.", componentName)));
         return convert(value, componentType);
     }

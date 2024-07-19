@@ -1,12 +1,12 @@
 package codesquad.http.parser;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.HttpHeaders;
 import codesquad.http.StatusCode;
 
 import java.util.Arrays;
 
-public final class HttpHeadersParser implements Parser<HttpHeaders> {
+public final class HttpHeadersParser {
 
     private static HttpHeadersParser instance;
 
@@ -20,10 +20,9 @@ public final class HttpHeadersParser implements Parser<HttpHeaders> {
         return instance;
     }
 
-    @Override
     public HttpHeaders parse(String headersText) {
         if (headersText == null || headersText.isEmpty()) {
-            throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] HTTP header의 내용이 없습니다.");
+            throw new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] HTTP header의 내용이 없습니다.");
         }
 
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -33,5 +32,4 @@ public final class HttpHeadersParser implements Parser<HttpHeaders> {
                 .forEach(httpHeaders::putHeader);
         return httpHeaders;
     }
-
 }

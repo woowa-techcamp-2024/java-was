@@ -1,26 +1,28 @@
 package codesquad;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.handler.HandlersMapper;
 import codesquad.handler.RequestHandler;
 import codesquad.http.HttpHeaders;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpRequestReader;
 import codesquad.http.HttpResponse;
+import codesquad.http.MediaType;
 import codesquad.http.ResponseWriter;
 import codesquad.http.StatusCode;
 import codesquad.http.parser.HttpRequestParser;
+import codesquad.http.parser.MultipartParser;
 import codesquad.http.parser.ParsersFactory;
 import codesquad.http.session.SessionContextFactory;
 import codesquad.http.session.SessionContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Map;
 
 public class HttpRequestProcessor implements Runnable {
 
@@ -43,17 +45,16 @@ public class HttpRequestProcessor implements Runnable {
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String requestText = requestReader.read(reader);
-            HttpRequest httpRequest = requestParser.parse(requestText);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream)) {
+            String requestHeader = requestReader.readHeader(bufferedInputStream);
+            HttpRequest httpRequest = requestParser.parse(requestHeader);
             if (httpRequest == null) {
                 return;
             }
 
             if (!httpRequest.method().equals("GET")) {
-                extractRequestBody(httpRequest, reader);
+                extractRequestBody(httpRequest, bufferedInputStream);
             }
-            log.info("httpRequest = {}", httpRequest);
 
             sessionContextFactory.createSessionContext(httpRequest);
             RequestHandler requestHandler = handlersMapper.getRequestHandler(httpRequest);
@@ -66,11 +67,18 @@ public class HttpRequestProcessor implements Runnable {
         }
     }
 
-    private void extractRequestBody(HttpRequest httpRequest, BufferedReader reader) throws IOException {
+    private void extractRequestBody(HttpRequest httpRequest, InputStream inputStream) throws IOException {
         String headerValue = httpRequest.firstHeaderValue(HttpHeaders.CONTENT_LENGTH)
-                .orElseThrow(() -> new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] Content-Length가 누락되었습니다."));
+                .orElseThrow(() -> new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] Content-Length가 누락되었습니다."));
         int contentLength = Integer.parseInt(headerValue);
-        String requestBody = requestReader.readBody(reader, contentLength);
-        httpRequest.setBody(requestBody);
+        String contentType = httpRequest.firstHeaderValue(HttpHeaders.CONTENT_TYPE)
+                .orElseThrow(() -> new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] Content-Type이 누락되었습니다."));
+        byte[] requestBody = requestReader.readBody(inputStream, contentLength);
+        if (contentType.startsWith(MediaType.MULTIPART_FORM_DATA.getValue())) {
+            Map<String, Object> parts = MultipartParser.parse(requestBody, contentType);
+            httpRequest.setMultipart(parts);
+        } else {
+            httpRequest.setBody(new String(requestBody));
+        }
     }
 }

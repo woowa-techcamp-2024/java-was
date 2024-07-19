@@ -3,14 +3,10 @@ package codesquad.http.session;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SessionManagerTest {
-
-    private final Logger log = LoggerFactory.getLogger(SessionManagerTest.class);
 
     SessionManager sessionManager;
 

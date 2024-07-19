@@ -1,6 +1,6 @@
 package codesquad.handler;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.HttpResponseGenerator;
@@ -41,9 +41,9 @@ public abstract class RequestHandler {
     }
 
     private HttpResponse handleError(HttpRequest httpRequest, RuntimeException e) {
-        if (e instanceof HttpStatusException httpStatusException) {
-            String message = String.format("<h1>%s</h1><p>%s</p>", httpStatusException.getStatusMessage(), e.getMessage());
-            return responseGenerator.sendError(httpRequest, httpStatusException.statusCode(), message);
+        if (e instanceof HttpRequestException httpRequestException) {
+            String message = String.format("<h1>%s</h1><p>%s</p>", httpRequestException.getStatusMessage(), e.getMessage());
+            return responseGenerator.sendError(httpRequest, httpRequestException.statusCode(), message);
         }
         return responseGenerator.sendInternalServerError(httpRequest);
     }

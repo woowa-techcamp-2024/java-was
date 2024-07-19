@@ -1,19 +1,22 @@
 package codesquad.handler;
 
 import codesquad.database.ArticleRepository;
-import codesquad.error.HttpStatusException;
-import codesquad.handler.dto.WriteArticleRequest;
+import codesquad.error.HttpRequestException;
 import codesquad.http.HttpRequest;
 import codesquad.http.HttpResponse;
 import codesquad.http.MediaType;
+import codesquad.http.MultipartFile;
 import codesquad.http.StatusCode;
 import codesquad.http.session.SessionContext;
 import codesquad.http.session.SessionContextHolder;
 import codesquad.model.Article;
 import codesquad.model.User;
 import codesquad.resource.DirectoryIndexResolver;
+import codesquad.resource.ImageWriter;
 import codesquad.resource.Resource;
 import codesquad.resource.transform.HtmlTransformer;
+
+import java.util.Map;
 
 public class ArticleHandler extends AuthenticatedHandler {
 
@@ -37,7 +40,7 @@ public class ArticleHandler extends AuthenticatedHandler {
     protected HttpResponse handleGet(HttpRequest httpRequest) {
         String uri = httpRequest.uri();
         Resource resource = directoryIndexResolver.resolve(uri)
-                .orElseThrow(() -> new HttpStatusException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다."));
+                .orElseThrow(() -> new HttpRequestException(StatusCode.NOT_FOUND, "[ERROR] 파일을 찾을 수 없습니다."));
         String content = new String(resource.getContent());
         SessionContext context = SessionContextHolder.getContext();
         String replacedHtml = HtmlTransformer.replaceUserHeader(content, context.user());
@@ -46,19 +49,19 @@ public class ArticleHandler extends AuthenticatedHandler {
 
     @Override
     protected HttpResponse handlePost(HttpRequest httpRequest) {
-        String body = httpRequest.body()
-                .orElseThrow(() -> new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] request body가 없습니다."));
-        WriteArticleRequest writeArticleRequest = objectMapper.readQueryString(body, WriteArticleRequest.class);
-
-        String content = writeArticleRequest.content()
-                .trim();
+        Map<String, Object> multipart = httpRequest.getMultipart()
+                .orElseThrow(() -> new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] 요청 바디가 비어있습니다."));
+        String content = (String) multipart.get("content");
         if (content.isBlank()) {
-            throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] 글 내용이 비어있습니다.");
+            throw new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] 글 내용이 비어있습니다.");
         }
+        MultipartFile imageFile = (MultipartFile) multipart.get("image");
+        Resource imageResource = Resource.file(imageFile.filename(), imageFile.content());
+        String fileName = ImageWriter.write(imageResource);
 
         User user = SessionContextHolder.getContext()
                 .user();
-        Article article = new Article(content, user.getId());
+        Article article = new Article(content, fileName, user.getId());
         articleRepository.save(article);
         return responseGenerator.sendRedirect(httpRequest, "/");
     }

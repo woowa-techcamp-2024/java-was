@@ -8,7 +8,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 
-public final class QueryParametersParser implements Parser<QueryParameters> {
+public final class QueryParametersParser {
 
     private static QueryParametersParser instance;
 
@@ -24,7 +24,6 @@ public final class QueryParametersParser implements Parser<QueryParameters> {
         return instance;
     }
 
-    @Override
     public QueryParameters parse(String queryString) {
         if (queryString == null || queryString.isEmpty()) {
             return QueryParameters.empty();
@@ -51,5 +50,4 @@ public final class QueryParametersParser implements Parser<QueryParameters> {
             // TODO 400 Bad Request 처리하기
         }
     }
-
 }

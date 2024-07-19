@@ -3,6 +3,7 @@ package codesquad.database;
 import codesquad.model.User;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class UserRepository {
@@ -11,13 +12,13 @@ public final class UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private UserRepository(H2Config h2Config) {
-        jdbcTemplate = JdbcTemplate.getInstance(h2Config);
+    private UserRepository() {
+        jdbcTemplate = JdbcTemplate.getInstance();
     }
 
-    public static UserRepository getInstance(H2Config h2Config) {
+    public static UserRepository getInstance() {
         if (instance == null) {
-            instance = new UserRepository(h2Config);
+            instance = new UserRepository();
         }
         return instance;
     }
@@ -28,6 +29,10 @@ public final class UserRepository {
     }
 
     public Optional<User> findByUserId(String userId) {
+        if (Objects.isNull(userId) || userId.isEmpty()) {
+            return Optional.empty();
+        }
+
         final String sql = "SELECT * FROM `user` WHERE userId = ?";
         User user = jdbcTemplate.queryForObject(sql, User.class, userId);
         return Optional.ofNullable(user);

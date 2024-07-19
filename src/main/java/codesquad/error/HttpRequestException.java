@@ -2,7 +2,7 @@ package codesquad.error;
 
 import codesquad.http.StatusCode;
 
-public class HttpStatusException extends RuntimeException {
+public class HttpRequestException extends RuntimeException {
 
     private final StatusCode statusCode;
 
@@ -10,11 +10,11 @@ public class HttpStatusException extends RuntimeException {
         return statusCode;
     }
 
-    public HttpStatusException(StatusCode statusCode) {
+    public HttpRequestException(StatusCode statusCode) {
         this.statusCode = statusCode;
     }
 
-    public HttpStatusException(StatusCode statusCode, String message) {
+    public HttpRequestException(StatusCode statusCode, String message) {
         super(message);
         this.statusCode = statusCode;
     }

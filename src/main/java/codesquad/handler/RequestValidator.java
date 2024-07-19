@@ -1,6 +1,6 @@
 package codesquad.handler;
 
-import codesquad.error.HttpStatusException;
+import codesquad.error.HttpRequestException;
 import codesquad.http.HttpHeaders;
 import codesquad.http.HttpRequest;
 import codesquad.http.MediaType;
@@ -12,7 +12,7 @@ public class RequestValidator {
         String contentType = httpRequest.firstHeaderValue(HttpHeaders.CONTENT_TYPE)
                 .orElse("");
         if (!contentType.equals(MediaType.APPLICATION_FORM_URLENCODED.getValue())) {
-            throw new HttpStatusException(StatusCode.BAD_REQUEST, "[ERROR] request body 타입이 올바르지 않습니다.");
+            throw new HttpRequestException(StatusCode.BAD_REQUEST, "[ERROR] request body 타입이 올바르지 않습니다.");
         }
     }
 }
