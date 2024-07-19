@@ -2,15 +2,18 @@ package codesquad.database.java;
 
 import codesquad.application.dao.ArticleDao;
 import codesquad.application.domain.Article;
+import codesquad.webserver.annotation.Repository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+@Repository
 public class ArticleDatabase implements ArticleDao {
     private static final List<Article> articles = new CopyOnWriteArrayList<>();
 
     public void add(Article article) {
+        if (article == null) throw new IllegalArgumentException("Article cannot be null");
         articles.add(article);
     }
 

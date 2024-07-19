@@ -11,6 +11,7 @@ import codesquad.webserver.file.FileHttpResponseCreator;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.type.HttpMethod;
+import codesquad.webserver.http.type.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class ArticleHandler {
         final User context = AuthenticationHolder.getContext();
         if (context == null) {
             logger.debug("세션 정보가 없습니다.");
-            return HttpResponse.found("/user/login_failed.html", null);
+            return HttpResponse.found("/login/index.html", "로그인이 필요합니다.");
         }
         return FileHttpResponseCreator.create("/article/index.html");
     }
@@ -41,13 +42,17 @@ public class ArticleHandler {
     public HttpResponse writeArticle(HttpRequest request) {
         final User context = AuthenticationHolder.getContext();
         if (context == null) {
-            logger.debug("세션 정보가 없습니다.");
-            return HttpResponse.found("/user/login_failed.html", null);
+            logger.debug("세션 정보가 없습니다. (글 작성 실패)");
+            return FileHttpResponseCreator.create(HttpStatus.UNAUTHORIZED, "/user/login_failed.html");
         }
 
         final String title = request.body().get("title");
         final String content = request.body().get("content");
         final String imagePath = request.body().get("image");
+
+        if (title == null || content == null || imagePath == null) {
+            throw new IllegalArgumentException("글에 Null값이 들어올 수 없습니다. " + title + " " + content + " " + imagePath);
+        }
 
         final Article article = new Article(null, title, content, imagePath);
         articleDao.add(article);
@@ -101,7 +106,6 @@ public class ArticleHandler {
             "title", article.title(),
             "content", article.content(),
             "imagePath", article.imagePath(),
-//            "imagePath", OnlineFileManager.getRelativePath(article.imagePath()),
             "comments", commentBuilder.toString(),
             "holder", holderValue,
             "signupOrLogoutButton", buttonValue
