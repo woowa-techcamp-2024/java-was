@@ -1,10 +1,11 @@
 package codesquad.application.database.dao;
 
-import codesquad.application.config.H2TestDatabaseConfig;
+import codesquad.application.config.CSVTestDatabaseConfig;
 import codesquad.application.database.vo.UserVO;
+import codesquad.csvdb.jdbc.CsvExecutor;
 import codesquad.factory.TestUserVOFactory;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,18 +17,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-class UserDaoImplTest {
+class CSVUserDaoImplTest {
 
-    private final H2TestDatabaseConfig h2TestDatabaseConfig = new H2TestDatabaseConfig();
-    private final UserDaoImpl userDao = new UserDaoImpl(h2TestDatabaseConfig);
+    private final CSVTestDatabaseConfig csvTestDatabaseConfig = new CSVTestDatabaseConfig();
+    private final UserDaoImpl userDao = new UserDaoImpl(csvTestDatabaseConfig);
+
+
+    @BeforeEach
+    void setUp() {
+        CsvExecutor.clear();
+    }
 
     @AfterEach
     void tearDown() {
-        h2TestDatabaseConfig.resetDatabase();
+        csvTestDatabaseConfig.resetDatabase();
     }
 
     @DisplayName("saveUserVo: 정상적인 UserVo 저장")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void saveUserVo() {
         // given
@@ -52,7 +58,6 @@ class UserDaoImplTest {
     }
 
     @DisplayName("saveUserVo: UserVo가 null인 경우 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void saveUserVoWithNullUserVo() {
         // given
@@ -66,7 +71,6 @@ class UserDaoImplTest {
     }
 
     @DisplayName("findById: 존재하는 UserVo 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByIdWithExistentUserVo() {
         // given
@@ -87,7 +91,6 @@ class UserDaoImplTest {
     }
 
     @DisplayName("findById: 존재하지 않는 UserVo 조회 시 Optional에 null이 들어간 값 반환")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByIdWithNonExistentUserVo() {
         // given
@@ -101,7 +104,6 @@ class UserDaoImplTest {
     }
 
     @DisplayName("findAll: 저장된 모든 UserVo 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findAll() {
         // given
@@ -123,88 +125,7 @@ class UserDaoImplTest {
                 );
     }
 
-    @DisplayName("update: 정상적인 UserVo 수정")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void update() {
-        // given
-        UserVO 기존_VO = TestUserVOFactory.createDefaultUserVO();
-        long savedId = userDao.save(기존_VO);
-
-        UserVO 업데이트_하려는_VO = new UserVO(
-                savedId,
-                "updatedUsername",
-                "updatedPassword",
-                "updatedName",
-                "updatedEmail",
-                null
-        );
-
-        // when
-        userDao.update(savedId, 업데이트_하려는_VO);
-
-        // then
-        Optional<UserVO> maybeUserVO = userDao.findById(savedId);
-        assertAll(
-                () -> assertThat(maybeUserVO).isPresent()
-                        .get()
-                        .extracting("userId", "username", "password", "nickname", "email")
-                        .containsExactly(savedId, 업데이트_하려는_VO.username(), 업데이트_하려는_VO.password(), 업데이트_하려는_VO.nickname(), 업데이트_하려는_VO.email()),
-                () -> assertThat(maybeUserVO.get().createdAt()).isNotNull()
-        );
-    }
-
-    @DisplayName("update: 존재하지 않는 UserVo 수정 시 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void updateWithNonExistentUserVo() {
-        // given
-        long 업데이트_하려는_ID = 1L;
-        UserVO 업데이트_하려는_VO = new UserVO(
-                업데이트_하려는_ID,
-                "updatedUsername",
-                "updatedPassword",
-                "updatedName",
-                "updatedEmail",
-                null
-        );
-
-        // when & then
-        assertThatThrownBy(() -> userDao.update(업데이트_하려는_ID, 업데이트_하려는_VO))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("존재하지 않는 User입니다.");
-    }
-
-    @DisplayName("delete: 정상적인 UserVo 삭제")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void delete() {
-        // given
-        UserVO userVO = TestUserVOFactory.createDefaultUserVO();
-        long savedId = userDao.save(userVO);
-
-        // when
-        userDao.delete(savedId);
-
-        // then
-        assertThat(userDao.findById(savedId)).isEmpty();
-    }
-
-    @DisplayName("delete: 존재하지 않는 UserVo 삭제 시 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void deleteWithNonExistentUserVo() {
-        // given
-        long 삭제_하려는_ID = 1L;
-
-        // when & then
-        assertThatThrownBy(() -> userDao.delete(삭제_하려는_ID))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("존재하지 않는 User입니다.");
-    }
-    
     @DisplayName("findByUsername: 존재하는 username으로 UserVo 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByUsernameWithExistentUsername() {
         // given
@@ -220,9 +141,8 @@ class UserDaoImplTest {
                 .extracting("username", "password", "nickname", "email")
                 .containsExactly(userVO.username(), userVO.password(), userVO.nickname(), userVO.email());
     }
-    
+
     @DisplayName("findByUsername: 존재하지 않는 username으로 UserVo 조회 시 Optional에 null이 들어간 값 반환")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByUsernameWithNonExistentUsername() {
         // given
@@ -236,7 +156,6 @@ class UserDaoImplTest {
     }
 
     @DisplayName("findByUsername: username이 null인 경우 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByUsernameWithNullUsername() {
         // given

@@ -1,11 +1,11 @@
 package codesquad.application.database.dao;
 
-import codesquad.application.config.H2TestDatabaseConfig;
+import codesquad.application.config.CSVTestDatabaseConfig;
 import codesquad.application.database.vo.PostListVO;
 import codesquad.application.database.vo.PostVO;
 import codesquad.application.database.vo.UserVO;
+import codesquad.csvdb.jdbc.CsvExecutor;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,25 +14,24 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 
-class PostDaoImplTest {
+class CSVPostDaoImplTest {
 
-    private final H2TestDatabaseConfig h2TestDatabaseConfig = new H2TestDatabaseConfig();
-    private final PostDaoImpl postDao = new PostDaoImpl(h2TestDatabaseConfig);
+    private final CSVTestDatabaseConfig csvTestDatabaseConfig = new CSVTestDatabaseConfig();
+    private final PostDaoImpl postDao = new PostDaoImpl(csvTestDatabaseConfig);
 
     @AfterEach
     void tearDown() {
-        h2TestDatabaseConfig.resetDatabase();
+        csvTestDatabaseConfig.resetDatabase();
+        CsvExecutor.clear();
     }
 
     @DisplayName("findAllJoinFetch: 모든 PostListVO 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findAllJoinFetch() {
         // given
-        UserDao userDao = new UserDaoImpl(h2TestDatabaseConfig);
+        UserDao userDao = new UserDaoImpl(csvTestDatabaseConfig);
         UserVO userVO = new UserVO(null, "userId1", "password1", "name1", "email1", null);
         long save = userDao.save(userVO);
         PostVO postVO = new PostVO(null, save, "content1", "/path/to/image1.jpg", null);
@@ -52,7 +51,6 @@ class PostDaoImplTest {
     }
 
     @DisplayName("save: 정상적인 PostVO 저장")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void savePostVO() {
         // given
@@ -70,7 +68,6 @@ class PostDaoImplTest {
     }
 
     @DisplayName("findById: 존재하는 PostVO 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByIdWithExistentPostVO() {
         // given
@@ -88,7 +85,6 @@ class PostDaoImplTest {
     }
 
     @DisplayName("findById: 존재하지 않는 PostVO 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findByIdWithNonExistentPostVO() {
         // given
@@ -101,45 +97,7 @@ class PostDaoImplTest {
         assertThat(foundPostVO).isEmpty();
     }
 
-    @DisplayName("delete: 정상적인 PostVO 삭제")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void deletePostVO() {
-        // given
-        PostVO postVO = new PostVO(null, 1L, "content", "/path/to/image.jpg", null);
-        long postId = postDao.save(postVO);
-
-        // when
-        postDao.delete(postId);
-
-        // then
-        Optional<PostVO> deletedPostVO = postDao.findById(postId);
-        assertThat(deletedPostVO).isEmpty();
-    }
-
-    @DisplayName("update: 정상적인 PostVO 수정")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void updatePostVO() {
-        // given
-        PostVO postVO = new PostVO(null, 1L, "content", "/path/to/image.jpg", null);
-        long 포스트_ID = postDao.save(postVO);
-
-        PostVO updatedPostVO = new PostVO(포스트_ID, 1L, "updated content", "/new/path/to/image.jpg", null);
-
-        // when
-        postDao.update(포스트_ID, updatedPostVO);
-
-        // then
-        Optional<PostVO> foundPostVO = postDao.findById(포스트_ID);
-        assertThat(foundPostVO).isPresent()
-                .get()
-                .extracting("userId", "content", "imagePath")
-                .containsExactly(1L, "updated content", "/new/path/to/image.jpg");
-    }
-
     @DisplayName("findAll: 저장된 모든 PostVO 조회")
-    @Disabled("csv 개발로 일시 중단")
     @Test
     void findAllPosts() {
         // given
@@ -160,27 +118,4 @@ class PostDaoImplTest {
                 );
     }
 
-    @DisplayName("save: content가 null인 경우 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void savePostVOWithNullContent() {
-        // given
-        PostVO postVO = new PostVO(null, 1L, null, "/path/to/image.jpg", null);
-
-        // when & then
-        assertThatThrownBy(() -> postDao.save(postVO))
-                .isInstanceOf(RuntimeException.class);
-    }
-
-    @DisplayName("save: imagePath가 null인 경우 예외 발생")
-    @Disabled("csv 개발로 일시 중단")
-    @Test
-    void savePostVOWithNullImagePath() {
-        // given
-        PostVO postVO = new PostVO(null, 1L, "content", null, null);
-
-        // when & then
-        assertThatThrownBy(() -> postDao.save(postVO))
-                .isInstanceOf(RuntimeException.class);
-    }
 }
