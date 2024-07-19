@@ -6,10 +6,8 @@ import codesquad.model.Article;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class JdbcArticleRepository implements ArticleRepository {
-    private static final AtomicLong id = new AtomicLong(1);
     private static final String DBNAME = "articles";
     private Connection conn;
 
@@ -18,18 +16,19 @@ public class JdbcArticleRepository implements ArticleRepository {
     }
 
     public void addArticle(Article article) {
-        String sql = "INSERT INTO " + DBNAME + " (id, userId, username, content) VALUES (?, ?, ?, ?)";
-        article.setId(id.get());
+        String sql = "INSERT INTO " + DBNAME + " (userId, username, content, uploadImgPath, originalImgName, imgSrc) VALUES ( ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setLong(1, article.getId());
-            pstmt.setString(2, article.getUserId());
-            pstmt.setString(3, article.getUsername());
-            pstmt.setString(4, article.getContent());
+            pstmt.setString(1, article.getUserId());
+            pstmt.setString(2, article.getUsername());
+            pstmt.setString(3, article.getContent());
+            pstmt.setString(4, article.getUploadImgPath());
+            pstmt.setString(5, article.getOriginalImgName());
+            pstmt.setString(6, article.getImgSrc());
+
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        id.incrementAndGet();
     }
 
     public Article getArticle(long id) {
@@ -45,7 +44,14 @@ public class JdbcArticleRepository implements ArticleRepository {
 
             var result = resultList.get(0);
 
-            return new Article(Long.parseLong(result.get("id".toUpperCase()).toString()), result.get("userId".toUpperCase()).toString(), result.get("username".toUpperCase()).toString(), result.get("content".toUpperCase()).toString());
+            long articleId = Long.parseLong(result.get("id".toUpperCase()).toString());
+            String userId = result.get("userId".toUpperCase()).toString();
+            String username = result.get("username".toUpperCase()).toString();
+            String content = result.get("content".toUpperCase()).toString();
+            String uploadImgPath = result.get("uploadImgPath".toUpperCase()) == null ? null : result.get("uploadImgPath".toUpperCase()).toString();
+            String originalImgName = result.get("originalImgName".toUpperCase()) == null ? null : result.get("originalImgName".toUpperCase()).toString();
+            String imgSrc = result.get("imgSrc".toUpperCase()) == null ? null : result.get("imgSrc".toUpperCase()).toString();
+            return new Article(articleId, userId, username, content, uploadImgPath, originalImgName, imgSrc);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

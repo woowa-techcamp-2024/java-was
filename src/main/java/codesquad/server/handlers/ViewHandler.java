@@ -52,12 +52,20 @@ public class ViewHandler {
             } catch (NumberFormatException e) {
                 String template = new String(ResourceResolver.readResourceFileAsBytes("/static/index.html"));
                 Article article = articleRepository.getArticle(now);
-                if (article == null) {
+                if (now != 1 && article == null) {
                     ctx.response()
                             .setStatus(HttpStatus.REDIRECT_FOUND)
                             .addHeader("Location", "/")
                             .addHeader("Set-Cookie", "page=" + 1 + "; Path=/; HttpOnly")
                     ;
+                    return;
+                }
+                if (now == 1 && article == null) {
+                    ctx.response()
+                            .setStatus(HttpStatus.OK)
+                            .addHeader("Content-Type", "text/html")
+                            .addHeader("Set-Cookie", "page=" + 1 + "; Path=/; HttpOnly")
+                            .setBody(template.replace("{{post}}", "").getBytes());
                     return;
                 }
 
@@ -75,12 +83,20 @@ public class ViewHandler {
 
                     String body = template.replace("{{username}}", user.get().getName());
                     Article article = articleRepository.getArticle(now);
-                    if (article == null) {
+                    if (now != 1 && article == null) {
                         ctx.response()
                                 .setStatus(HttpStatus.REDIRECT_FOUND)
                                 .addHeader("Location", "/")
                                 .addHeader("Set-Cookie", "page=" + 1 + "; Path=/; HttpOnly")
                         ;
+                        return;
+                    }
+                    if (now == 1 && article == null) {
+                        ctx.response()
+                                .setStatus(HttpStatus.OK)
+                                .addHeader("Content-Type", "text/html")
+                                .addHeader("Set-Cookie", "page=" + 1 + "; Path=/; HttpOnly")
+                                .setBody(body.replace("{{post}}", "").getBytes());
                         return;
                     }
                     body = body.replace("{{post}}", getArticleHtml(article));
@@ -98,8 +114,8 @@ public class ViewHandler {
         Article article = articleRepository.getArticle(now);
         if (article == null) {
             ctx.response()
-                    .setStatus(HttpStatus.REDIRECT_FOUND)
-                    .addHeader("Location", "/")
+                    .setStatus(HttpStatus.OK)
+                    .setBody(template.replace("{{post}}", "").getBytes())
                     .addHeader("Set-Cookie", "page=" + 1 + "; Path=/; HttpOnly")
             ;
             return;
@@ -156,13 +172,14 @@ public class ViewHandler {
     }
 
     private String getArticleHtml(Article article) {
+        String defaultPostImg = "class='post__img'";
         String articleTemplate = """
                         <div class="post">
                           <div class="post__account">
                             <img class="post__account__img" />
                             <p class="post__account__nickname">{{username}}</p>
                           </div>
-                          <img class="post__img" />
+                          <img {post_img} />
                           <div class="post__menu">
                             <ul class="post__menu__personal">
                               <li>
@@ -219,6 +236,7 @@ public class ViewHandler {
             return "";
         }
         return articleTemplate.replace("{{username}}", article.getUsername())
+                .replace("{post_img}", article.getImgSrc() == null ? defaultPostImg : "src=" + article.getImgSrc())
                 .replace("{{content}}", article.getContent())
                 .replace("{{comments}}", getCommentListHtml(comments))
                 ;
