@@ -3,8 +3,9 @@ package codesquad.was.http.handler;
 import codesquad.was.http.cookie.Cookie;
 import codesquad.was.http.exception.HttpInternalServerErrorException;
 import codesquad.was.http.message.parser.RequestParser;
-import codesquad.was.http.message.request.HttpRequest;
+import codesquad.was.http.message.request.Request;
 import codesquad.was.http.message.response.HttpResponse;
+import codesquad.was.http.message.response.Response;
 import codesquad.was.http.session.Session;
 import codesquad.was.utils.CustomDateFormatter;
 import codesquad.was.utils.Timer;
@@ -45,16 +46,18 @@ public class SocketHandler implements Runnable {
         try{
             is = socket.getInputStream();
             Map<String, List<String>> header = new HashMap<>();
-            HttpRequest request = requestParser.parse(is);
+            Request request = requestParser.parse(is);
             logger.info("request URI : {} / method : {}", request.getUri(),request.getMethod());
-            HttpResponse response = new HttpResponse(request.getHttpVersion(), header);
+            Response response = new HttpResponse(request.getHttpVersion(), header);
+
+            XssRequestWrapper xssRequestWrapper = new XssRequestWrapper(request);
 
             if (request.isNewSession() && request.getSession(false) != null) {
                 Session session = request.getSession(false);
                 response.addCookie(new Cookie("SID", session.getId()));
             }
 
-            requestHandler.handle(request,response);
+            requestHandler.handle(xssRequestWrapper,response);
 
             sendResponse(response, socket);
         } catch (IOException ioException) {
@@ -80,7 +83,7 @@ public class SocketHandler implements Runnable {
         }
     }
 
-    private void sendResponse(HttpResponse response, Socket clientSocket) throws IOException {
+    private void sendResponse(Response response, Socket clientSocket) throws IOException {
         response.setHeader("Date", dateFormatter.format(timer.getCurrentTime()));
 
         byte[] parsed = response.parse();
