@@ -7,15 +7,13 @@ import codesquad.http.message.SessionManager;
 import codesquad.http.message.constant.ContentType;
 import codesquad.http.message.request.HttpRequest;
 import codesquad.http.message.response.HttpResponse;
-import codesquad.http.model.ModelAndView;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.time.LocalDateTime;
 
 import static codesquad.utils.StringUtils.NEW_LINE;
@@ -41,7 +39,7 @@ class MainApiTest {
         articleDatabase = new InMemoryArticleDatabase();
         commentDatabase = new InMemoryCommentDatabase();
         userDatabase = new InMemoryUserDatabase();
-        mainApi = new MainApi(userDatabase, articleDatabase, commentDatabase);
+        mainApi = new MainApi(articleDatabase);
         user = new User.Builder()
                 .name("박재성")
                 .email("javajigi@slipp.net")
@@ -59,7 +57,7 @@ class MainApiTest {
     @Test
     @DisplayName("MainApi 인스턴스를 생성한다.")
     void createMainApi() {
-        mainApi = new MainApi(userDatabase, articleDatabase, commentDatabase);
+        mainApi = new MainApi(articleDatabase);
 
         assertNotNull(mainApi);
     }
@@ -116,26 +114,25 @@ class MainApiTest {
     @Test
     @DisplayName("Article이 있는 상태에서 /main 경로로 요청이 들어오면 최근 Article을 반환한다")
     void getMainPageWithArticle() throws IOException {
-        articleDatabase.save(new Article("test", "contest", user.getUserId(),
+        articleDatabase.save(new Article("test", "contest", user.getUserId(), "image",
                 LocalDateTime.now(), LocalDateTime.now()));
 
         HttpRequest httpRequest = loginRequest();
         Object mav = mainApi.main(httpRequest);
 
-        assertAll(() -> assertTrue(mav instanceof ModelAndView),
-                () -> assertTrue(((ModelAndView) mav).containsAttribute("article")),
-                () -> assertTrue(((ModelAndView) mav).getObject("article") instanceof Article)
+        assertAll(() -> assertTrue(mav instanceof HttpResponse),
+                () -> assertTrue(((HttpResponse) mav).toString().contains("302"))
         );
     }
 
     private HttpRequest loginRequest() throws IOException {
         String session = SessionManager.createSession(user, HttpResponse.ok());
         String loginMessage = getMessage + "Cookie: SID=" + session + NEW_LINE;
-        return HttpRequest.from(new BufferedReader(new StringReader(loginMessage)));
+        return HttpRequest.from(new ByteArrayInputStream(loginMessage.getBytes()));
     }
 
     private HttpRequest noLoginRequest() throws IOException {
-        return HttpRequest.from(new BufferedReader(new StringReader(getMessage)));
+        return HttpRequest.from(new ByteArrayInputStream(getMessage.getBytes()));
     }
 
 }

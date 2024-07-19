@@ -3,10 +3,11 @@ package codesquad.http.message.request;
 import codesquad.http.exception.BadRequestException;
 import codesquad.http.message.Cookie;
 import codesquad.http.message.HttpHeaders;
+import codesquad.http.message.constant.ContentType;
 import codesquad.http.message.constant.HttpHeader;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,18 +27,22 @@ public class HttpRequest {
         this.requestBody = requestBody;
     }
 
-    public static HttpRequest from(final BufferedReader reader) throws IOException {
+    public static HttpRequest from(final InputStream reader) throws IOException {
         RequestStartLine requestStartLine = RequestStartLine.from(reader);
         HttpHeaders httpHeaders = HttpHeaders.from(reader);
         String length = Optional.ofNullable(httpHeaders.getHeader(CONTENT_LENGTH.getHeaderName())).orElse("0");
         int contentLength = Integer.parseInt(length);
 
-        if (contentLength > 100000000) {
+        if (contentLength > 10000000) {
             throw new BadRequestException("Content-Length가 너무 큽니다.");
         }
 
         if (contentLength == 0) {
             return new HttpRequest(requestStartLine, httpHeaders, null);
+        }
+
+        if (httpHeaders.getHeader(HttpHeader.CONTENT_TYPE.getHeaderName()).contains(ContentType.MULTI_PART_FORM.getType())) {
+            return new HttpRequest(requestStartLine, httpHeaders, MultipartRequestBody.from(reader, contentLength, httpHeaders));
         }
 
         RequestBody requestBody = RequestBody.from(reader, contentLength);

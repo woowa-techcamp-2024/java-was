@@ -7,6 +7,7 @@ import codesquad.http.message.constant.ContentType;
 import codesquad.http.model.ModelAndView;
 import codesquad.utils.FileUtil;
 
+import java.io.File;
 import java.util.List;
 
 public class ArticleRenderer implements ViewRenderer {
@@ -15,6 +16,7 @@ public class ArticleRenderer implements ViewRenderer {
     private static final String COMMENTS_ATTRIBUTE = "comments";
     private static final String WRITER_NAME_ATTRIBUTE = "writerName";
     private static final String SESSION_ATTRIBUTE = "session";
+    private static final String IS_NEXT_PAGE = "isNext";
 
     @Override
     public String render(final ModelAndView modelAndView) {
@@ -22,10 +24,11 @@ public class ArticleRenderer implements ViewRenderer {
         List<Comment> comments = (List<Comment>) modelAndView.getObject(COMMENTS_ATTRIBUTE);
         String writerName = (String) modelAndView.getObject(WRITER_NAME_ATTRIBUTE);
         boolean login = SessionManager.isValidSession((String) modelAndView.getObject(SESSION_ATTRIBUTE));
+        boolean isNext = (boolean) modelAndView.getObject(IS_NEXT_PAGE);
 
         String templateFile = getTemplateFile(modelAndView);
 
-        return replace(templateFile, article, writerName, comments, login);
+        return replace(templateFile, article, writerName, comments, login, isNext);
     }
 
     @Override
@@ -45,6 +48,10 @@ public class ArticleRenderer implements ViewRenderer {
                 return false;
             }
 
+            if (!modelAndView.containsAttribute(IS_NEXT_PAGE)) {
+                return false;
+            }
+
             return modelAndView.getObject(ARTICLE_ATTRIBUTE) instanceof Article;
         } catch (IllegalArgumentException e) {
             return false;
@@ -58,7 +65,7 @@ public class ArticleRenderer implements ViewRenderer {
 
 
     private String replace(final String html, final Article article, final String writerName,
-                           final List<Comment> comments, final boolean login) {
+                           final List<Comment> comments, final boolean login, final boolean isNext) {
         String result = html;
 
         if (!login) {
@@ -86,6 +93,16 @@ public class ArticleRenderer implements ViewRenderer {
                     "            </li>");
         }
 
+        String basePath = System.getProperty("user.images.path", System.getProperty("user.home") + File.separator + "appImages");
+        String imagesPath = basePath + File.separator + "images/";
+
+        if (article.getImageUrl() != null) {
+            String imageUrl = article.getImageUrl();
+            result = result.replace("src=${article.image}", "src=\"" + imagesPath + imageUrl + "\"");
+        } else {
+            result = result.replace("src=${article.image}", "");
+        }
+
         result = result.replace("${article.title}", article.getTitle());
         result = result.replace("${article.user.name}", writerName);
         result = result.replace("${article.content}", article.getContent());
@@ -103,6 +120,8 @@ public class ArticleRenderer implements ViewRenderer {
         }
 
         result = result.replace("${comments}", renderedComments.toString());
+
+        result = result.replace("${isNext}", isNext ? "true" : "false");
 
         return result;
     }

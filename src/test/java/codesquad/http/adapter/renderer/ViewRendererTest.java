@@ -66,9 +66,10 @@ class ViewRendererTest {
         ModelAndView mav = new ModelAndView();
         mav.addObject("session", "invalid");
         mav.setViewName("/article/index.html");
-        mav.addObject("article", new Article(1L, "title", "content", user.getName(), null, null));
+        mav.addObject("article", new Article(1L, "title", "content", user.getName(), "image", null, null));
         mav.addObject("comments", List.of());
         mav.addObject("writerName", "test");
+        mav.addObject("isNext", true);
 
         String article = viewRenderer.render(mav);
 
@@ -87,8 +88,9 @@ class ViewRendererTest {
         ModelAndView mav = new ModelAndView();
         mav.setViewName("/article/index.html");
         mav.addObject("comments", List.of());
-        mav.addObject("article", new Article(1L, "title", "content", "javajigi", null, null));
+        mav.addObject("article", new Article(1L, "title", "content", "javajigi", "image", null, null));
         mav.addObject("writerName", "자바지기");
+        mav.addObject("isNext", true);
 
         assertTrue(viewRenderer.isSupport(mav));
     }
