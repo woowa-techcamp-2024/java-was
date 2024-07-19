@@ -31,26 +31,35 @@ public class QueryParserUtil {
     public static Map<String, Map<String, byte[]>> parseMulti(byte[] body, String boundary) {
         Map<String, Map<String, byte[]>> result = new HashMap<>();
         String delimiter = "--" + boundary;
+        byte[] delimiterBytes = delimiter.getBytes();
+        byte[] newLineBytes = "\r\n".getBytes();
+        byte[] endDelimiterBytes = (delimiter + "--").getBytes();
+
         int startIndex = 0;
 
         while (startIndex < body.length) {
-            int boundaryIndex = indexOf(body, delimiter.getBytes(), startIndex);
+            int boundaryIndex = indexOf(body, delimiterBytes, startIndex);
             if (boundaryIndex == -1) break;
 
-            startIndex = boundaryIndex + delimiter.length();
-            if (body[startIndex] == '-' && body[startIndex + 1] == '-') break; // End of parts
+            startIndex = boundaryIndex + delimiterBytes.length;
+            if (startIndex >= body.length) break;
 
-            startIndex += 2; // Skip \r\n
+            if (indexOf(body, endDelimiterBytes, boundaryIndex) == boundaryIndex) {
+                break; // 마지막 구분자 처리
+            }
+
+            startIndex += newLineBytes.length; // Skip \r\n
 
             int headerEndIndex = indexOf(body, "\r\n\r\n".getBytes(), startIndex);
             if (headerEndIndex == -1) continue;
 
             String headers = new String(body, startIndex, headerEndIndex - startIndex);
             int contentStartIndex = headerEndIndex + 4;
-            int contentEndIndex = indexOf(body, delimiter.getBytes(), contentStartIndex) - 2;
+            int contentEndIndex = indexOf(body, delimiterBytes, contentStartIndex) - 2;
 
-            byte[] content = new byte[contentEndIndex - contentStartIndex];
-            System.arraycopy(body, contentStartIndex, content, 0, content.length);
+            if (contentEndIndex < contentStartIndex) continue; // End of part not found correctly
+
+            byte[] content = Arrays.copyOfRange(body, contentStartIndex, contentEndIndex);
 
             Map<String, String> headersMap = Header.headerMapper(headers);
             String contentDisposition = headersMap.get("Content-Disposition");
@@ -66,7 +75,7 @@ public class QueryParserUtil {
                 }
             }
 
-            startIndex = contentEndIndex + 2;
+            startIndex = contentEndIndex + newLineBytes.length;
         }
         return result;
     }

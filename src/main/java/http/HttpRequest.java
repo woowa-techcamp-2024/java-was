@@ -48,7 +48,19 @@ public class HttpRequest extends Http {
 
         int contentLength = Integer.parseInt(header.getValue("Content-Length"));
         byte[] body = new byte[contentLength];
-        inputStream.read(body, 0, contentLength);
+        int nowRead = 0;
+        //int temp = inputStream.read(body, 0, contentLength);
+
+        do{
+            nowRead += inputStream.read(body, nowRead, contentLength - nowRead);
+            if (nowRead == -1) {
+                break;
+            }
+        }while (nowRead < contentLength);
+
+//        for(int i = 0; i < contentLength; i++) {
+//            body[i] = (byte) inputStream.read(body, );
+//        }
 
         return body;
     }
