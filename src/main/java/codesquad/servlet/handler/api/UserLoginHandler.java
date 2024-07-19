@@ -1,23 +1,26 @@
 package codesquad.servlet.handler.api;
 
-import codesquad.domain.InMemoryUserStorage;
+import codesquad.domain.UserStorage;
 import codesquad.domain.model.User;
 import codesquad.servlet.SessionStorage;
+import codesquad.servlet.execption.ClientException;
+import codesquad.servlet.execption.ErrorCode;
 import codesquad.servlet.handler.Handler;
 import codesquad.webserver.http.Cookie;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class UserLoginHandler implements Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(UserLoginHandler.class);
-    private final InMemoryUserStorage inMemoryUserStorage;
+    private final UserStorage userStorage;
     private final SessionStorage sessionStorage;
 
-    public UserLoginHandler(InMemoryUserStorage inMemoryUserStorage, SessionStorage sessionStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public UserLoginHandler(UserStorage userStorage, SessionStorage sessionStorage) {
+        this.userStorage = userStorage;
         this.sessionStorage = sessionStorage;
     }
 
@@ -30,11 +33,11 @@ public class UserLoginHandler implements Handler {
 
         logger.debug("userId = {}, password = {}", userId, password);
 
-        User findUser = inMemoryUserStorage.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
+        User findUser = userStorage.selectByUserId(userId)
+                .orElseThrow(() -> new ClientException("존재하지 않는 아이디입니다.", HttpStatus.OK, ErrorCode.INVALID_USER_LOGIN));
 
         if (!findUser.getPassword().equals(password)) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new ClientException("비밀번호가 일치하지 않습니다.", HttpStatus.OK, ErrorCode.INVALID_USER_LOGIN);
         }
 
         String createdSessionId = sessionStorage.createSession(findUser);

@@ -1,8 +1,12 @@
 package codesquad.servlet.handler.api;
 
-import codesquad.domain.InMemoryUserStorage;
+import static codesquad.servlet.execption.ErrorCode.ALREADY_REGISTERED_EMAIL;
+import static codesquad.servlet.execption.ErrorCode.ALREADY_REGISTERED_USER_ID;
+import static codesquad.webserver.http.HttpStatus.OK;
+
+import codesquad.domain.UserStorage;
 import codesquad.domain.model.User;
-import codesquad.servlet.SessionStorage;
+import codesquad.servlet.execption.ClientException;
 import codesquad.servlet.handler.Handler;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
@@ -14,12 +18,10 @@ import org.slf4j.LoggerFactory;
 public class UserRegistrationHandler implements Handler {
 
     private static final Logger logger = LoggerFactory.getLogger(UserRegistrationHandler.class);
-    private final InMemoryUserStorage inMemoryUserStorage;
-    private final SessionStorage sessionStorage;
+    private final UserStorage userStorage;
 
-    public UserRegistrationHandler(InMemoryUserStorage inMemoryUserStorage, SessionStorage sessionStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
-        this.sessionStorage = sessionStorage;
+    public UserRegistrationHandler(UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     @Override
@@ -30,19 +32,21 @@ public class UserRegistrationHandler implements Handler {
         String name = request.getBodyParamValue("name");
         String email = request.getBodyParamValue("email");
 
-        List<User> findUsers = inMemoryUserStorage.findAll();
+        List<User> findUsers = userStorage.selectAll();
         for (User findUser : findUsers) {
             if (findUser.getUserId().equals(userId)) {
-                throw new IllegalArgumentException("이미 존재하는 userId (%s) 입니다.".formatted(userId));
+                throw new ClientException("이미 존재하는 userId (%s) 입니다.".formatted(userId), OK,
+                        ALREADY_REGISTERED_USER_ID);
             }
             if (findUser.getEmail().equals(email)) {
-                throw new IllegalArgumentException("이미 존재하는 이메일 (%s) 입니다.".formatted(email));
+                throw new ClientException("이미 존재하는 이메일 (%s) 입니다.".formatted(email), OK,
+                        ALREADY_REGISTERED_EMAIL);
             }
         }
 
         User user = new User(userId, password, name, email);
-        inMemoryUserStorage.save(user);
-        Optional<User> savedUser = inMemoryUserStorage.findById(user.getUserId());
+        userStorage.insert(user);
+        Optional<User> savedUser = userStorage.selectById(user.getId());
         logger.debug("saved user: {}", savedUser);
         response.sendRedirect("/index.html");
     }

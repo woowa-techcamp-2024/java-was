@@ -35,6 +35,105 @@
             }
         }
 
+        let posts = []; // 전역 변수로 posts 선언
+        let currentPostIndex = 0; // 현재 표시 중인 게시글 인덱스
+
+        // 게시물 데이터를 가져오는 함수
+        async function fetchPosts() {
+            try {
+                const response = await fetch('/api/articles/list');
+                if (!response.ok) {
+                    throw new Error('서버 응답 오류');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('게시물을 가져오는 중 오류 발생:', error);
+                return [];
+            }
+        }
+
+        // 게시물을 표시하는 함수
+        function displayPost(post) {
+            const postElement = document.querySelector('.post');
+            postElement.innerHTML = `
+            <div class="post__account">
+                <img class="post__account__img"/>
+                <p class="post__account__nickname">${post.author}</p>
+            </div>
+            <div class="post__menu">
+                <ul class="post__menu__personal">
+                    <li>
+                        <button class="post__menu__btn">
+                            <img src="./img/like.svg"/>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="post__menu__btn">
+                            <img src="./img/sendLink.svg"/>
+                        </button>
+                    </li>
+                </ul>
+                <button class="post__menu__btn">
+                    <img src="./img/bookMark.svg"/>
+                </button>
+            </div>
+            <h2 class="post__title">${post.title}</h2>
+            <P class="post__article">${post.content}</P>
+        `;
+
+            // 댓글 표시
+            displayComments(post.comments);
+
+            // 댓글 작성 버튼 링크 수정
+            const commentBtn = document.getElementById('comment-btn');
+            commentBtn.href = `/comment?articleId=${post.id}`;
+
+            updateNavigationButtons();
+        }
+
+        // 댓글을 표시하는 함수
+        function displayComments(comments) {
+            const commentList = document.querySelector('.comment');
+            commentList.innerHTML = ''; // 기존 댓글 초기화
+
+            comments.forEach((comment, index) => {
+                const commentItem = document.createElement('li');
+                commentItem.className = `comment__item ${index >= 3 ? 'hidden' : ''}`;
+                commentItem.innerHTML = `
+                <div class="comment__item__user">
+                    <img class="comment__item__user__img"/>
+                    <p class="comment__item__user__nickname">${comment.commenterName}</p>
+                </div>
+                <p class="comment__item__article">${comment.content}</p>
+            `;
+                commentList.appendChild(commentItem);
+            });
+
+            // "모든 댓글 보기" 버튼 추가
+            if (comments.length > 3) {
+                const showAllBtn = document.createElement('button');
+                showAllBtn.id = 'show-all-btn';
+                showAllBtn.className = 'btn btn_ghost btn_size_m';
+                showAllBtn.textContent = `모든 댓글 보기(${comments.length - 3}개 더)`;
+                showAllBtn.addEventListener('click', () => {
+                    document.querySelectorAll('.comment__item.hidden').forEach(item => {
+                        item.classList.remove('hidden');
+                    });
+                    showAllBtn.style.display = 'none';
+                });
+                commentList.appendChild(showAllBtn);
+            }
+        }
+
+        // 네비게이션 버튼 상태 업데이트 함수
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.disabled = currentPostIndex === 0;
+            nextBtn.disabled = currentPostIndex === posts.length - 1;
+        }
+
         // 페이지 로드 시 실행되는 함수
         async function onLoad() {
             const isLoggedIn = checkLoginStatus();
@@ -65,6 +164,33 @@
             </li>
           `;
             }
+
+            // 게시물 데이터 가져오기 및 표시
+            posts = await fetchPosts();
+            if (posts.length > 0) {
+                currentPostIndex = 0; // 첫 번째 게시글부터 시작
+                displayPost(posts[currentPostIndex]);
+            }
+
+            // 게시물 네비게이션 설정
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            prevBtn.addEventListener('click', () => {
+                if (currentPostIndex > 0) {
+                    currentPostIndex--;
+                    displayPost(posts[currentPostIndex]);
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentPostIndex < posts.length - 1) {
+                    currentPostIndex++;
+                    displayPost(posts[currentPostIndex]);
+                }
+            });
+
+            updateNavigationButtons();
         }
 
         // 페이지 로드 시 onLoad 함수 실행
@@ -110,100 +236,44 @@
                     <img src="./img/bookMark.svg"/>
                 </button>
             </div>
-            <p class="post__article">
-                우리는 시스템 아키텍처에 대한 일관성 있는 접근이 필요하며, 필요한
-                모든 측면은 이미 개별적으로 인식되고 있다고 생각합니다. 즉, 응답이
-                잘 되고, 탄력적이며 유연하고 메시지 기반으로 동작하는 시스템 입니다.
-                우리는 이것을 리액티브 시스템(Reactive Systems)라고 부릅니다.
-                리액티브 시스템으로 구축된 시스템은 보다 유연하고, 느슨한 결합을
-                갖고, 확장성 이 있습니다. 이로 인해 개발이 더 쉬워지고 변경 사항을
-                적용하기 쉬워집니다. 이 시스템은 장애 에 대해 더 강한 내성을 지니며,
-                비록 장애가 발생 하더라도, 재난이 일어나기 보다는 간결한 방식으로
-                해결합니다. 리액티브 시스템은 높은 응답성을 가지며 사용자 에게
-                효과적인 상호적 피드백을 제공합니다.
-            </p>
         </div>
         <ul class="comment">
             <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    군인 또는 군무원이 아닌 국민은 대한민국의 영역안에서는 중대한
-                    군사상 기밀·초병·초소·유독음식물공급·포로·군용물에 관한 죄중
-                    법률이 정한 경우와 비상계엄이 선포된 경우를 제외하고는 군사법원의
-                    재판을 받지 아니한다.
-                </p>
             </li>
             <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    대통령의 임기연장 또는 중임변경을 위한 헌법개정은 그 헌법개정 제안
-                    당시의 대통령에 대하여는 효력이 없다. 민주평화통일자문회의의
-                    조직·직무범위 기타 필요한 사항은 법률로 정한다.
-                </p>
             </li>
             <li class="comment__item">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
-                <p class="comment__item__article">
-                    민주평화통일자문회의의 조직·직무범위 기타 필요한 사항은 법률로
-                    정한다.
-                </p>
             </li>
             <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
                 <p class="comment__item__article">Comment 1</p>
             </li>
             <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
                 <p class="comment__item__article">Comment 2</p>
             </li>
             <li class="comment__item hidden">
-                <div class="comment__item__user">
-                    <img class="comment__item__user__img"/>
-                    <p class="comment__item__user__nickname">account</p>
-                </div>
                 <p class="comment__item__article">Comment 3</p>
             </li>
-            <button id="show-all-btn" class="btn btn_ghost btn_size_m">
-                모든 댓글 보기(3개)
-            </button>
         </ul>
         <nav class="nav">
             <ul class="nav__menu">
                 <li class="nav__menu__item">
-                    <a class="nav__menu__item__btn" href="">
-                        <img
-                                class="nav__menu__item__img"
-                                src="./img/ci_chevron-left.svg"
-                        />
+                    <button class="nav__menu__item__btn" id="prevBtn">
+                        <img class="nav__menu__item__img" src="./img/ci_chevron-left.svg"/>
                         이전 글
-                    </a>
+                    </button>
+                </li>
+                <!-- 글쓰기 버튼 추가 -->
+                <li class="nav__menu__item">
+                    <a class="nav__menu__item__btn" href="/article/write.html">글쓰기</a>
                 </li>
                 <li class="nav__menu__item">
-                    <a class="btn btn_ghost btn_size_m">댓글 작성</a>
+                    <a class="btn btn_ghost btn_size_m" id="comment-btn" href="/comment">댓글 작성</a>
                 </li>
                 <li class="nav__menu__item">
-                    <a class="nav__menu__item__btn" href="">
+                    <button class="nav__menu__item__btn" id="nextBtn">
                         다음 글
-                        <img
-                                class="nav__menu__item__img"
-                                src="./img/ci_chevron-right.svg"
-                        />
-                    </a>
+                        <img class="nav__menu__item__img" src="./img/ci_chevron-right.svg"/>
+                    </button>
                 </li>
             </ul>
         </nav>

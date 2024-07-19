@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link href="../reset.css" rel="stylesheet"/>
+    <link href="../global.css" rel="stylesheet"/>
+    <style>
+        .input_textfield.title {
+            border: 1px solid #d2dae0; /* 테두리 색상과 두께 설정 */
+            border-radius: 8px;
+            height: auto; /* 높이를 자동으로 설정 */
+            box-sizing: border-box; /* 패딩과 테두리를 포함한 크기 설정 */
+            padding: 8px 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <a href="/"><img src="../img/signiture.svg"/></a>
+        <ul class="header__menu">
+            <li class="header__menu__item">
+                <a class="btn btn_contained btn_size_s" href="/article">글쓰기</a>
+            </li>
+            <li class="header__menu__item">
+                <button id="logout-btn" class="btn btn_ghost btn_size_s">
+                    로그아웃
+                </button>
+            </li>
+        </ul>
+    </header>
+    <div class="page">
+        <h2 class="page-title">게시글 작성</h2>
+        <form class="form" action="/article" method="post">
+
+            <input
+                    class="input_textfield title"
+                    type="text"
+                    name="title"
+                    placeholder="글의 제목을 입력하세요"
+                    autocomplete="off"
+            />
+            <div class="textfield textfield_size_m">
+                <p class="title_textfield">내용</p>
+                <textarea
+                        class="input_textfield"
+                        name="content"
+                        placeholder="글의 내용을 입력하세요"
+                        autocomplete="username"
+                ></textarea>
+            </div>
+            <button
+                    id="registration-btn"
+                    class="btn btn_contained btn_size_m"
+                    style="margin-top: 24px"
+                    type="submit"
+            >
+                작성 완료
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

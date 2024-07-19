@@ -3,6 +3,8 @@ package codesquad.webserver.http;
 import static codesquad.utils.string.StringUtils.CRLF;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import codesquad.servlet.execption.GlobalExceptionHandler;
+import codesquad.servlet.handler.resource.StaticResourceReader;
 import codesquad.webserver.parser.HttpRequestMapper;
 import codesquad.webserver.parser.HttpRequestParser;
 import java.io.BufferedReader;
@@ -13,7 +15,9 @@ import org.junit.jupiter.api.Test;
 
 class HttpRequestMapperTest {
 
-    HttpRequestMapper httpRequestMapper = new HttpRequestMapper(new HttpRequestParser());
+    StaticResourceReader staticResourceReader = StaticResourceReader.getInstance();
+    GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler(staticResourceReader);
+    HttpRequestMapper httpRequestMapper = new HttpRequestMapper(new HttpRequestParser(), globalExceptionHandler);
 
     @Test
     @DisplayName("[Success] Request Body가 없는 요청")
@@ -22,9 +26,9 @@ class HttpRequestMapperTest {
                 "Host: localhost:8080" + CRLF +
                 "User-Agent: Mozilla/5.0" + CRLF +
                 CRLF;
-
         BufferedReader bufferedReader = new BufferedReader(new StringReader(request));
-        HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader);
+        HttpResponse httpResponse = HttpResponse.ok();
+        HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader, httpResponse);
 
         assertFirstLine(httpRequest);
         assertHeaders(httpRequest);
@@ -74,7 +78,8 @@ class HttpRequestMapperTest {
                 + "userId=ThisIsId%21%40%23&name=ThisIsNickname%25%5E&password=qlalfqjsgh&email=emailemailemail%40gmail.com";
         // given
         BufferedReader bufferedReader = new BufferedReader(new StringReader(request));
-        HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader);
+        HttpResponse httpResponse = HttpResponse.ok();
+        HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader, httpResponse);
         System.out.println("httpRequest = " + httpRequest);
         // when
         // then

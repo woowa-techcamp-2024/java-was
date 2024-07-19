@@ -56,6 +56,12 @@ public class HttpResponse {
         setBody(unauthorized);
     }
 
+    public void badResponse(HttpStatus httpStatus, byte[] body) {
+        HttpResponseLine httpResponseLine = new HttpResponseLine(HttpVersion.HTTP1_1, httpStatus);
+        setHttpResponseLine(httpResponseLine);
+        setBody(body);
+    }
+
     public void setHttpResponseLine(HttpResponseLine httpResponseLine) {
         this.httpResponseLine = httpResponseLine;
     }

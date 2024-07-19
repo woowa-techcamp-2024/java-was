@@ -1,5 +1,8 @@
 package codesquad.configuration;
 
+import codesquad.servlet.SessionStorage;
+import codesquad.servlet.execption.GlobalExceptionHandler;
+import codesquad.servlet.filter.SessionAuthFilter;
 import codesquad.servlet.handler.HandlerMapper;
 import codesquad.servlet.handler.HttpRequestHandler;
 import codesquad.servlet.handler.resource.MappingMediaTypeFileExtensionResolver;
@@ -19,11 +22,19 @@ public class Container {
     }
 
     private HttpProcessor httpProcessor() {
-        return new HttpProcessor(httpRequestMapper(), httpRequestHandler());
+        return new HttpProcessor(
+                httpRequestMapper(),
+                httpRequestHandler(),
+                sessionAuthFilter(),
+                zonedDateTimeGenerator());
+    }
+
+    private GlobalExceptionHandler globalExceptionHandler() {
+        return new GlobalExceptionHandler(staticResourceReader());
     }
 
     private HttpRequestMapper httpRequestMapper() {
-        return new HttpRequestMapper(httpRequestParser());
+        return new HttpRequestMapper(httpRequestParser(), globalExceptionHandler());
     }
 
     private HttpRequestParser httpRequestParser() {
@@ -31,11 +42,19 @@ public class Container {
     }
 
     private HttpRequestHandler httpRequestHandler() {
-        return new HttpRequestHandler(handlerMapper(), staticResourceHandler(), zonedDateTimeGenerator());
+        return new HttpRequestHandler(handlerMapper(), staticResourceHandler(), globalExceptionHandler());
+    }
+
+    private SessionAuthFilter sessionAuthFilter() {
+        return new SessionAuthFilter(sessionStorage());
+    }
+
+    private SessionStorage sessionStorage() {
+        return SessionStorage.getInstance();
     }
 
     private HandlerMapper handlerMapper() {
-        return new HandlerMapper();
+        return HandlerMapper.getInstance();
     }
 
     private StaticResourceHandler staticResourceHandler() {
@@ -43,7 +62,7 @@ public class Container {
     }
 
     private StaticResourceReader staticResourceReader() {
-        return new StaticResourceReader();
+        return StaticResourceReader.getInstance();
     }
 
     private MappingMediaTypeFileExtensionResolver mappingMediaTypeFileExtensionResolver() {

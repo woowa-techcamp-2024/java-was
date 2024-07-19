@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 class SessionStorageTest {
 
-    SessionStorage sessionStorage = new SessionStorage();
+    SessionStorage sessionStorage = SessionStorage.getInstance();
 
     @Nested
     @DisplayName("세션을 생성하는 기능은")

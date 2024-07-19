@@ -2,6 +2,7 @@ package codesquad.domain.model;
 
 public class User {
 
+    private Long id;
     private final String userId;
     private final String password;
     private final String name;
@@ -17,7 +18,8 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "userId='" + userId + '\'' +
+                "id=" + id +
+                ", userId='" + userId + '\'' +
                 ", password='" + password + '\'' +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
@@ -39,4 +41,18 @@ public class User {
     public String getEmail() {
         return email;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    /**
+     * DAO 에서 PK Id 세팅 작업 이외에 사용 금지
+     *
+     * @param: primary key value
+     */
+    public void setPrimaryKey(final Long id) {
+        this.id = id;
+    }
+    
 }

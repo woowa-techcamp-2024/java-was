@@ -26,7 +26,7 @@ public class HttpRequestParser {
             throw new IllegalArgumentException("Invalid request line: " + requestLine);
         }
 
-        HttpMethod method = HttpMethod.valueOf(startLineParts[0]);
+        HttpMethod method = HttpMethod.fromString(startLineParts[0]);
         String defaultPath = startLineParts[1];
         HttpVersion version = HttpVersion.of(startLineParts[2]);
 

@@ -24,13 +24,10 @@ public class UserInfoHandler implements Handler {
         logger.debug("all session = {}", sessionStorage.getSessions());
         // 사용자 인증
         Cookie cookie = request.getCookie();
-        logger.debug("cookie: {}", cookie);
-        if (cookie == null || !cookie.getName().equals("sid")) {
-            response.unauthorized();
-            return;
-        }
         // TODO: 쿠키값과 세션값 검증 로직
         String uuid = cookie.getValue();
+        // TODO: 세션에서 가져오면 X (DB 동기화 이슈)
+        // TODO: HTTPRequest/HTTPResponse Builder 패턴 추천
         User user = sessionStorage.findByUuid(uuid).orElseThrow(() -> new IllegalArgumentException("세션에 존재하지 않습니다."));
         UserInfo userInfo = new UserInfo(user);
         logger.debug("UserInfoHandler end");

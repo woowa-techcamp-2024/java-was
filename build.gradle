@@ -20,6 +20,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
 
     testImplementation 'org.assertj:assertj-core:3.22.0'
+    runtimeOnly 'com.h2database:h2:2.1.214'
 }
 
 application {

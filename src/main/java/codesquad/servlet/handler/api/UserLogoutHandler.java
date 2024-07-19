@@ -22,12 +22,6 @@ public class UserLogoutHandler implements Handler {
         logger.debug("UserLogoutHandler start");
         // 사용자 인증
         Cookie cookie = request.getCookie();
-        logger.debug("cookie: {}", cookie);
-        if (cookie == null || !cookie.getName().equals("sid")) {
-            response.unauthorized();
-            return;
-        }
-        // TODO: 쿠키값과 세션값 검증 로직
 
         sessionStorage.removeSessionValue(cookie.getValue());
         cookie.expire();

@@ -1,12 +1,17 @@
 package codesquad.servlet.handler;
 
+import static codesquad.webserver.http.HttpStatus.INTERNAL_SERVER_ERROR;
+
+import codesquad.servlet.execption.ClientException;
+import codesquad.servlet.execption.GlobalExceptionHandler;
+import codesquad.servlet.execption.ServerException;
 import codesquad.servlet.handler.resource.StaticResourceHandler;
-import codesquad.utils.time.ZonedDateTimeGenerator;
 import codesquad.webserver.http.Cookie;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.http.HttpStatus;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -18,49 +23,46 @@ public class HttpRequestHandler {
 
     private final HandlerMapper handlerMapper;
     private final StaticResourceHandler staticResourceHandler;
-    private final ZonedDateTimeGenerator zonedDateTimeGenerator;
+    private final GlobalExceptionHandler globalExceptionHandler;
 
     private List<String> staticAuthPathes = List.of("/user/list");
 
-    public HttpRequestHandler(HandlerMapper handlerMapper,
-                              StaticResourceHandler staticResourceHandler,
-                              ZonedDateTimeGenerator zonedDateTimeGenerator
-    ) {
+    public HttpRequestHandler(HandlerMapper handlerMapper, StaticResourceHandler staticResourceHandler,
+                              GlobalExceptionHandler globalExceptionHandler) {
         this.handlerMapper = handlerMapper;
         this.staticResourceHandler = staticResourceHandler;
-        this.zonedDateTimeGenerator = zonedDateTimeGenerator;
+        this.globalExceptionHandler = globalExceptionHandler;
     }
 
     public void handle(final HttpRequest httpRequest, final HttpResponse httpResponse) {
         HttpMethod method = httpRequest.getMethod();
         HttpPath path = httpRequest.getPath();
-
         Optional<Handler> handler = handlerMapper.findBy(method, path.getDefaultPath());
         try {
             if (handler.isPresent()) {
                 Handler userRegistrationHandler = handler.get();
                 userRegistrationHandler.service(httpRequest, httpResponse);
-                httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
                 return;
             }
-        } catch (IllegalArgumentException e) {
-            httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-            httpResponse.sendRedirect("/user/fail");
-            logger.debug("error while handling request", e);
-            return;
-        }
-
-        if (isStaticResourceRequest(method, path)) {
-            if (validateStaticAuthPath(httpRequest, httpResponse, path)) {
+            if (isStaticResourceRequest(method, path)) {
+                if (validateStaticAuthPath(httpRequest, httpResponse, path)) {
+                    return;
+                }
+                staticResourceHandler.service(httpRequest, httpResponse);
                 return;
             }
-            staticResourceHandler.service(httpRequest, httpResponse);
-            httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-            return;
-        }
 
-        httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
-        httpResponse.notFound();
+            throw new ClientException("잘못된 요청입니다", HttpStatus.BAD_REQUEST);
+
+        } catch (ClientException e) {
+            globalExceptionHandler.handle(e, httpResponse);
+
+        } catch (ServerException e) {
+            globalExceptionHandler.handle(e, httpResponse);
+
+        } catch (Exception e) {
+            globalExceptionHandler.handle(new ServerException(e, INTERNAL_SERVER_ERROR), httpResponse);
+        }
     }
 
     private boolean validateStaticAuthPath(HttpRequest httpRequest, HttpResponse httpResponse, HttpPath path) {

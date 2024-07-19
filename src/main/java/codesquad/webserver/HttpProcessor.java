@@ -2,9 +2,13 @@ package codesquad.webserver;
 
 import static codesquad.utils.string.StringUtils.CRLF;
 
+import codesquad.servlet.execption.ClientException;
+import codesquad.servlet.filter.SessionAuthFilter;
 import codesquad.servlet.handler.HttpRequestHandler;
+import codesquad.utils.time.ZonedDateTimeGenerator;
 import codesquad.webserver.http.HttpRequest;
 import codesquad.webserver.http.HttpResponse;
+import codesquad.webserver.http.HttpStatus;
 import codesquad.webserver.parser.HttpRequestMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,30 +25,46 @@ public class HttpProcessor {
 
     private final HttpRequestMapper httpRequestMapper;
     private final HttpRequestHandler httpRequestHandler;
+    private final SessionAuthFilter sessionAuthFilter;
+    private final ZonedDateTimeGenerator zonedDateTimeGenerator;
 
-    public HttpProcessor(HttpRequestMapper httpRequestMapper, HttpRequestHandler httpRequestHandler) {
+    public HttpProcessor(HttpRequestMapper httpRequestMapper, HttpRequestHandler httpRequestHandler,
+                         SessionAuthFilter sessionAuthFilter, ZonedDateTimeGenerator zonedDateTimeGenerator) {
         this.httpRequestMapper = httpRequestMapper;
         this.httpRequestHandler = httpRequestHandler;
+        this.sessionAuthFilter = sessionAuthFilter;
+        this.zonedDateTimeGenerator = zonedDateTimeGenerator;
     }
 
     public void process(Socket connection) {
+
         try (InputStream inputStream = connection.getInputStream();
              OutputStream outputStream = connection.getOutputStream()
         ) {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            HttpRequest httpRequest = httpRequestMapper.mapFrom(bufferedReader);
+            HttpRequest httpRequest;
             HttpResponse httpResponse = HttpResponse.ok();
-            httpRequestHandler.handle(httpRequest, httpResponse);
+            httpResponse.setDefaultHeaders(zonedDateTimeGenerator.now());
+
+            try {
+                httpRequest = httpRequestMapper.mapFrom(bufferedReader, httpResponse);
+            } catch (ClientException e) {
+                sendResponse(outputStream, httpResponse);
+                return;
+            }
+
+            sessionAuthFilter.doFilter(httpRequest, httpResponse);
+            if (httpResponse.getHttpStatus() == HttpStatus.OK) {
+                httpRequestHandler.handle(httpRequest, httpResponse);
+            }
             sendResponse(outputStream, httpResponse);
-        } catch (IOException | RuntimeException e) {
+        } catch (IOException e) {
             logger.error(e.getMessage(), e);
-            e.printStackTrace();
         } finally {
             try {
                 connection.close();
             } catch (IOException e) {
                 logger.error("Socket Close Error");
-                e.printStackTrace();
             }
         }
     }

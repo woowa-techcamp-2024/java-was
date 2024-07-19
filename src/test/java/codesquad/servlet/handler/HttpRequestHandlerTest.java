@@ -1,14 +1,21 @@
 package codesquad.servlet.handler;
 
 import static codesquad.webserver.http.HttpMethod.GET;
-import static codesquad.webserver.http.HttpMethod.POST;
 import static codesquad.webserver.http.HttpVersion.HTTP1_1;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import codesquad.configuration.TestDatabaseConfiguration;
+import codesquad.domain.UserStorage;
+import codesquad.domain.model.User;
+import codesquad.helper.TestDatabaseExtension;
+import codesquad.servlet.database.connection.DatabaseConnector;
+import codesquad.servlet.database.connection.UserDao;
+import codesquad.servlet.database.exception.InvalidDataAccessException;
+import codesquad.servlet.execption.GlobalExceptionHandler;
+import codesquad.servlet.fixture.UserFixture;
 import codesquad.servlet.handler.resource.MappingMediaTypeFileExtensionResolver;
 import codesquad.servlet.handler.resource.StaticResourceHandler;
 import codesquad.servlet.handler.resource.StaticResourceReader;
-import codesquad.utils.FixedZonedDateTimeGenerator;
 import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpMethod;
 import codesquad.webserver.http.HttpPath;
@@ -18,30 +25,27 @@ import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import codesquad.webserver.http.HttpStatus;
 import java.io.IOException;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(TestDatabaseExtension.class)
 class HttpRequestHandlerTest {
 
-    FixedZonedDateTimeGenerator fixedZonedDateTimeGenerator = new FixedZonedDateTimeGenerator(2000, 1, 1, 1, 1, 1, 1,
-            ZoneOffset.UTC);
-
-    HttpRequestHandler httpRequestHandler = new HttpRequestHandler(
-            new HandlerMapper(),
-            new StaticResourceHandler(
-                    new StaticResourceReader(),
-                    new MappingMediaTypeFileExtensionResolver()
+    HttpRequestHandler httpRequestHandler = new HttpRequestHandler(HandlerMapper.getInstance(),
+            new StaticResourceHandler(StaticResourceReader.getInstance(), new MappingMediaTypeFileExtensionResolver()
             ),
-            fixedZonedDateTimeGenerator
+            new GlobalExceptionHandler(StaticResourceReader.getInstance())
     );
 
     @Test
     @DisplayName("[Success] /index.html로 요청을 보내면 200 OK 응답이 발생한다.")
-    void requestIndex() throws IOException {
+    void requestIndex() {
         HttpResponse httpResponse = HttpResponse.ok();
         httpRequestHandler.handle(new HttpRequest(
                 new HttpRequestLine(GET, HttpPath.ofOnlyDefaultPath("/index.html"), HTTP1_1),
@@ -63,7 +67,28 @@ class HttpRequestHandlerTest {
 
     @Nested
     @DisplayName("회원가입을 하는 기능은")
+    @ExtendWith(TestDatabaseExtension.class)
     class Describe_Registration {
+
+        DatabaseConnector databaseConnector = TestDatabaseConfiguration.getDatabaseConnector();
+
+        UserStorage userStorage = new UserDao(databaseConnector);
+        User user1;
+
+        @BeforeEach
+        void setUp() {
+            user1 = UserFixture.createUser1();
+        }
+
+        @AfterEach
+        void cleanUserDatabase() {
+            try {
+                userStorage.deleteById(user1.getId());
+            } catch (InvalidDataAccessException e) {
+                System.out.println("After Each Catch = " + e);
+                // ignore
+            }
+        }
 
         @Test
         @DisplayName("[Fail] GET으로 회원가입은 404 실패한다.")
@@ -78,30 +103,6 @@ class HttpRequestHandlerTest {
             // then
             HttpStatus httpStatus = httpResponse.getHttpStatus();
             assertThat(httpStatus).isEqualTo(HttpStatus.NOT_FOUND);
-        }
-
-        @Test
-        @DisplayName("[Success] POST로 회원가입은 성공하고 /index.html로 리다이렉트한다.")
-        void POST_registration_success() {
-            // given
-            String userId = "아이디";
-            String password = "비밀번호";
-            String name = "이름";
-            String email = "이메일@google.com";
-            HttpRequest httpRequest = createRegistrationRequest(
-                    POST,
-                    createUserRegistrationRequestBodyParams(userId, password, name, email)
-            );
-            HttpResponse httpResponse = HttpResponse.ok();
-
-            // when
-            httpRequestHandler.handle(httpRequest, httpResponse);
-
-            // then
-            HttpStatus httpStatus = httpResponse.getHttpStatus();
-            assertThat(httpStatus).isEqualTo(HttpStatus.FOUND);
-            assertThat(httpResponse.getRedirect()).isPresent();
-            assertThat(httpResponse.getRedirect().get()).isEqualTo("/index.html");
         }
 
         private HttpRequest createRegistrationRequest(HttpMethod httpMethod, Map<String, String> requestBodyParams) {
@@ -123,5 +124,11 @@ class HttpRequestHandlerTest {
             return requestBodyParams;
         }
 
+        private void cleanUsers() {
+            user1 = userStorage.selectByUserId(user1.getUserId()).orElse(null);
+            userStorage.deleteById(user1.getId());
+        }
+
     }
 }
+

@@ -5,7 +5,8 @@ import static codesquad.webserver.http.HttpVersion.HTTP1_1;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import codesquad.domain.InMemoryUserStorage;
-import codesquad.servlet.SessionStorage;
+import codesquad.domain.model.User;
+import codesquad.servlet.fixture.UserFixture;
 import codesquad.webserver.http.HttpHeaders;
 import codesquad.webserver.http.HttpPath;
 import codesquad.webserver.http.HttpRequest;
@@ -14,15 +15,29 @@ import codesquad.webserver.http.HttpRequestLine;
 import codesquad.webserver.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class UserRegistrationHandlerTest {
 
-    InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
-    SessionStorage sessionStorage = new SessionStorage();
-    UserRegistrationHandler userRegistrationHandler = new UserRegistrationHandler(inMemoryUserStorage, sessionStorage);
+    InMemoryUserStorage inMemoryUserStorage = InMemoryUserStorage.getInstance();
+    UserRegistrationHandler userRegistrationHandler = new UserRegistrationHandler(inMemoryUserStorage);
+
+    User user1;
+
+    @BeforeEach
+    void setUp() {
+        user1 = UserFixture.createUser1();
+    }
+
+    @AfterEach
+    void clean() {
+        user1 = inMemoryUserStorage.selectByUserId(user1.getUserId()).orElse(null);
+        inMemoryUserStorage.deleteById(user1.getId());
+    }
 
     @Nested
     @DisplayName("회원가입 API는")
@@ -33,7 +48,8 @@ class UserRegistrationHandlerTest {
         void redirectSpec() {
             // given
             HttpRequest httpRequest = createRegistrationRequest(
-                    createUserRegistrationRequestBodyParams("아이디", "비밀번호", "이름", "이메일")
+                    createUserRegistrationRequestBodyParams(user1.getUserId(), user1.getPassword(), user1.getName(),
+                            user1.getEmail())
             );
             HttpResponse httpResponse = HttpResponse.ok();
 

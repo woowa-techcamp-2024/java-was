@@ -1,12 +1,5 @@
 package codesquad.servlet.handler;
 
-import codesquad.domain.InMemoryUserStorage;
-import codesquad.servlet.SessionStorage;
-import codesquad.servlet.handler.api.AllUserInfoHandler;
-import codesquad.servlet.handler.api.UserInfoHandler;
-import codesquad.servlet.handler.api.UserLoginHandler;
-import codesquad.servlet.handler.api.UserLogoutHandler;
-import codesquad.servlet.handler.api.UserRegistrationHandler;
 import codesquad.webserver.http.HttpMethod;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,35 +7,28 @@ import java.util.Optional;
 
 public class HandlerMapper {
 
-    private final Map<HttpMethod, Map<String, Handler>> handlers;
+    private static final Map<HttpMethod, Map<String, Handler>> handlers;
 
-    public HandlerMapper() {
+    static {
         handlers = new HashMap<>();
         for (HttpMethod httpMethod : HttpMethod.values()) {
             handlers.put(httpMethod, new HashMap<>());
         }
+    }
 
-        InMemoryUserStorage inMemoryUserStorage = new InMemoryUserStorage();
-        SessionStorage sessionStorage = new SessionStorage();
+    private HandlerMapper() {
+    }
 
-        handlers.get(HttpMethod.POST)
-                .put("/user/create", new UserRegistrationHandler(
-                        inMemoryUserStorage,
-                        sessionStorage));
+    private static class SingletonHolder {
+        private static final HandlerMapper INSTANCE = new HandlerMapper();
+    }
 
-        handlers.get(HttpMethod.POST)
-                .put("/user/login", new UserLoginHandler(
-                        inMemoryUserStorage,
-                        sessionStorage));
+    public static HandlerMapper getInstance() {
+        return HandlerMapper.SingletonHolder.INSTANCE;
+    }
 
-        handlers.get(HttpMethod.GET)
-                .put("/user/logout", new UserLogoutHandler(sessionStorage));
-
-        handlers.get(HttpMethod.GET)
-                .put("/api/user/info", new UserInfoHandler(sessionStorage));
-
-        handlers.get(HttpMethod.GET)
-                .put("/api/user/list", new AllUserInfoHandler(inMemoryUserStorage, sessionStorage));
+    public void addMapping(HttpMethod httpMethod, String path, Handler handler) {
+        handlers.get(httpMethod).put(path, handler);
     }
 
     public Optional<Handler> findBy(HttpMethod httpMethod, String path) {

@@ -28,7 +28,7 @@ public class HttpPath {
     }
 
     public boolean isDirectoryPath() {
-        return isOnlyDefaultPath() && !hasFileExtension();
+        return !hasFileExtension();
     }
 
     public boolean isOnlyDefaultPath() {
