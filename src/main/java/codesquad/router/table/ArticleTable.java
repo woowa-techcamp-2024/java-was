@@ -13,11 +13,13 @@ import codesquad.context.SessionContextManager;
 import codesquad.http.ContentType;
 import codesquad.http.HttpResponse;
 import codesquad.http.HttpStatus;
+import codesquad.http.MultipartContent;
 import codesquad.router.RouteTableRow;
 import codesquad.template.HtmlElement;
 import codesquad.template.HtmlManager;
 import codesquad.template.HtmlRoot;
 import codesquad.template.Model;
+import codesquad.util.file.FileStorageManager;
 import codesquad.util.file.ResourceFileManager;
 import codesquad.util.scan.Solo;
 import org.slf4j.Logger;
@@ -26,10 +28,12 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static codesquad.router.RouteTableRow.get;
 import static codesquad.router.RouteTableRow.post;
+import static codesquad.router.rule.RouteRules.MULTIPART_REQUEST_RULE;
 
 @Solo
 public class ArticleTable {
@@ -39,12 +43,14 @@ public class ArticleTable {
     private final SessionContextManager sessionContextManager;
     private final ArticleRepository articleRepository;
     private final CommentRepository commentRepository;
+    private final FileStorageManager fileStorageManager;
 
-    public ArticleTable(RouterConfig config, HtmlManager htmlManager, SessionContextManager sessionContextManager, H2ArticleRepository articleRepository, H2CommentRepository commentRepository) {
+    public ArticleTable(RouterConfig config, HtmlManager htmlManager, SessionContextManager sessionContextManager, H2ArticleRepository articleRepository, H2CommentRepository commentRepository, FileStorageManager fileStorageManager) {
         this.htmlManager = htmlManager;
         this.sessionContextManager = sessionContextManager;
         this.articleRepository = articleRepository;
         this.commentRepository = commentRepository;
+        this.fileStorageManager = fileStorageManager;
         config.addRouteTable(table());
     }
 
@@ -83,6 +89,9 @@ public class ArticleTable {
                         HtmlElement element = root.findById("comment-list");
 
                         if (element != null) {
+
+                            root.findById("post_image").setAttribute("src", article.imagePath());
+
                             for (Comment comment : comments) {
                                 element.addChild(htmlManager.createElement(String.format("""
                                         <li class="comment__item">
@@ -109,7 +118,7 @@ public class ArticleTable {
                 }),
 
                 // 게시글 작성
-                post("/article").handle(request -> {
+                post("/article").rules(MULTIPART_REQUEST_RULE).handle(request -> {
                     SessionContext session = sessionContextManager.getSession(request);
                     if (session == null) {
                         HttpResponse response = HttpResponse.of(HttpStatus.SEE_OTHER);
@@ -117,11 +126,46 @@ public class ArticleTable {
                         return response;
                     }
 
-                    User user = (User) session.getAttribute("user");
-                    String title = (String) request.getBodyParam("title");
-                    String content = (String) request.getBodyParam("content");
+                    Optional<String> optionalBoundary = request.getHeaders("Content-Type").stream()
+                            .filter(attr -> attr.startsWith("boundary="))
+                            .map(attr -> attr.substring(9))
+                            .findAny();
 
-                    articleRepository.save(new Article(UUID.randomUUID().toString(), user.getNickname(), title, content));
+                    if (optionalBoundary.isEmpty()) {
+                        return HttpResponse.of(HttpStatus.BAD_REQUEST);
+                    }
+
+                    String boundary = optionalBoundary.get();
+
+                    List<MultipartContent> multipartContents = MultipartContent.parse(boundary, request.getByteBody());
+
+                    User user = (User) session.getAttribute("user");
+                    String title = null;
+                    String content = null;
+                    String filename = null;
+                    byte[] file = null;
+                    ContentType fileContentType = null;
+
+                    for (MultipartContent data : multipartContents) {
+                        if (data.name.equals("title")) {
+                            title = new String(data.getContent());
+                        } else if (data.name.equals("content")) {
+                            content = new String(data.getContent());
+                        } else if (data.name.equals("image")) {
+                            file = data.getContent();
+                            filename = data.filename;
+                            fileContentType = data.contentType;
+                        }
+                    }
+
+                    if (title == null || content == null || file == null || fileContentType == null) {
+                        return HttpResponse.of(HttpStatus.BAD_REQUEST);
+                    }
+
+                    filename = UUID.randomUUID() + filename.substring(filename.lastIndexOf("."));
+                    String filePath = "/image/" + filename;
+                    fileStorageManager.saveFile(fileContentType, filename, file);
+                    articleRepository.save(new Article(UUID.randomUUID().toString(), user.getNickname(), title, content, filePath));
 
                     HttpResponse response = HttpResponse.of(HttpStatus.SEE_OTHER);
                     response.addHeader("Location", "/index.html");
@@ -139,6 +183,9 @@ public class ArticleTable {
                         Article article = articleRepository.findOne();
 
                         if (article != null) {
+
+                            root.findById("post_image").setAttribute("src", article.imagePath());
+
                             List<Comment> comments = commentRepository.findByArticleId(article.id(), null);
 
                             HtmlElement element = root.findById("comment-list");
@@ -166,7 +213,6 @@ public class ArticleTable {
                         model.addAttribute("article", article);
 
                         root.applyModel(model);
-
 
                         HttpResponse response = HttpResponse.of(HttpStatus.OK);
                         response.setContentType(ContentType.TEXT_HTML);
