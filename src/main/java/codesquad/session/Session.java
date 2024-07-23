@@ -36,11 +36,11 @@ public class Session {
             throw ServerErrorCode.CANNOT_CREATE_SESSION.exception();
         }
 
+
         return sessionKey;
     }
 
     public SessionUserInfo getSession(String cookie) {
-        System.out.println(sessionInfo);
         return sessionInfo.get(cookie);
     }
 

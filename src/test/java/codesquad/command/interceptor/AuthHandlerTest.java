@@ -1,5 +1,6 @@
 package codesquad.command.interceptor;
 
+import ch.qos.logback.core.db.dialect.DBUtil;
 import codesquad.http.request.format.HttpMethod;
 import codesquad.http.request.format.HttpRequest;
 import codesquad.session.Cookie;
@@ -12,9 +13,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
+import static codesquad.util.StringUtils.SESSIONKEY;
 import static org.junit.jupiter.api.Assertions.*;
 
-class AuthHandlerTest {
+class AuthHandlerTest extends DBUtil {
 
     @Nested
     @DisplayName("사용자 인증 테스트")
@@ -26,8 +28,8 @@ class AuthHandlerTest {
             // given
             SessionUserInfo sessionUserInfo = new SessionUserInfo(1,"testId", "testName");
             String sessionKey = Session.getInstance().setSession(sessionUserInfo);
-            Cookie cookie = new Cookie("sessionKey", sessionKey);
-            HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", FileExtension.DYNAMIC, "HTTP/1.1", Map.of(), Map.of("sessionKey",cookie), "");
+            Cookie cookie = new Cookie(SESSIONKEY, sessionKey);
+            HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", FileExtension.DYNAMIC, "HTTP/1.1", Map.of(), Map.of(SESSIONKEY,cookie), "",null,null);
 
             // when
             boolean result = AuthHandler.getInstance().handle(httpRequest);
@@ -39,7 +41,7 @@ class AuthHandlerTest {
         @Test
         @DisplayName("로그인을 하지 않은 사용자라면 false를 리턴한다")
         void request_with_non_login_user(){
-            HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", FileExtension.DYNAMIC, "HTTP/1.1", Map.of(), Map.of(), "");
+            HttpRequest httpRequest = new HttpRequest(HttpMethod.GET, "/user/list", FileExtension.DYNAMIC, "HTTP/1.1", Map.of(), Map.of(), "",null,null);
 
             // when
             boolean result = AuthHandler.getInstance().handle(httpRequest);

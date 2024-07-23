@@ -4,11 +4,11 @@ import java.io.File;
 import java.util.Map;
 import java.util.Objects;
 
-import codesquad.command.domainResponse.DomainResponse;
+import codesquad.command.domainReqRes.DomainResponse;
 import codesquad.http.HttpStatus;
 import codesquad.util.FileExtension;
 
-import static codesquad.util.StringSeparator.*;
+import static codesquad.util.StringUtils.*;
 
 public record DynamicHandleResult(
 	HttpStatus httpStatus,
@@ -45,6 +45,7 @@ public record DynamicHandleResult(
 			cookieValue.append(" Path=/");
 			headers.put("Set-Cookie", cookieValue.toString());
 		}
+
 
 		return new DynamicHandleResult(httpStatus, headers, hasBody, fileExtension, body);
 	}

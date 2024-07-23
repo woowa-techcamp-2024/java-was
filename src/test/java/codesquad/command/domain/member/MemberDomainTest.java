@@ -3,6 +3,7 @@ package codesquad.command.domain.member;
 import java.util.List;
 import java.util.Map;
 
+import ch.qos.logback.core.db.dialect.DBUtil;
 import codesquad.command.domain.DynamicResponseBody;
 import codesquad.db.user.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,8 +11,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import codesquad.command.domainResponse.HttpClientRequest;
-import codesquad.command.domainResponse.HttpClientResponse;
+import codesquad.command.domainReqRes.HttpClientRequest;
+import codesquad.command.domainReqRes.HttpClientResponse;
 import codesquad.db.user.Member;
 import codesquad.exception.CustomException;
 import codesquad.exception.client.ClientErrorCode;
@@ -22,9 +23,10 @@ import codesquad.session.Session;
 import codesquad.session.SessionUserInfo;
 import codesquad.util.FileExtension;
 
+import static codesquad.util.StringUtils.SESSIONKEY;
 import static org.junit.jupiter.api.Assertions.*;
 
-class MemberDomainTest {
+class MemberDomainTest extends DBUtil {
 
 	String userId = "testId";
 	String password = "password";
@@ -96,7 +98,7 @@ class MemberDomainTest {
 
 			// then
 			var cookieInfo = httpClientResponse.getCookie();
-			var sessionKey = cookieInfo.get("sessionKey");
+			var sessionKey = cookieInfo.get(SESSIONKEY);
 			var session = Session.getInstance().getSession(sessionKey);
 			assertEquals(userId, session.userId());
 			assertEquals(userName, session.userName());
@@ -134,16 +136,16 @@ class MemberDomainTest {
 
 			var httpClientRequest = new HttpClientRequest(
 				new HttpRequest(HttpMethod.POST, "testUri", FileExtension.HTML, "http 1.1", Map.of(),
-					Map.of("sessionKey", new Cookie("key", "value")), "body"));
+					Map.of(SESSIONKEY, new Cookie("key", "value")), "body",null,null));
 			var httpClientResponse = new HttpClientResponse();
-			httpClientResponse.setCookie("sessionKey", value);
+			httpClientResponse.setCookie(SESSIONKEY, value);
 
 			// when
 			MemberDomain.getInstance().logout(httpClientRequest, httpClientResponse);
 
 			// then
 			var session = Session.getInstance()
-				.getSession(httpClientRequest.getCookie("sessionKey").value());
+				.getSession(httpClientRequest.getCookie(SESSIONKEY).value());
 			assertNull(session);
 
 		}
@@ -168,7 +170,7 @@ class MemberDomainTest {
 			var sessionUserInfo = new SessionUserInfo(1, userId, userName);
 			var httpClientRequest = new HttpClientRequest(
 				new HttpRequest(HttpMethod.POST, "testUri", FileExtension.HTML, "http 1.1", Map.of(),
-					Map.of(), "body"));
+					Map.of(), "body",null,null));
 			httpClientRequest.setUserInfo(sessionUserInfo);
 
 			// when

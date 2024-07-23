@@ -1,6 +1,7 @@
 package codesquad.command;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -11,15 +12,15 @@ import java.util.Map;
 import java.util.Objects;
 
 import codesquad.command.annotation.custom.RequestParam;
+import codesquad.command.annotation.file.Chunked;
 import codesquad.command.annotation.preprocess.PreHandle;
 import codesquad.command.annotation.redirect.Redirect;
-import codesquad.command.domain.DynamicResponseBody;
-import codesquad.command.domainResponse.DomainResponse;
+import codesquad.command.domainReqRes.DomainResponse;
 import codesquad.command.annotation.method.Command;
 import codesquad.command.annotation.method.GetMapping;
 import codesquad.command.annotation.method.PostMapping;
-import codesquad.command.domainResponse.HttpClientRequest;
-import codesquad.command.domainResponse.HttpClientResponse;
+import codesquad.command.domainReqRes.HttpClientRequest;
+import codesquad.command.domainReqRes.HttpClientResponse;
 import codesquad.command.interceptor.PreHandler;
 import codesquad.exception.CustomException;
 import codesquad.exception.client.ClientErrorCode;
@@ -32,8 +33,7 @@ import codesquad.session.SessionUserInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static codesquad.util.StringSeparator.EQUAL_SEPARATOR;
-import static codesquad.util.StringSeparator.QUERY_PARAMETER_SEPARATOR;
+import static codesquad.util.StringUtils.*;
 
 public class CommandManager {
 	private static final Logger log = LoggerFactory.getLogger(CommandManager.class);
@@ -121,6 +121,7 @@ public class CommandManager {
 		var httpMethod = httpRequest.method();
 		var path = httpRequest.uri();
 		var resources = httpRequest.body();
+		var userInputData = parsingQueryParameterResources(resources); // 사용자 데이터 Map으로 변환
 		Method method = null;
 
 		switch(httpMethod) {
@@ -142,7 +143,7 @@ public class CommandManager {
 			return new DomainResponse(HttpStatus.FOUND, httpClientResponse, false, method.getReturnType(), null);
 		} else {
 			var cookieInfo = httpRequest.cookie();
-			Cookie cookie = cookieInfo.get("sessionKey");
+			Cookie cookie = cookieInfo.get(SESSIONKEY);
 			if (Objects.nonNull(cookie)) {
 				SessionUserInfo userInfo = Session.getInstance().getSession(cookie.value());
 				httpClientRequest.setUserInfo(userInfo);
@@ -154,12 +155,12 @@ public class CommandManager {
 			var className = method.getDeclaringClass().getName();
 			var instance = findInstance(className);
 
-			var userInputData = parsingQueryParameterResources(resources);
 			var parameters = makeParameterArgs(method, userInputData, httpClientRequest, httpClientResponse);
 			log.info("[User Parameters] : {}", Arrays.toString(parameters));
 
 			var responseBody = method.invoke(instance, parameters);
 			log.debug("[{} Called Successfully] ,{}", method.getName(), path);
+
 
 			var returnType = method.getReturnType();
 
@@ -181,6 +182,9 @@ public class CommandManager {
 				httpClientResponse.setHeader("Location", annotation.redirection());
 			}
 
+			if (method.isAnnotationPresent(Chunked.class)) {
+				httpClientResponse.setHeader("chunked","chunked");
+			}
 
 			return new DomainResponse(httpStatus, httpClientResponse, Objects.equals(returnType, Void.TYPE) ? false : true, returnType,
 					responseBody);
@@ -309,6 +313,9 @@ public class CommandManager {
 		var userData = resources.split(QUERY_PARAMETER_SEPARATOR);
 		for (String keyValue : userData) {
 			var data = keyValue.split(EQUAL_SEPARATOR);
+			if (data.length == 1) {
+				throw ClientErrorCode.INVALID_PARAMETER.exception();
+			}
 			try {
 				map.put(data[0], URLDecoder.decode(data[1], "UTF-8"));
 			} catch (UnsupportedEncodingException exception) {

@@ -9,8 +9,8 @@ import codesquad.command.annotation.method.PostMapping;
 import codesquad.command.annotation.preprocess.PreHandle;
 import codesquad.command.annotation.redirect.Redirect;
 import codesquad.command.domain.DynamicResponseBody;
-import codesquad.command.domainResponse.HttpClientRequest;
-import codesquad.command.domainResponse.HttpClientResponse;
+import codesquad.command.domainReqRes.HttpClientRequest;
+import codesquad.command.domainReqRes.HttpClientResponse;
 import codesquad.command.interceptor.AuthHandler;
 import codesquad.db.user.MemberRepository;
 import codesquad.db.user.Member;
@@ -18,8 +18,11 @@ import codesquad.exception.client.ClientErrorCode;
 import codesquad.http.HttpStatus;
 import codesquad.session.Session;
 import codesquad.session.SessionUserInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static codesquad.util.StringUtils.SESSIONKEY;
 
 
 @Command
@@ -47,28 +50,29 @@ public class MemberDomain {
 	@PostMapping(httpStatus = HttpStatus.FOUND, path = "/user/login")
 	public void login(@RequestParam(name = "userId") String userId, @RequestParam(name = "password") String password, HttpClientResponse response) {
 
-		 Member member = MemberRepository.getInstance().findById(userId);
-		 if (Objects.isNull(member)) {
-		 	throw ClientErrorCode.USER_NOT_FOUND.exception();
-		 }
-		 if (!Objects.equals(member.getPassword(), password)) {
-		 	log.debug("[Login] Invalid username or password");
-		 	throw  ClientErrorCode.INVALID_PASSWORD.exception();
-		 }
+		Member member = MemberRepository.getInstance().findById(userId);
+		if (Objects.isNull(member)) {
+		throw ClientErrorCode.USER_NOT_FOUND.exception();
+		}
+		if (!Objects.equals(member.getPassword(), password)) {
+		log.debug("[Login] Invalid username or password");
+		throw  ClientErrorCode.INVALID_PASSWORD.exception();
+		}
 
-		 String sessionKey = Session.getInstance().setSession(new SessionUserInfo(member.getId(),member.getMemberId(), member.getName()));
-		 response.setCookie("sessionKey", sessionKey);
-		 log.debug("[Login] Login successful");
+		String sessionKey = Session.getInstance().setSession(new SessionUserInfo(member.getId(),member.getMemberId(), member.getName()));
+		response.setCookie(SESSIONKEY, sessionKey);
+
+		log.debug("[Login] Login successful");
 
 	}
 
 	@Redirect(redirection = "/")
 	@PostMapping(httpStatus = HttpStatus.FOUND, path = "/user/logout")
 	public void logout(HttpClientRequest request, HttpClientResponse response) {
-		var cookie = request.getCookie("sessionKey");
+		var cookie = request.getCookie(SESSIONKEY);
 		if (!Objects.isNull(cookie)) {
 			Session.getInstance().removeSession(cookie.value());
-			response.setCookie("sessionKey", "");
+			response.setCookie(SESSIONKEY, "");
 			response.setMaxAge(cookie.key(), 0);
 		}
 	}

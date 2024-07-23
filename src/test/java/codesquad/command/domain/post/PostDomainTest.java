@@ -1,7 +1,8 @@
 package codesquad.command.domain.post;
 
+import ch.qos.logback.core.db.dialect.DBUtil;
 import codesquad.command.domain.DynamicResponseBody;
-import codesquad.command.domainResponse.HttpClientRequest;
+import codesquad.command.domainReqRes.HttpClientRequest;
 import codesquad.db.post.Post;
 import codesquad.db.post.PostRepository;
 import codesquad.db.user.Member;
@@ -10,16 +11,26 @@ import codesquad.http.request.format.HttpMethod;
 import codesquad.http.request.format.HttpRequest;
 import codesquad.session.SessionUserInfo;
 import codesquad.util.FileExtension;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PostDomainTest {
+class PostDomainTest extends DBUtil {
 
     String userId = "testId";
     String password = "password";
@@ -29,20 +40,64 @@ class PostDomainTest {
     Member member = null;
     HttpClientRequest request = null;
 
+    File file;
+    File outFile;
+    InputStream fis;
+    OutputStream fos;
+
+    String httpRequestData = """
+        --Uee--r1_eDOWu7FpA0LJdLwCMLJQapQGu
+        Content-Disposition: form-data; name=title
+        Content-Type: text/plain\r\n
+        aaaa
+        --Uee--r1_eDOWu7FpA0LJdLwCMLJQapQGu
+        Content-Disposition: form-data; name=content;
+        Content-Type: text/plain\r\n
+        aaaa
+        --Uee--r1_eDOWu7FpA0LJdLwCMLJQapQGu--
+        """;
+
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         member = new Member("loginTest", "password", "name", "email");
         Member findMember = MemberRepository.getInstance().findById(member.getMemberId());
         if (findMember != null) {
             MemberRepository.getInstance().delete(findMember);
         }
         member = MemberRepository.getInstance().save(member);
+        file = new File("test.txt");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        fis = new ByteArrayInputStream(httpRequestData.getBytes());
+
+        outFile = new File("testOut.png");
+        if (!outFile.exists()) {
+            outFile.createNewFile();
+        }
+        fos = new FileOutputStream(outFile);
         request = new HttpClientRequest(
-                new HttpRequest(HttpMethod.POST, "testUri", FileExtension.HTML, "http 1.1", Map.of(),
-                        Map.of(), "body"));
-        System.out.println("init member = "+member);
+                new HttpRequest(HttpMethod.POST, "testUri", FileExtension.HTML, "http 1.1", Map.of("Content-Type","multipart/form-data; boundary=Uee--r1_eDOWu7FpA0LJdLwCMLJQapQGu"),
+                        Map.of(), "body",fis,fos));
         var userInfo = new SessionUserInfo(member.getId(), member.getMemberId(), member.getName());
         request.setUserInfo(userInfo);
+    }
+
+    @AfterEach
+    void shutDown() throws IOException {
+        if (file.exists()) {
+            file.delete();
+        }
+        if (outFile.exists()) {
+            outFile.delete();
+        }
+
+        if (fis != null) {
+            fis.close();
+        }
+        if (fos != null) {
+            fos.close();
+        }
     }
     @Nested
     @DisplayName("게시글 페이지 요청 테스트")
@@ -72,7 +127,8 @@ class PostDomainTest {
             var postContent = "testContent";
 
             // when
-            String post = PostDomain.getInstance().createPost(postTitle, postContent, request);
+            System.out.println(request.getUserInfo());
+            String post = PostDomain.getInstance().createPost(request);
 
             // then
             String htmlFile = DynamicResponseBody.getInstance().getHtmlFile("/main/index.html", request.getUserInfo());
@@ -87,10 +143,9 @@ class PostDomainTest {
             var postContent = "testContent";
             Post post = new Post(postTitle, postContent, member.getId());
             Post savePost = PostRepository.getInstance().save(post);
-            var findMemeber = MemberRepository.getInstance().findByPk(post.getUserId());
+            var findMemeber = MemberRepository.getInstance().findByPk(savePost.getUserId());
 
             // when
-            System.out.println(request.getUserInfo());
             String findPost = PostDomain.getInstance().getPost(savePost.getId(), request);
 
             // then

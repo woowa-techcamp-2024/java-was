@@ -1,12 +1,19 @@
 package codesquad.db.post;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import codesquad.db.XSSUtil;
+import codesquad.exception.client.ClientErrorCode;
 
 public class Post {
     private long id;
     private String title;
     private String content;
     private long userId;
+    private String fileName;
+    private String filePath;
 
     public Post(){}
 
@@ -14,6 +21,55 @@ public class Post {
         this.title = title;
         this.content = content;
         this.userId = userId;
+    }
+
+    public Post(String title, String content, long userId, String fileName, String filePath) {
+        this.title = title;
+        this.content = content;
+        this.userId = userId;
+        this.fileName = fileName;
+        this.filePath = filePath;
+    }
+
+    public void characterChange() {
+        XSSUtil.list.stream()
+            .forEach(s -> {
+                if (title.contains(s)) {
+                    title =title.replace(s,XSSUtil.map.get(s));
+                }
+                if (content.contains(s)) {
+                    System.out.println("s = "+s);
+                    content =content.replace(s,XSSUtil.map.get(s));
+                }
+                if (fileName != null && fileName.contains(s)) {
+                    fileName =fileName.replace(s,XSSUtil.map.get(s));
+                }
+                if (filePath != null && filePath.contains(s)) {
+                    filePath = filePath.replace(s,XSSUtil.map.get(s));
+                }
+            });
+    }
+
+    public void isValid() {
+        if (Objects.isNull(title) || Objects.isNull(content) || Objects.isNull(userId) || (fileName!= null && fileName.length() > 100) || (filePath != null && filePath.length() > 100) || title.length() > 100) {
+            throw ClientErrorCode.INVALID_ARGUMENT.exception();
+        }
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getFilePath() {
+        return filePath;
     }
 
     public long getId() {
@@ -51,22 +107,29 @@ public class Post {
     @Override
     public String toString() {
         return "Post{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", post='" + content + '\'' +
-                '}';
+            "id=" + id +
+            ", title='" + title + '\'' +
+            ", content='" + content + '\'' +
+            ", userId=" + userId +
+            ", fileName='" + fileName + '\'' +
+            ", filePath='" + filePath + '\'' +
+            '}';
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Post post1 = (Post) o;
-        return Objects.equals(title, post1.title) && Objects.equals(content, post1.content);
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Post post = (Post)o;
+        return getId() == post.getId() && getUserId() == post.getUserId() && Objects.equals(getTitle(),
+            post.getTitle()) && Objects.equals(getContent(), post.getContent()) && Objects.equals(
+            getFileName(), post.getFileName()) && Objects.equals(getFilePath(), post.getFilePath());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, content);
+        return Objects.hash(getId(), getTitle(), getContent(), getUserId(), getFileName(), getFilePath());
     }
 }

@@ -22,10 +22,13 @@ public class PostRepository {
 
     public Post save(Post post) {
         log.info("[Post Save], post = {}", post);
+        post.isValid();
+        post.characterChange();
+
 
         var sql = """
-            insert into post(post_title,post_content,user_id)
-            values(?,?,?)
+            insert into post(post_title,post_content,user_id, file_name, file_path)
+            values(?,?,?,?,?)
             """;
 
         Connection con = null;
@@ -38,6 +41,8 @@ public class PostRepository {
             ps.setString(1,post.getTitle());
             ps.setString(2,post.getContent());
             ps.setLong(3,post.getUserId());
+            ps.setString(4, post.getFileName());
+            ps.setString(5,post.getFilePath());
             ps.executeUpdate();
 
             rs = ps.getGeneratedKeys();
@@ -79,6 +84,9 @@ public class PostRepository {
                 post.setTitle(rs.getString(2));
                 post.setContent(rs.getString(3));
                 post.setUserId(rs.getLong(4));
+                post.setFileName(rs.getString(5));
+                post.setFilePath(rs.getString(6));
+
 
                 return post;
             } else {
@@ -158,7 +166,6 @@ public class PostRepository {
             for (Post post : postList) {
                 ps = con.prepareStatement(userSql);
                 ps.setLong(1,post.getUserId());
-                System.out.println(post);
                 rs = ps.executeQuery();
 
                 if (rs.next()) {
@@ -171,7 +178,6 @@ public class PostRepository {
                 }
             }
 
-            System.out.println(postAndMember);
 
             if (postAndMember.size() == 0) {
                 postAndMember = null;

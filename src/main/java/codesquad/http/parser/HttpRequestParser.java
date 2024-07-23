@@ -14,7 +14,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.*;
 
-import static codesquad.util.StringSeparator.*;
+import static codesquad.util.StringUtils.*;
 
 public class HttpRequestParser {
     private static final Logger log = LoggerFactory.getLogger(HttpRequestParser.class);
@@ -28,23 +28,42 @@ public class HttpRequestParser {
     }
 
     public HttpRequest parse() {
-        var buffer = new byte[bufferSize];
         var readSize = 0;
         var inputSize = 0;
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        StringBuilder sb = new StringBuilder();
+
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        int enterCheck = 0;
 
         try {
-            var inputStream = clientSocket.getInputStream();
+            inputStream = clientSocket.getInputStream();
+            outputStream = clientSocket.getOutputStream();
+
+            int read = 0;
+
+            var bos = new ByteArrayOutputStream();
             // 소켓 버퍼 데이터를 빨리 가져와야 하니 우선 outputStream으로 복사한다.
-            while ((readSize = inputStream.read(buffer, 0, bufferSize)) != -1) {
-                inputSize += readSize;
-                if (inputSize > maxInputSize) {
-                    throw ClientErrorCode.URI_TOO_LONG.exception();
+            while ((read = inputStream.read()) != -1) {
+                inputSize ++;
+                bos.write(read);
+
+                boolean flag = false;
+
+                if (read == 13) {
+                    var line = bos.toString();
+                    sb.append(line);
+                    bos.reset();
+                    enterCheck++;
+                    if (enterCheck == 2) {
+                        break;
+                    }
+                } else if (read != 10 && read != 13) {
+                    enterCheck = 0;
                 }
 
-                outputStream.write(buffer, 0, readSize);
-                if (readSize < bufferSize) {
+                if(flag){
                     break;
                 }
             }
@@ -52,18 +71,17 @@ public class HttpRequestParser {
             log.error("[Socket Error] : 데이터를 읽어오던 중 에러 발생");
             throw ServerErrorCode.INTERNAL_SERVER_ERROR.exception();
         } catch (Exception exception) {
-            log.error("tqtqtqt");
+            log.error("[Http Parsing Error]");
         }
 
-        String htmlString = outputStream.toString();
+        String headerString = sb.toString();
 
-
-        return getHttpRequest(htmlString);
+        return getHttpRequest(headerString, inputSize, inputStream, outputStream);
     }
 
 
-    public HttpRequest getHttpRequest(String htmlString) {
-        var lines = htmlString.replaceAll(CR, EMPTY_STRING).split(LF);
+    public HttpRequest getHttpRequest(String headerString, int inputSize, InputStream inputStream, OutputStream outputStream) {
+        var lines = headerString.replace(CR, EMPTY_STRING).split(LF);
 
         var firstLine = lines[0].split(SPACE_SEPARATOR);
         var method = HttpMethod.fromString(firstLine[0]);
@@ -81,44 +99,86 @@ public class HttpRequestParser {
         var headers = new HashMap<String,String>();
         var cookies = new HashMap<String, Cookie>();
         var bodyIdx = parsingHeader(lines, headers, cookies);
-        var body = getBody(lines, bodyIdx);
+
+        var contentType = headers.get("Content-Type");
+        var contentLength = headers.get("Content-Length");
+
+        var body = "";
+
+        if (Objects.nonNull(contentType) && contentType.contains(BOUNDARY)) {
+            var split = contentType.split(BOUNDARY);
+            headers.put("multipart", "--"+split[1]);
+            fileExtension = FileExtension.MULTIPART;
+        } else if(Objects.nonNull(contentLength)){
+            log.debug("[Not Multipart Body]");
+            body = getBody(Integer.parseInt(contentLength), inputSize, inputStream);
+        }
+
+        if (Objects.equals(fileExtension, FileExtension.MULTIPART)) {
+            try {
+                int read = inputStream.read(); // 엔터 없애기
+            } catch (Exception e) {
+
+            }
+        }
 
         if (uri.contains("?")) {
             var uriSplit = uri.split("\\?");
+            log.debug("[URI] {}",Arrays.toString(uriSplit));
             uri = uriSplit[0];
+            fileExtension = getFileExtension(uri);
             body = uriSplit[1];
         }
 
-        return new HttpRequest(method, uri, fileExtension, httpVersion, headers, cookies, body);
+        var httpRequest = new HttpRequest(method, uri, fileExtension, httpVersion, headers, cookies, body, inputStream, outputStream);
+
+        return httpRequest;
     }
 
     public FileExtension getFileExtension(String uri) {
-        if (uri.contains("?")) {
-            return FileExtension.DYNAMIC;
-        }
-
         int lastIndex = uri.lastIndexOf(".");
         var extension = uri.substring(lastIndex+1, uri.length()).toUpperCase();
 
         return FileExtension.fromString(extension);
     }
 
-    public String getBody(String[] lines, int bodyIdx) {
+    public String getBody(int contentLength, int inputSize, InputStream inputStream) {
         StringBuilder sb = new StringBuilder();
-        for (; bodyIdx < lines.length; bodyIdx++) {
-            sb.append(lines[bodyIdx]);
-            if (bodyIdx != lines.length-1) {
-                sb.append("\n");
-            }
-        }
 
-        return sb.toString();
+        int read = 0;
+        var bos = new ByteArrayOutputStream();
+        try {
+            for(int i = 0; i <= contentLength; i++){
+                read = inputStream.read();
+                inputSize ++;
+
+                if (inputSize > maxInputSize) {
+                    throw ClientErrorCode.URI_TOO_LONG.exception();
+                }
+
+                bos.write(read);
+
+            }
+        } catch (IOException exception) {
+            log.error("[BODY READ ERROR] {}", exception.getMessage());
+            throw ServerErrorCode.INTERNAL_SERVER_ERROR.exception();
+        }
+        var body = bos.toString();
+        sb.append(body);
+        var result = sb.toString().replace("\n", "");
+
+        log.debug("[Body] {}", body);
+
+        return result;
     }
 
     public int parsingHeader(String[] lines, Map<String, String> headers, Map<String, Cookie> cookies) {
         int idx = 1;
         for (; idx < lines.length; idx++) {
-            var headerLine = lines[idx].replaceAll(SPACE_SEPARATOR,EMPTY_STRING);
+            if (Objects.equals(lines[idx], EMPTY_STRING)) {
+                break;
+            }
+            var headerLine = lines[idx].replace(SPACE_SEPARATOR,EMPTY_STRING);
             if (headerLine.isEmpty()) { // 비어 있다는 것은 라인 구분자가 2개라는 것으로 header 영역이 끝난다.
                 idx++;
                 break;
@@ -133,7 +193,7 @@ public class HttpRequestParser {
                     var cookieKeyValue = cookieInfo.split(EQUAL_SEPARATOR);
 
                     var key = cookieKeyValue[0];
-                    if (Objects.equals(key,"sessionKey")) {
+                    if (Objects.equals(key,SESSIONKEY)) {
                         var value = cookieKeyValue[1];
                         cookies.put(key, new Cookie(key, value));
                     }
@@ -144,32 +204,5 @@ public class HttpRequestParser {
         }
 
         return idx;
-    }
-
-
-    @Deprecated
-    public Map<String, String> parsingHeaderValue(String headerString) {
-        var headerValues = new HashMap<String, String>();
-        var values = headerString.split(SPACE_SEPARATOR);
-
-        for (var value : values) {
-            if (value.isEmpty()) {
-                continue;
-            }
-
-            if (value.contains(COMMA_DELIMITER)) {
-                var commaSplitData = value.split(COMMA_DELIMITER);
-                for (String data : commaSplitData) {
-                    headerValues.put(data, null);
-                }
-
-            } else if (value.contains(EQUAL_SEPARATOR)) {
-                var split = value.split(EQUAL_SEPARATOR);
-                headerValues.put(split[0], split[1]);
-            } else {
-                headerValues.put(value, null);
-            }
-        }
-        return headerValues;
     }
 }

@@ -1,7 +1,6 @@
 package codesquad.webserver;
 
 import codesquad.command.CommandManager;
-import codesquad.command.domainResponse.DomainResponse;
 import codesquad.exception.client.ClientErrorCode;
 import codesquad.http.HttpStatus;
 import codesquad.http.request.dynamichandler.DynamicHandleResult;
@@ -19,12 +18,13 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConnectionHandler {
     private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
     private static ConnectionHandler connectionThreadPool;
 
-    private ThreadPoolExecutor threadPoolExecutor;
+    private final ThreadPoolExecutor threadPoolExecutor;
     
     private int corePoolSize;
     private int maxPoolSize;
@@ -68,6 +68,7 @@ public class ConnectionHandler {
         var clientTask = new HttpRequestParser(clientSocket);
 
 
+
         CompletableFuture.supplyAsync(() -> clientTask.parse(), threadPoolExecutor)
             .handle((parsingResult, throwable) -> { // parsing 결과 핸들링
                 var httpRequest = parsingResult;
@@ -82,15 +83,22 @@ public class ConnectionHandler {
                 HttpRequest httpRequest = (HttpRequest)handleResult;
 
                 if (!Objects.isNull(httpRequest) && Objects.isNull(throwable)) {
-                    if (Objects.equals(httpRequest.fileExtension(), FileExtension.DYNAMIC)) { // 동적 요청 처리
-                        DomainResponse domainResponse = CommandManager.getInstance().execute(httpRequest);
-                        DynamicHandleResult dynamicHandleResult = DynamicHandleResult.of(domainResponse);
+                    if(Objects.equals(httpRequest.fileExtension(),FileExtension.MULTIPART)){
+                        var domainResponse = CommandManager.getInstance().execute(httpRequest);
+                        var dynamicHandleResult = DynamicHandleResult.of(domainResponse);
+
+                        return HttpResponse.getHtmlResponse(dynamicHandleResult);
+                    }
+                    else if (Objects.equals(httpRequest.fileExtension(), FileExtension.DYNAMIC)) { // 동적 요청 처리
+                        var domainResponse = CommandManager.getInstance().execute(httpRequest);
+                        var dynamicHandleResult = DynamicHandleResult.of(domainResponse);
 
                         return HttpResponse.getHtmlResponse(dynamicHandleResult);
                     } else { // 정적 요청 처리애
                         if (Objects.equals(httpRequest.method(), HttpMethod.GET)) {
                             var body = StaticResourceHandler.getInstance().getStaticResource(httpRequest);
-                            return HttpResponse.getHtmlResponse(HttpStatus.OK, httpRequest.fileExtension(), body);
+                            return HttpResponse.getHtmlResponse(HttpStatus.OK, httpRequest
+                                    .fileExtension(), body);
                         } else if (!Objects.equals(httpRequest.method(),
                             HttpMethod.GET)) { // throw method not allowed error
                             throw ClientErrorCode.METHOD_NOT_ALLOWED.exception();
@@ -107,7 +115,15 @@ public class ConnectionHandler {
                 HttpResponse response = applyResult;
 
                 if (!Objects.isNull(applyResult) && Objects.isNull(throwable)) { // 정상 응답 처리
-                    doResponse(clientSocket, response);
+                    if (response.headers().get("chunked") == null) {
+                        doResponse(clientSocket, response);
+                    } else {
+                        log.debug("IMAGE!");
+                        while (clientSocket.isConnected()) {
+
+                        }
+                        return;
+                    }
                 } else {
                     try {
                         Exception exception = (Exception)throwable.getCause();
@@ -124,11 +140,13 @@ public class ConnectionHandler {
 
                     if (!Objects.isNull(clientSocket) && !clientSocket.isClosed() && !clientSocket.getKeepAlive()) {
                         clientSocket.close();
+                        log.debug("[SOCKET] client socket closed");
                     }
                 } catch (IOException exception) {
                     log.error("[Socket Error] : Client Socket Already Closed");
                 }
 			});
+
 
     }
 
