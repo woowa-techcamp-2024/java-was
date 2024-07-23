@@ -1,6 +1,5 @@
 package codesquad.db.csv;
 
-import codesquad.container.Component;
 import codesquad.db.ConnectionPoolManager;
 import codesquad.db.DataSourceConfigurer;
 import codesquad.file.AppFileReader;
@@ -13,7 +12,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-@Component
 public class CsvDataSourceManager implements ConnectionPoolManager {
     private static final String homePath = System.getProperty("user.home");
     private static final String CREATE_SQL_FILE_PATH = "db/create.sql";
@@ -64,6 +62,12 @@ public class CsvDataSourceManager implements ConnectionPoolManager {
     }
 
     private void initTable(DataSourceConfigurer dataSourceConfigurer) throws SQLException {
+        try {
+            DriverManager.registerDriver(new CsvDriver());
+        } catch (SQLException e) {
+            throw new RuntimeException("Can't register driver!");
+        }
+
         Connection connection = DriverManager.getConnection(
                 dataSourceConfigurer.getURL(),
                 dataSourceConfigurer.getUsername(),
