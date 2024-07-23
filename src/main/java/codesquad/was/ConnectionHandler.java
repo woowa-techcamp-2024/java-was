@@ -2,6 +2,7 @@ package codesquad.was;
 
 import static codesquad.was.http.type.StatusCodeType.NOT_FOUND;
 
+import codesquad.was.exception.InternalServerException;
 import codesquad.was.http.HttpRequest;
 import codesquad.was.http.HttpResponse;
 import codesquad.was.http.type.MimeType;
@@ -30,11 +31,11 @@ public class ConnectionHandler implements Runnable {
     @Override
     public void run() {
         try (InputStream clientInput = clientSocket.getInputStream();
-             OutputStream clientOutput = clientSocket.getOutputStream()
-        ) {
+             OutputStream clientOutput = clientSocket.getOutputStream()) {
             HttpRequest httpRequest = new HttpRequest(clientInput);
-            HttpResponse httpResponse = new HttpResponse(clientOutput, httpRequest.getHttpVersion());
             log.debug("Http Request = {}", httpRequest);
+
+            HttpResponse httpResponse = new HttpResponse(clientOutput, httpRequest.getHttpVersion());
 
             RequestHandler requestHandler = requestHandlerMapping.read(httpRequest.getRequestPath());
             validateHandler(httpRequest, httpResponse, requestHandler);
@@ -42,6 +43,13 @@ public class ConnectionHandler implements Runnable {
             requestHandler.process(httpRequest, httpResponse);
         } catch (IOException e) {
             log.error("요청을 처리할 수 없습니다.", e);
+        } finally {
+            try {
+                clientSocket.close();
+            } catch (IOException e) {
+                log.error(e.getMessage(), e);
+                throw new InternalServerException();
+            }
         }
     }
 

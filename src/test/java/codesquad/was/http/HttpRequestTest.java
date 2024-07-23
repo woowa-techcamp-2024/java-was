@@ -23,7 +23,7 @@ class HttpRequestTest {
                             + "Host: localhost\r\n"
                             + "Connection: keep-alive\r\n"
                             + "Content-Type: application/x-www-form-urlencoded\r\n"
-                            + "Content-Length: 13\r\n"
+                            + "Content-Length: " + "body=data".getBytes().length + "\r\n"
                             + "\r\n"
                             + "name=JohnDoe";
             InputStream clientInput = new ByteArrayInputStream(httpRequestValue.getBytes("UTF-8"));
@@ -46,7 +46,7 @@ class HttpRequestTest {
                             + "Host: localhost\r\n"
                             + "Connection: keep-alive\r\n"
                             + "Content-Type: application/x-www-form-urlencoded\r\n"
-                            + "Content-Length: 13\r\n"
+                            + "Content-Length: " + "body=data".getBytes().length + "\r\n"
                             + "\r\n"
                             + "body=data";
             InputStream clientInput = new ByteArrayInputStream(httpRequestValue.getBytes("UTF-8"));
@@ -71,7 +71,7 @@ class HttpRequestTest {
                             + "Host: localhost\r\n"
                             + "Connection: keep-alive\r\n"
                             + "Content-Type: application/x-www-form-urlencoded\r\n"
-                            + "Content-Length: 13\r\n"
+                            + "Content-Length: " + "body=data".getBytes().length + "\r\n"
                             + "\r\n"
                             + "body=data";
             InputStream clientInput = new ByteArrayInputStream(httpRequestValue.getBytes("UTF-8"));

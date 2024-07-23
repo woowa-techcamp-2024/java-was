@@ -22,17 +22,19 @@ public class RequestInputStreamReader {
     private final byte[] requestLineBytes;
     private final List<byte[]> headerBytes = new ArrayList<>();
 
+
     public RequestInputStreamReader(final BufferedInputStream bufferedInputStream) throws IOException {
         this.requestInputStream = new BufferedInputStream(bufferedInputStream);
 
         requestLineBytes = readBytesUntilSymbol(CR);
+        skipByte(2);
 
-        byte[] currentHeaderBytes;
-        do {
+        byte[] currentHeaderBytes = readBytesUntilSymbol(CR);
+        while (currentHeaderBytes.length > 1) {
+            headerBytes.add(currentHeaderBytes);
             skipByte(2);
             currentHeaderBytes = readBytesUntilSymbol(CR);
-            headerBytes.add(currentHeaderBytes);
-        } while (currentHeaderBytes.length > 1);
+        }
 
         skipByte(2);
     }
